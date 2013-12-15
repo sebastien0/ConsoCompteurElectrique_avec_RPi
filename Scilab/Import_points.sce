@@ -81,21 +81,34 @@ if (cheminFichier ~= "") then
     CreationHeureTxt + " à " + FermetureHeureTxt],"Heure","Puissance en VA");
     
     // **** Ajouter les heures en abscisses ***********
+    //* TODO: 
+    //* - Obtenir la taille de la fenêtre pour ajuster au mieux
+    //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
+    //*************************************************************************
     graphique = gca();
     //Augmenter la taille des textes
     graphique.title.font_size = 3;
     graphique.x_label.font_size = 2;
     graphique.y_label.font_size = 2;
+    // Ajustement de la zone d'affichage
+    graphique.tight_limits = "on";
+    graphique.data_bounds(1,2) = 0;
+    // multiple de 500 pour affichage en réduit
+    graphique.data_bounds(2,2) = round(graphique.data_bounds(2,2)/200)*200;
     //Obtenir le pas du quadrillage vertical
-    increment = size(graphique.x_ticks.locations);
-    increment = int(nbrLignes/(increment(1)-1));
-    //Attribuer une heure au pas principal
-    noms_labels = [CreationHeureTxt;donnee_mesure(increment);donnee_mesure(increment*2);donnee_mesure(increment*3);donnee_mesure(increment*4);donnee_mesure(increment*5);donnee_mesure(increment*6);donnee_mesure(increment*7);donnee_mesure(increment*8);FermetureHeureTxt];
+    x_pas = size(graphique.x_ticks.locations);
+    x_pas = x_pas(1)-1;
+    increment = int(nbrLignes/x_pas);
+
+    noms_labels(1) = CreationHeureTxt;
     locations_labels(1)=0;
-    for i = 2:9
+    for i = 2:x_pas
         locations_labels(i)= (i-1)*increment;
+        noms_labels(i) = donnee_mesure(i*increment);
     end
-    locations_labels(10)=nbrLignes;
+    locations_labels(x_pas+1) =nbrLignes;
+    noms_labels(x_pas+1) = FermetureHeureTxt;
+    
     // Effectuer la mise à jour des abscisses
     graphique.x_ticks = tlist(["ticks" "locations" "labels"],locations_labels,noms_labels);
 end
