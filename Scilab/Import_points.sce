@@ -73,17 +73,30 @@ if (cheminFichier ~= "") then
     //clear donnee_mesure;
         
     disp("Pret à tracer",toc(),"Fin du traitement en secondes");
-
-// **** Tracer la puissance en fonction du temps ******************************
-plot(Papp);
-set(gca(),"grid",[1 1]);    // Grid on
-xtitle(["Puissance en fonction du temps";"Relevé du " + CreationDateTxt + " de " + ...
-CreationHeureTxt + " à " + FermetureHeureTxt],"Temps en échantillons ","Puissance en VA");
-
-//plot(HeureEchantillon,Papp);    // ATTENTION, problème d'affichage entre 60 et 99 minutes
-
-// **** Ajouter les heures en abscisses ***********
-// axe vertical avec chaînes de caractères au dessus des graduations
-//drawaxis(x=1:nbrLignes,y=7,dir='d',tics='v',val=HeureEchantillon(1,1));
+    
+    // **** Tracer la puissance en fonction du temps ******************************
+    plot(Papp);
+    set(gca(),"grid",[1 1]);    // Grid on
+    xtitle(["Puissance au cours de la journée";"Relevé du " + CreationDateTxt + " de " + ...
+    CreationHeureTxt + " à " + FermetureHeureTxt],"Heure","Puissance en VA");
+    
+    // **** Ajouter les heures en abscisses ***********
+    graphique = gca();
+    //Augmenter la taille des textes
+    graphique.title.font_size = 3;
+    graphique.x_label.font_size = 2;
+    graphique.y_label.font_size = 2;
+    //Obtenir le pas du quadrillage vertical
+    increment = size(graphique.x_ticks.locations);
+    increment = int(nbrLignes/(increment(1)-1));
+    //Attribuer une heure au pas principal
+    noms_labels = [CreationHeureTxt;donnee_mesure(increment);donnee_mesure(increment*2);donnee_mesure(increment*3);donnee_mesure(increment*4);donnee_mesure(increment*5);donnee_mesure(increment*6);donnee_mesure(increment*7);donnee_mesure(increment*8);FermetureHeureTxt];
+    locations_labels(1)=0;
+    for i = 2:9
+        locations_labels(i)= (i-1)*increment;
+    end
+    locations_labels(10)=nbrLignes;
+    // Effectuer la mise à jour des abscisses
+    graphique.x_ticks = tlist(["ticks" "locations" "labels"],locations_labels,noms_labels);
 end
 resume;
