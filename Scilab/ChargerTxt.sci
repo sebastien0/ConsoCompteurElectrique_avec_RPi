@@ -1,6 +1,4 @@
-function [CreationTxt, Papp, donnee_mesure] = ChargerTxt ()
-    // Répertoire par défaut des données
-        dataPath = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur Linky\Compteur_Linky\Relevés";
+function ChargerTxt (dataPath)
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath, "Choisir le fichier à ouvrir", %f);
     
@@ -63,23 +61,6 @@ function [CreationTxt, Papp, donnee_mesure] = ChargerTxt ()
         CreationTxt(1) = CreationDateTxt;
         CreationTxt(2) = CreationHeureTxt;
         CreationTxt(3) = FermetureHeureTxt;
-        
-//        tracerGraph(CreationTxt, Papp, donnee_mesure);
-
-        clear CreationDateTxt;
-        clear CreationHeureTxt;
-        clear FermetureHeureTxt;
-        clear temp;
-        clear nbrLignes;
-        clear repertoire;
-        clear cheminFichier;
-    else
-        CreationTxt = "Erreur";
-        Papp = zeros();
-        donnee_mesure = zeros();
     end
-    
-    return
-    [CreationTxt, Papp, donnee_mesre] = return (CreationTxt, Papp, donnee_mesure);
 endfunction
     

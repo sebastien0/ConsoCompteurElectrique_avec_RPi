@@ -1,12 +1,14 @@
-function tracerGraph(CreationTxt, Papp, donnee_mesure)
-// **** Tracer la puissance en fonction du temps ******************************
+function tracerGraph()
+    // **** Tracer la puissance en fonction du temps ******************************
+    disp("Tracer le graph de la Papp");
     nbrLignes = size(Papp);
     nbrLignes = nbrLignes(1);
     
     plot(Papp);
     set(gca(),"grid",[1 1]);    // Grid on
-    xtitle(["Puissance au cours de la journée";"Relevé du " + CreationDateTxt + " de " + ...
-    CreationHeureTxt + " à " + FermetureHeureTxt],"Heure","Puissance en VA");
+//    xtitle(["Puissance au cours de la journée";"Relevé du " + CreationDateTxt + " de " + ...    CreationHeureTxt + " à " + FermetureHeureTxt],"Heure","Puissance en VA");
+    xtitle(["Puissance au cours de la journée";"Relevé du " + CreationTxt(1) + " de " + ...
+    CreationTxt(2) + " à " + CreationTxt(3)],"Heure","Puissance en VA");
         
     //*************************************************************************
     //* TODO: 
@@ -14,9 +16,7 @@ function tracerGraph(CreationTxt, Papp, donnee_mesure)
     //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
     // UTILISER event handler functions (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) pour avoir un zoom dynamique.
     //*************************************************************************
-    clear noms_labels;
-    clear locations_labels;
-       
+
     fenetre = gcf();
     fenetre.figure_name = "Puissance apparente";
     fenetre.figure_size = floor(fenetre.figure_size*1.3);

@@ -2,22 +2,21 @@ clear all;
 clc;
 
 //*** Chargement de l'environnement ***********
-// Répertoire par défaut des fonctions
+// Répertoire par défaut
 fnctPath= "E:\Documents\Documents\Divers\Communication cpt Linky\Scilab";
-    
-// Charger les functions
-//exec(fnctPath+"\ChargerTxt.sci");
-//exec(fnctPath+"\tracerGraph.sci");
-deff('[CreationTxt, Papp, donnee_mesure] = ChargerTxt()',"ChargerTxt");   // Importer le fichier texte
-deff('tracerGraph(CreationTxt, Papp, donnee_mesure)',"tracerGraph");  //Tracer la courbe
+dataPath = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur Linky\Compteur_Linky\Relevés";
 
-//*** Traitement ***************
+// Variables globales
 global CreationTxt;
 global Papp;
 global donnee_mesure;
 
+// Charger les functions
+exec(fnctPath+"\ChargerTxt.sci");
+exec(fnctPath+"\tracerGraph.sci");
+//deff('ChargerTxt(dataPath)',"ChargerTxt(dataPath)");   // Importer le fichier texte
+//deff('tracerGraph()',"tracerGraph");  //Tracer la courbe
 
-[CreationTxt1, Papp1, donnee_mesure1] = ChargerTxt();
-tracerGraph(CreationTxt1, Papp1, donnee_mesure1);
-
-resume;
+//*** Traitement ***************
+ChargerTxt(dataPath);
+tracerGraph();
