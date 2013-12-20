@@ -7,7 +7,7 @@ function tracerGraph()
     plot(Papp);
     set(gca(),"grid",[1 1]);    // Grid on
     xtitle(["Puissance au cours de la journée";"Relevé du " + CreationTxt(1) + " de " + ...
-    CreationTxt(2) + " à " + CreationTxt(3)],"Heure","Puissance en VA");
+    CreationTxt(2) + " à " + CreationTxt(3); "Courant max = " + string(Imax) + " A"],"Heure","Puissance en VA");
         
     //*************************************************************************
     //* TODO: 

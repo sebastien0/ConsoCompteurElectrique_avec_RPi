@@ -9,7 +9,9 @@ dataPath = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur 
 // Variables globales
 global CreationTxt;
 global Papp;
+global Base;
 global donnee_mesure;
+global Imax;
 
 // Charger les functions dans l'environnement
 exec(fnctPath+"\ChargerTxt.sci");
