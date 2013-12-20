@@ -1,12 +1,11 @@
 function tracerGraph()
     // **** Tracer la puissance en fonction du temps ******************************
-    disp("Tracer le graph de la Papp");
+    disp("Tracer le graph de la Papp ...");
     nbrLignes = size(Papp);
     nbrLignes = nbrLignes(1);
     
     plot(Papp);
     set(gca(),"grid",[1 1]);    // Grid on
-//    xtitle(["Puissance au cours de la journée";"Relevé du " + CreationDateTxt + " de " + ...    CreationHeureTxt + " à " + FermetureHeureTxt],"Heure","Puissance en VA");
     xtitle(["Puissance au cours de la journée";"Relevé du " + CreationTxt(1) + " de " + ...
     CreationTxt(2) + " à " + CreationTxt(3)],"Heure","Puissance en VA");
         
@@ -48,4 +47,6 @@ function tracerGraph()
     
     // Effectuer la mise à jour des abscisses
     graphique.x_ticks = tlist(["ticks" "locations" "labels"],locations_labels,noms_labels);
+    
+    disp("Graph de la Papp tracé");
 endfunction

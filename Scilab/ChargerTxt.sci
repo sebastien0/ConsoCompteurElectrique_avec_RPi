@@ -4,7 +4,7 @@ function ChargerTxt (dataPath)
     
     // Si un fichier est bien sélectionné
     if (cheminFichier ~= "") then
-        disp(cheminFichier,"Ouverture du fichier");
+        disp(cheminFichier,"Ouverture du fichier:");
         tic;
         // Ouverture du fichier
         fichier=mopen(cheminFichier,'r');
@@ -31,36 +31,35 @@ function ChargerTxt (dataPath)
         disp((CreationDateTxt + " " + CreationHeureTxt),"Date et heure de création:");
         
         // *** Conversion des donnée de chaine de caractère en valeur numérique *******
-        disp("Extraction des données");
+        disp("Extraction des données ...");
         donnee_mesure = msscanf(donnee(4,1),'%s %s %s %s');  // En têtes
         nbrLignes = size(donnee)-1;
         nbrLignes = nbrLignes(1,1)-offset;
         for ligne = 2:nbrLignes
         // ATTENTION, tel quel on ne récupère pas les Index ni invalide
-            donnee_mesure(ligne,:)=msscanf(donnee(offset+ligne,1),'%s %s');
+            donnee_mesure(ligne,:) = msscanf(donnee(offset+ligne,1),'%s %s');
         end
         sleep(1);   //Pause 1ms
                 
         // *** Convertir les nombres au format string en double ***********************
-        disp("Mise en forme des données");
+        disp("Mise en forme des données ...");
         for ligne = 2:nbrLignes-1
             if donnee_mesure(ligne,PAPP) <> "-" then
             //    Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
                 Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
             //    Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
-                temp = msscanf(donnee_mesure(ligne,HEURE),'%c%c:%c%c:%c%c');
-                HeureEchantillon(ligne-1,:) = evstr(strcat(temp(1,:)));
             end
         end
+        temp = msscanf(donnee_mesure(ligne,HEURE),'%c%c:%c%c:%c%c');
         //Imax = evstr(donnee_mesure(ligne,IMAX));    // Courrant max de la journée
         
         FermetureHeureTxt = temp(1) + temp(2) + ":" + temp(3) + temp(4) + ":" + temp(5) + temp(6);
         
-        disp("Pret à tracer",toc(),"Fin du traitement en secondes");
-        
         CreationTxt(1) = CreationDateTxt;
         CreationTxt(2) = CreationHeureTxt;
         CreationTxt(3) = FermetureHeureTxt;
+        
+        disp("Pret à tracer",toc(),"Fin du traitement en secondes");
     end
 endfunction
     
