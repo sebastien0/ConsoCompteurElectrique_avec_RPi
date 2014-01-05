@@ -24,8 +24,10 @@ else
 end
 
 // *** Tracer la Papp ou les index *****************
-tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
-// Illustrations sur le graph
-if Config == 2 then
-    legend(["Index heures creuses"; "Index heures pleines"]);
+if Config == 1 then
+    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
+elseif Config == 2 then
+    tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
+    legende = legend(["Index heures creuses"; "Index heures pleines"],2);
+    legende.font_size = 3;
 end
