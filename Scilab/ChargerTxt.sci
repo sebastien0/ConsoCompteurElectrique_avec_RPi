@@ -26,7 +26,7 @@ function ChargerTxt (dataPath)
         end
         configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
         clear temp;
-        if configHPHC_N = 0 then
+        if configHPHC_N == 0 then
             disp("Compteur configuré en HCHP");
         end
         
@@ -35,10 +35,10 @@ function ChargerTxt (dataPath)
         HEURE = 1;  // Colonne contenant l'heure
         IMAX = 4;   // Colonne contenant le courant max journalier
         INVALIDE = 4;   // Colonne contenant l'invalidité de la trame
-        if configBase_N = 0 then
+        if configBase_N == 0 then
             PAPP = 2;   // Colonne contenant la puissance apparente
             BASE = 3;   // Colonne contenant l'index Base
-        elseif configHPHC_N then
+        elseif configHPHC_N == 0 then
             HEURECREUSE = 2;   // Colonne contenant l'index Heure Creuse
             HEUREPLEINE = 3;   // Colonne contenant l'index Heure Pleine
         end
@@ -62,9 +62,9 @@ function ChargerTxt (dataPath)
         disp("Extraction des données ...");
         
         // En tête des colonnes
-        if configBase_N = 0 then
+        if configBase_N == 0 then
             donnee_mesure = msscanf(donnee(offset,1),'%s %s %s %s');
-        elseif configHPHC_N = 0 then
+        elseif configHPHC_N == 0 then
             temp = msscanf(donnee(offset,1),'%s %s %s %s %s %s %s');
             donnee_mesure = [temp(1) temp(3)+" "+temp(4) temp(5)+" "+temp(6) temp(7)];
             clear temp;
@@ -75,20 +75,21 @@ function ChargerTxt (dataPath)
         for ligne = 1:(nbrLignes-1)
             // Récupération de la Puissance et des Index
             try
-                if configBase_N = 0 then
+                if configBase_N == 0 then
                     donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),'%s %s %s') ""];
-                elseif configHPHC_N = 0 then
+                elseif configHPHC_N == 0 then
                     temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s %s')];
                     donnee_mesure(ligne+1,:) = [temp(1) temp(3) temp(4) temp(5)];
                     clear temp;
                 end
             catch
-                if configBase_N = 0 then
+                if configBase_N == 0 then
                     donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),'%s %s') donnee_mesure(ligne,BASE) ""];
-                elseif configHPHC_N = 0 then
+                elseif configHPHC_N == 0 then
                     temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s')];
                     donnee_mesure(ligne+1,:) = [temp(1) temp(2) temp(3) ""];
                     clear temp;
+                end
             end
         end
 
@@ -105,14 +106,14 @@ function ChargerTxt (dataPath)
         // *** Convertir les nombres au format string en double ***************
         disp("Mise en forme des données ...");
         for ligne = 2:nbrLignes-1
-            if configBase_N = 0 then
+            if configBase_N == 0 then
                 if donnee_mesure(ligne,PAPP) <> "-" then
                     Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
                     Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
                     //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
                 end
                 
-            elseif configHPHC_N = 0 then
+            elseif configHPHC_N == 0 then
                 if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & donnee_mesure(ligne,HEURECREUSE) <> "-") then
                     if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
                         index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
@@ -138,17 +139,25 @@ function ChargerTxt (dataPath)
         CreationTxt(2) = CreationHeureTxt;
         CreationTxt(3) = FermetureHeureTxt;
         
-        Gbl_Config = [configBase_N configHPHC_N];
+        Config = [configBase_N configHPHC_N];
         
-        disp("Fin du traitement en " + string(toc()) + " secondes");
+        disp("Fin du traitement en " + string(ceil(toc())) + " secondes");
     end
     
     // ****** Retour des variables ********************************************
-    // Retourner Gbl_Index = Base ou Gbl_Index = [Hpleines Hcreuses]
-    if configBase_N = 0 then
-        [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Base, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Papp, Base, NumCompteur);
-    elseif configHPHC_N = 0 then
-        [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Hpleines, Gbl_Hcreuses, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Hpleines, Hcreuses, NumCompteur);
+    if configBase_N == 0 then
+        //NOP
+    elseif configHPHC_N == 0 then
+        Base = [Hpleines Hcreuses];
+        Papp = zeros(1);
+    else
+        CreationTxt = zeros(1);
+        donnee_mesure = zeros(1);
+        Papp = zeros(1);
+        Base = zeros(1);
+        NumCompteur = zeros(1);
     end
+    
+    [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Papp, Base, NumCompteur, Config);
 endfunction
     
