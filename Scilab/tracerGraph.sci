@@ -62,6 +62,6 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
         disp("Graph tracé");
 
     else
-        disp("Erreur");
+        disp("Erreur de config");
     end
 endfunction

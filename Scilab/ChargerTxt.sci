@@ -15,7 +15,11 @@ function ChargerTxt (dataPath)
         try
             titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
         catch
-            titres = msscanf(donnee(5,1),'%s %s %s %s');
+            try
+                titres = msscanf(donnee(5,1),'%s %s %s %s');
+            catch
+                disp(lasterror());
+            end
         end
         temp = titres(3);
         configBase_N = strcmp('Base',temp); // =0 si compteur en Base 
@@ -45,21 +49,18 @@ function ChargerTxt (dataPath)
         
         //Date du relevé
         Creation = msscanf(donnee(1,1),'%s %s %s %s');
-        CreationDateTxt = msscanf(Creation(1,3),'%c%c%c%c/%c%c/%c%c');
-        CreationDateTxt = CreationDateTxt(1) + CreationDateTxt(2) + CreationDateTxt(3) + CreationDateTxt(4)+ "/" + CreationDateTxt(5) + CreationDateTxt(6) + "/" + CreationDateTxt(7) + CreationDateTxt(8);
-        
-        CreationHeureTxt = msscanf(Creation(1,4),'%c%c:%c%c:%c%c');
-        CreationHeureTxt = CreationHeureTxt(1) + CreationHeureTxt(2) + ":" + CreationHeureTxt(3) + CreationHeureTxt(4) + ":" + CreationHeureTxt(5) + CreationHeureTxt(6);
+        CreationDateTxt = msscanf(Creation(1,3),'%s');
+        CreationHeureTxt = msscanf(Creation(1,4),'%s');
     
         // Numéro du compteur
-        temp = msscanf(donnee(3,1),'%s %s');
+        temp = msscanf(donnee(3,1),'%s n°%s');
         NumCompteur = temp(1,2);
         clear temp;
     
-        disp("Relevé créé le " + CreationDateTxt + " à " + CreationHeureTxt + " par le compteur " + NumCompteur);
+        disp("Relevé créé le " + CreationDateTxt + " à " + CreationHeureTxt + " par le compteur n°" + NumCompteur);
         
         // *** Conversion des donnée de chaine de caractère en valeur numérique *******
-        disp("Extraction des données ...");
+        disp("Extraction et mise en forme des données ...");
         
         // En tête des colonnes
         if configBase_N == 0 then
@@ -72,8 +73,25 @@ function ChargerTxt (dataPath)
 
         nbrLignes = size(donnee)-1;
         nbrLignes = nbrLignes(1,1)-offset;
+        
+        //Création de matrices vides
+        donnee_mesure(nbrLignes,:) = ["" "" "" ""];
+        if configBase_N == 0 then
+            Papp = zeros(nbrLignes,1);
+            Base = zeros(nbrLignes,1);
+        elseif configHPHC_N == 0 then
+            Hpleines = zeros(nbrLignes,1);
+            Hcreuses = zeros(nbrLignes,1);
+        end
+
+        i = 0.09;    // pourcentage d'avancement
         for ligne = 1:(nbrLignes-1)
-            // Récupération de la Puissance et des Index
+            // pourcentage d'avancement
+            if (ligne == round(nbrLignes *i)) then
+                disp(string(round(ligne*100/nbrLignes)) + "% traités");
+                i = i + 0.09;
+            end
+            // Reconstitution des colonnes
             try
                 if configBase_N == 0 then
                     donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),'%s %s %s') ""];
@@ -89,6 +107,35 @@ function ChargerTxt (dataPath)
                     temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s')];
                     donnee_mesure(ligne+1,:) = [temp(1) temp(2) temp(3) ""];
                     clear temp;
+                else
+                    disp(lasterror());
+                end
+            end
+            
+            // Conversion des chaines de caractères en nombre
+            if ligne >= 2 then
+                if configBase_N == 0 then
+                    if donnee_mesure(ligne,PAPP) <> "-" then
+                        Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
+                        Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
+                        //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
+                    end
+                    
+                elseif configHPHC_N == 0 then
+                    if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & donnee_mesure(ligne,HEURECREUSE) <> "-") then
+                        if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
+                            index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
+                            index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
+                        else
+                            Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) - index_Hpleines;
+                            Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) - index_Hcreuses;
+                        end
+                        //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
+                    else
+                        //Recopier la valeur de l'échantillon précédent pour ne pas avoir de 0 dans le tableau
+                        Hpleines(ligne-1,1) = Hpleines(ligne-2,1);
+                        Hcreuses(ligne-1,1) = Hcreuses(ligne-2,1);
+                    end
                 end
             end
         end
@@ -101,44 +148,10 @@ function ChargerTxt (dataPath)
             disp("Courant max sur la journée: " + string(Imax) + " A");
         catch
         end
-        sleep(1);   //Pause 1ms
-                
-        // *** Convertir les nombres au format string en double ***************
-        disp("Mise en forme des données ...");
-        for ligne = 2:nbrLignes-1
-            if configBase_N == 0 then
-                if donnee_mesure(ligne,PAPP) <> "-" then
-                    Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
-                    Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
-                    //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
-                end
-                
-            elseif configHPHC_N == 0 then
-                if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & donnee_mesure(ligne,HEURECREUSE) <> "-") then
-                    if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
-                        index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
-                        index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
-                    else
-                        Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) - index_Hpleines;
-                        Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) - index_Hcreuses;
-                    end
-                    //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
-                else
-                    //Recopier la valeur de l'échantillon précédent pour ne pas avoir de 0 dans le tableau
-                    Hpleines(ligne-1,1) = Hpleines(ligne-2,1);
-                    Hcreuses(ligne-1,1) = Hcreuses(ligne-2,1);
-                end
-            end
-        end
         
-        temp = msscanf(donnee_mesure(ligne,HEURE),'%c%c:%c%c:%c%c');
-        FermetureHeureTxt = temp(1) + temp(2) + ":" + temp(3) + temp(4) + ":" + temp(5) + temp(6);
-        clear temp;
+        FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
         
-        CreationTxt(1) = CreationDateTxt;
-        CreationTxt(2) = CreationHeureTxt;
-        CreationTxt(3) = FermetureHeureTxt;
-        
+        CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
         Config = [configBase_N configHPHC_N];
         
         disp("Fin du traitement en " + string(ceil(toc())) + " secondes");

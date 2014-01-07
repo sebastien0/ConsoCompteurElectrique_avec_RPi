@@ -25,7 +25,7 @@ end
 
 // *** Tracer la Papp ou les index *****************
 if Config == 1 then
-    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
+    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index de la puissance", Config);
 elseif Config == 2 then
     tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
     legende = legend(["Index heures creuses"; "Index heures pleines"],2);
