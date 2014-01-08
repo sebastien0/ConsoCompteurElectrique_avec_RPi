@@ -5,6 +5,7 @@ function ChargerTxt (dataPath)
     // Si un fichier est bien sélectionné
     if (cheminFichier ~= "") then
         disp("Ouverture du fichier " + cheminFichier);
+        BarreProgression = progressionbar('Import en cours: 0% fait');
         tic;
 
         fichier = mopen(cheminFichier,'r'); // Ouverture du fichier
@@ -84,13 +85,11 @@ function ChargerTxt (dataPath)
             Hcreuses = zeros(nbrLignes,1);
         end
 
-        i = 0.09;    // pourcentage d'avancement
         for ligne = 1:(nbrLignes-1)
-            // pourcentage d'avancement
-            if (ligne == round(nbrLignes *i)) then
-                disp(string(round(ligne*100/nbrLignes)) + "% traités");
-                i = i + 0.09;
-            end
+            // Barre de progression
+            progressionbar(BarreProgression, 'Import en cours, ' + string(round(ligne*100/nbrLignes)) + '% fait');
+            // TODO: temps restant approximatif
+
             // Reconstitution des colonnes
             try
                 if configBase_N == 0 then
@@ -171,6 +170,21 @@ function ChargerTxt (dataPath)
         NumCompteur = zeros(1);
     end
     
+    close(BarreProgression);
+    
     [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Papp, Base, NumCompteur, Config);
 endfunction
     
+function SauveVariables (filePath)
+    originPath = pwd();
+    // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
+    temp = msscanf(Gbl_CreationTxt(1), '%c%c%c%c / %c%c / %c%c');
+    temp = [temp(1)+temp(2)+temp(3)+temp(4) temp(5)+temp(6) temp(7)+temp(8)];
+//    filePath = dataPath+"\Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
+    cd(filePath);
+    fileName = "Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
+    save(fileName,"Gbl_CreationTxt", "Gbl_donnee_mesure", "Gbl_Papp", "Gbl_Index", "Gbl_NumCompteur", "Gbl_Config");
+   
+   cd(originPath);
+    disp("Variables sauvegardées dans " + pwd() + "\" + fileName);
+endfunction
