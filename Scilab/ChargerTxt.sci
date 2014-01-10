@@ -4,7 +4,11 @@ function ChargerTxt (dataPath)
     
     // Si un fichier est bien sélectionné
     if (cheminFichier ~= "") then
+        // Initialisation des variables
         fichierOuvert = 1;
+        tempsExecution = 0;
+        progression = -1;
+        
         disp("Ouverture du fichier " + cheminFichier);
         BarreProgression = progressionbar('Import en cours: 0% fait');
         tic;
@@ -88,8 +92,26 @@ function ChargerTxt (dataPath)
 
         for ligne = 1:(nbrLignes-1)
             // Barre de progression
-            progressionbar(BarreProgression, 'Import en cours, ' + string(round(ligne*100/nbrLignes)) + '% fait');
             // TODO: temps restant approximatif
+            if (floor(ligne*100/nbrLignes) > progression) then
+                // Calcul du temps restant
+                progression = progression + 1;
+                tempsExecution = tempsExecution + toc();
+                tic;
+                // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
+                tempsRestant = (tempsExecution / (progression + 1)) * (145 - progression);
+                if (progression == 0 | tempsRestant > tempsRestant_1) then
+                    disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
+                    tempsRestant_1 = tempsRestant;
+                end
+                // Affichage du pourcentage d'avancement et temps restant
+                if tempsRestant < 60 then
+                    progressionbar(BarreProgression, 'Import en cours, ' + string(floor(ligne*100/nbrLignes)) + '% fait. Temps restant : ' + string(round(tempsRestant)) + 's');
+                else
+                    tempTRestant = [floor(tempsRestant/60) round(modulo(round(tempsRestant),60))];
+                    progressionbar(BarreProgression, 'Import en cours, ' + string(floor(ligne*100/nbrLignes)) + '% fait. Temps restant : ' + string(tempTRestant(1)) +'min '+ string(tempTRestant(2)) + 's');
+                end
+            end
 
             // Reconstitution des colonnes
             try
@@ -154,7 +176,8 @@ function ChargerTxt (dataPath)
         CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
         Config = [configBase_N configHPHC_N 0];
         
-        disp("Fin du traitement en " + string(ceil(toc())) + " secondes");
+        tempsExecution = tempsExecution + toc();
+        disp("Fin du traitement en " + string(ceil(tempsExecution)) + " secondes");
     else
         fichierOuvert = 0;
         Config = zeros(1,2);

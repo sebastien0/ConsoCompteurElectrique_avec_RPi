@@ -18,7 +18,7 @@ disp("Saisissez votre choix puis valier par OK (et non ENTREE)");
 
 choix = "-1";
 while(choix <> "0" & choix <> []) do
-    choix = x_dialog(["Que voulez-vous faire?";"";"1   Charger un fichier texte";"2   Charger un fichier de données";"3   Tracer le graphique";"0 ou CANCEL   Quitter"],"0");
+    choix = x_dialog(["Que voulez-vous faire?";"";"1   Charger un fichier texte";"2   Charger un fichier de données";"3   Tracer le graphique";"0 ou CANCEL   Quitter"],"1");
     
     // *** 1   Charger un fichier texte ***************************************
     if choix == "1" then
@@ -28,6 +28,7 @@ while(choix <> "0" & choix <> []) do
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
         if Gbl_Config <> zeros(1,2) then
             //Sauvegarder les variables globales
+            // TODO: sélection du répertoire ?!
             SauveVariables(dataPath2Save);
         end
     
