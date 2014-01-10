@@ -26,9 +26,10 @@ while(choix <> "0" & choix <> []) do
         // *** Importer le fichier txt ***************
         ChargerTxt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
-    
-        //Sauvegarder les variables globales
-        SauveVariables(dataPath2Save);
+        if Gbl_Config <> zeros(1,2) then
+            //Sauvegarder les variables globales
+            SauveVariables(dataPath2Save);
+        end
     
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then

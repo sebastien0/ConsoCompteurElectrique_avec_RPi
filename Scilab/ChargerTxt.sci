@@ -4,6 +4,7 @@ function ChargerTxt (dataPath)
     
     // Si un fichier est bien sélectionné
     if (cheminFichier ~= "") then
+        fichierOuvert = 1;
         disp("Ouverture du fichier " + cheminFichier);
         BarreProgression = progressionbar('Import en cours: 0% fait');
         tic;
@@ -151,17 +152,30 @@ function ChargerTxt (dataPath)
         FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
         
         CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
-        Config = [configBase_N configHPHC_N];
+        Config = [configBase_N configHPHC_N 0];
         
         disp("Fin du traitement en " + string(ceil(toc())) + " secondes");
+    else
+        fichierOuvert = 0;
+        Config = zeros(1,2);
+        disp("Aucun fichier sélectionné");
     end
     
     // ****** Retour des variables ********************************************
-    if configBase_N == 0 then
-        //NOP
-    elseif configHPHC_N == 0 then
-        Base = [Hpleines Hcreuses];
-        Papp = zeros(1);
+    if fichierOuvert <> 0 then
+        if configBase_N == 0 then
+            //NOP
+        elseif configHPHC_N == 0 then
+            Base = [Hpleines Hcreuses];
+            Papp = zeros(1);
+        else
+            CreationTxt = zeros(1);
+            donnee_mesure = zeros(1);
+            Papp = zeros(1);
+            Base = zeros(1);
+            NumCompteur = zeros(1);
+        end
+        close(BarreProgression);
     else
         CreationTxt = zeros(1);
         donnee_mesure = zeros(1);
@@ -169,8 +183,6 @@ function ChargerTxt (dataPath)
         Base = zeros(1);
         NumCompteur = zeros(1);
     end
-    
-    close(BarreProgression);
     
     [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Papp, Base, NumCompteur, Config);
 endfunction
