@@ -1,6 +1,7 @@
 function ChargerTxt (dataPath)
     // Selection du fichier à traiter
-    cheminFichier = uigetfile(["*.txt"],dataPath, "Choisir le fichier à ouvrir", %f);
+    cheminFichier = uigetfile(["*.txt"],dataPath, ...
+    "Choisir le fichier à ouvrir", %f);
     
     // Si un fichier est bien sélectionné
     if (cheminFichier ~= "") then
@@ -32,12 +33,12 @@ function ChargerTxt (dataPath)
         if configBase_N <> 0 then
             temp = titres(3) + titres(4);
         else
-            disp("Compteur configuré en Base");
+            printf("Compteur configuré en Base\n");
         end
         configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
         clear temp;
         if configHPHC_N == 0 then
-            disp("Compteur configuré en HCHP");
+            printf("Compteur configuré en HCHP\n");
         end
         
         // ******* Obtention de la date et l'heure ****************************
@@ -63,17 +64,19 @@ function ChargerTxt (dataPath)
         NumCompteur = temp(1,2);
         clear temp;
     
-        disp("Relevé créé le " + CreationDateTxt + " à " + CreationHeureTxt + " par le compteur n°" + NumCompteur);
+        printf("\nRelevé créé le %s à %s par le compteur n°%s\n", ...
+        CreationDateTxt, CreationHeureTxt, NumCompteur);
         
         // *** Conversion des donnée de chaine de caractère en valeur numérique *******
-        disp("Extraction et mise en forme des données ...");
+        printf("Extraction et mise en forme des données ...\n");
         
         // En tête des colonnes
         if configBase_N == 0 then
             donnee_mesure = msscanf(donnee(offset,1),'%s %s %s %s');
         elseif configHPHC_N == 0 then
             temp = msscanf(donnee(offset,1),'%s %s %s %s %s %s %s');
-            donnee_mesure = [temp(1) temp(3)+" "+temp(4) temp(5)+" "+temp(6) temp(7)];
+            donnee_mesure = [temp(1) temp(3)+" "+temp(4) temp(5)+" "+ ...
+            temp(6) temp(7)];
             clear temp;
         end
 
@@ -98,24 +101,33 @@ function ChargerTxt (dataPath)
                 tempsExecution = tempsExecution + toc();
                 tic;
                 // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
-                tempsRestant = (tempsExecution / (progression + 1)) * (145 - progression);
+                tempsRestant = (tempsExecution / (progression + 1)) * ...
+                 (145 - progression);
                 if (progression == 0 | tempsRestant > tempsRestant_1) then
                     disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
                     tempsRestant_1 = tempsRestant;
                 end
                 // Affichage du pourcentage d'avancement et temps restant
                 if tempsRestant < 60 then
-                    progressionbar(BarreProgression, 'Import en cours, ' + string(floor(ligne*100/nbrLignes)) + '% fait. Temps restant : ' + string(round(tempsRestant)) + 's');
+                    progressionbar(BarreProgression, 'Import en cours, ' + ...
+                    string(floor(ligne*100/nbrLignes)) + ...
+                    '% fait. Temps restant : ' + ...
+                    string(round(tempsRestant)) + 's');
                 else
-                    tempTRestant = [floor(tempsRestant/60) round(modulo(round(tempsRestant),60))];
-                    progressionbar(BarreProgression, 'Import en cours, ' + string(floor(ligne*100/nbrLignes)) + '% fait. Temps restant : ' + string(tempTRestant(1)) +'min '+ string(tempTRestant(2)) + 's');
+                    tempTRestant = [floor(tempsRestant/60) ...
+                    round(modulo(round(tempsRestant),60))];
+                    progressionbar(BarreProgression, 'Import en cours, ' + ...
+                    string(floor(ligne*100/nbrLignes)) + ...
+                    '% fait. Temps restant : ' + string(tempTRestant(1)) + ...
+                    'min '+ string(tempTRestant(2)) + 's');
                 end
             end
 
             // Reconstitution des colonnes
             try
                 if configBase_N == 0 then
-                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),'%s %s %s') ""];
+                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
+                    '%s %s %s') ""];
                 elseif configHPHC_N == 0 then
                     temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s %s')];
                     donnee_mesure(ligne+1,:) = [temp(1) temp(3) temp(4) temp(5)];
@@ -123,7 +135,8 @@ function ChargerTxt (dataPath)
                 end
             catch
                 if configBase_N == 0 then
-                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),'%s %s') donnee_mesure(ligne,BASE) ""];
+                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
+                    '%s %s') donnee_mesure(ligne,BASE) ""];
                 elseif configHPHC_N == 0 then
                     temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s')];
                     donnee_mesure(ligne+1,:) = [temp(1) temp(2) temp(3) ""];
@@ -143,7 +156,8 @@ function ChargerTxt (dataPath)
                     end
                     
                 elseif configHPHC_N == 0 then
-                    if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & donnee_mesure(ligne,HEURECREUSE) <> "-") then
+                    if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & ...
+                        donnee_mesure(ligne,HEURECREUSE) <> "-") then
                         if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
                             index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
                             index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
@@ -166,7 +180,7 @@ function ChargerTxt (dataPath)
             ligne = offset+ligne+2;
             Imax = msscanf(donnee(ligne,1),'%s %s %s %s');
             Imax = evstr(Imax(IMAX));
-            disp("Courant max sur la journée: " + string(Imax) + " A");
+            printf("Courant max sur la journée: %dA\n", Imax);
         catch
         end
         
@@ -176,16 +190,18 @@ function ChargerTxt (dataPath)
         Config = [configBase_N configHPHC_N 0];
         
         tempsExecution = tempsExecution + toc();
-        disp("Fin du traitement en " + string(ceil(tempsExecution)) + " secondes");
-        printf("Erreur sur l''estimation du temps restant : %.1f%% \n",((tempsExecution - tempsRestant_1) / tempsRestant_1)*100);
+        printf("Fin du traitement en %d secondes\n", ceil(tempsExecution));
+        printf("\nErreur sur l''estimation du temps restant : %.1f%% \n\n",...
+        ((tempsExecution - tempsRestant_1) / tempsRestant_1)*100);  //DEBUG
     else
         fichierOuvert = 0;
         Config = zeros(1,2);
-        disp("Aucun fichier sélectionné");
+        printf("Aucun fichier sélectionné\n");
     end
     
     // ****** Retour des variables ********************************************
     if fichierOuvert <> 0 then
+        Heure = donnee_mesure(2:nbrLignes,1);
         if configBase_N == 0 then
             //NOP
         elseif configHPHC_N == 0 then
@@ -200,6 +216,7 @@ function ChargerTxt (dataPath)
         end
         close(BarreProgression);
     else
+        Heure = zeros(1);
         CreationTxt = zeros(1);
         donnee_mesure = zeros(1);
         Papp = zeros(1);
@@ -207,7 +224,8 @@ function ChargerTxt (dataPath)
         NumCompteur = zeros(1);
     end
     
-    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure(2:nbrLignes,1), Papp, Base, NumCompteur, Config);
+    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
+    Gbl_Config] = resume (CreationTxt, Heure, Papp, Base, NumCompteur, Config);
 endfunction
     
 function SauveVariables (filePath)
@@ -218,8 +236,9 @@ function SauveVariables (filePath)
 //    filePath = dataPath+"\Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
     cd(filePath);
     fileName = Gbl_NumCompteur + "_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
-    save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", "Gbl_NumCompteur", "Gbl_Config");
+    save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
+    "Gbl_NumCompteur", "Gbl_Config");
    
    cd(originPath);
-    disp("Variables sauvegardées dans " + pwd() + "\" + fileName);
+    printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
 endfunction

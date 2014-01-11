@@ -1,7 +1,7 @@
 function tracerGraph(data2plot, NumCompteur, Titre, Config)
     if Config <> 0 then
-        // **** Tracer la puissance en fonction du temps ******************************
-        disp("Tracer le graph ...");
+        // **** Tracer la puissance en fonction du temps **********************
+        printf("Tracer le graph ...\n");
         nbrLignes = size(data2plot);
         nbrLignes = nbrLignes(1);
         
@@ -9,18 +9,22 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
         set(gca(),"grid",[1 1]);    // Grid on
         if Config == 1 then
             xtitle([Titre;"Relevé du " + Gbl_CreationTxt(1) + " de " + ...
-        Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + NumCompteur],"Heure","Puissance en VA");
+        Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + ...
+        NumCompteur],"Heure","Puissance en VA");
         
         elseif Config == 2 then
             xtitle([Titre;"Relevé du " + Gbl_CreationTxt(1) + " de " + ...
-        Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + NumCompteur],"Heure","Variation d''index en Wh");
+        Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + ...
+        NumCompteur],"Heure","Variation d''index en Wh");
         end
     
-        //*************************************************************************
+        //*********************************************************************
         //* TODO: 
         //* - Obtenir la taille de la fenêtre pour ajuster au mieux
         //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-        // UTILISER event handler functions (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) pour avoir un zoom dynamique.
+        // UTILISER event handler functions 
+        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+        // pour avoir un zoom dynamique.
         //*************************************************************************
     
         fenetre = gcf();
@@ -40,7 +44,8 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
         graphique.tight_limits = "on";
         graphique.data_bounds(1,2) = 0;
         // multiple de 500 pour affichage en réduit
-        graphique.data_bounds(2,2) = ceil(graphique.data_bounds(2,2)/200 + 1)*200;
+        graphique.data_bounds(2,2) = ceil(graphique.data_bounds(2,2)/200 + ...
+        1)*200;
     
         //Obtenir le pas du quadrillage vertical
         if fenetre.figure_size(1) <= 700 then
@@ -51,17 +56,22 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
         end
         increment = floor(nbrLignes/x_pas);
     
-        for i = 1:(x_pas+1)
+        for i = 1:x_pas
             locations_labels(i)= (i-1)*increment;
-            noms_labels(i) = Gbl_Heure((i)*increment);
+            noms_labels(i) = Gbl_Heure(i*increment);
         end
+        i = i+1;
+        locations_labels(i) = nbrLignes;
+        temp = size(Gbl_Heure);
+        noms_labels(i) = Gbl_Heure(temp(1));
         
         // Effectuer la mise à jour des abscisses
-        graphique.x_ticks = tlist(["ticks" "locations" "labels"],locations_labels,noms_labels);
+        graphique.x_ticks = tlist(["ticks" "locations" "labels"],...
+        locations_labels, noms_labels);
         
-        disp("Graph tracé");
+        printf("Graph tracé\n");
 
     else
-        disp("Erreur de config");
+        printf("Erreur de config\n");
     end
 endfunction

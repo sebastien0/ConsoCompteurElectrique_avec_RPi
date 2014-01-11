@@ -13,8 +13,8 @@ exec(fnctPath+"\ChargerTxt.sci");
 exec(fnctPath+"\tracerGraph.sci");
 
 //*** Début du programme *******************************************************
-disp("Programme de gestion des données acquise avec la Raspberry-Pi");
-disp("Saisissez votre choix puis valier par OK (et non ENTREE)");
+printf("Programme de gestion des données acquise avec la Raspberry-Pi\n");
+printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
 
 choix = "-1";
 while(choix <> "0" & choix <> []) do
@@ -22,7 +22,7 @@ while(choix <> "0" & choix <> []) do
     
     // *** 1   Charger un fichier texte ***************************************
     if choix == "1" then
-        disp("Chargement d''un fichier texte");
+        printf("Chargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
         ChargerTxt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
@@ -34,51 +34,61 @@ while(choix <> "0" & choix <> []) do
     
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then
-        disp("Chargement d''un fichier de données");
+        printf("Chargement d''un fichier de données\n");
         cheminFichier = uigetfile(["*.sod"],dataPath2Save, "Choisir le fichier à ouvrir", %f);
         
         // Si un fichier est bien sélectionné
         if (cheminFichier ~= "") then
             load(cheminFichier);
-            disp("Variables chargées");
+            printf("Variables chargées\n");
         else
-            disp("Aucun fichier sélectionné");
+            printf("Aucun fichier sélectionné\n");
         end
         clear cheminFichier;
         
-    // *** 3   Tracer les graphiques ******************************************
+    //*************************************************************************
+    //* 3   Tracer les graphiques 
+    //*************************************************************************
     elseif choix == "3" then
-        disp("Tracer le graphique");
+        printf("Tracer le graphique\n");
         // Connaitre la configuration du compteur
-        if Gbl_Config (1) == 0 then
-            Config = 1;
-        elseif Gbl_Config (2) == 0 then
-            Config = 2;
-        else
-            Config = 0;
-        end
-
-        // *** Tracer la Papp *****************
-        if Config == 1 then
-            tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index de la puissance", Config);
-            
-        // *** Tracer les index *****************    
-        elseif Config == 2 then
-            tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
-            legende = legend(["Index heures creuses"; "Index heures pleines"],2);
-            legende.font_size = 3;
-        end
+        try
+            if Gbl_Config <> [0 0] then
+                if Gbl_Config (1) == 0 then
+                    Config = 1;
+                elseif Gbl_Config (2) == 0 then
+                    Config = 2;
+                else
+                    Config = 0;
+                end
+        
+                // *** Tracer la Papp *****************
+                if Config == 1 then
+                    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index de la puissance", Config);
+                    
+                // *** Tracer les index *****************    
+                elseif Config == 2 then
+                    tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
+                    legende = legend(["Index heures creuses"; "Index heures pleines"],2);
+                    legende.font_size = 3;
+                end
+             else
+                 printf("Aucune donnée valide à tracer\n")
+             end
+    catch
+        printf("Aucune donnée valide à tracer\n")
+    end
 
     // *** 0   Quitter ********************************************************
     elseif size(choix) == [1 1] then
         if choix == "0" then
-            disp("Fin de l''application");
+            printf("Fin de l''application\n");
         end
     elseif (choix == [] & size(choix) == [0 0]) then
-        disp("Fin de l''application");
+        printf("Fin de l''application\n");
 
     // *** Défaut *************************************************************
     else
-        disp("Mauvaise saisie, validez par OK et non ENTREE");
+        printf("Mauvaise saisie, validez par OK et non ENTREE\n");
     end
 end
