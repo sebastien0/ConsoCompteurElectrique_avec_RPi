@@ -9,7 +9,7 @@ function ChargerTxt (dataPath)
         tempsExecution = 0;
         progression = -1;
         
-        disp("Ouverture du fichier " + cheminFichier);
+        printf("Ouverture du fichier %s \n", cheminFichier);
         BarreProgression = progressionbar('Import en cours: 0% fait');
         tic;
 
@@ -92,7 +92,6 @@ function ChargerTxt (dataPath)
 
         for ligne = 1:(nbrLignes-1)
             // Barre de progression
-            // TODO: temps restant approximatif
             if (floor(ligne*100/nbrLignes) > progression) then
                 // Calcul du temps restant
                 progression = progression + 1;
@@ -178,6 +177,7 @@ function ChargerTxt (dataPath)
         
         tempsExecution = tempsExecution + toc();
         disp("Fin du traitement en " + string(ceil(tempsExecution)) + " secondes");
+        printf("Erreur sur l''estimation du temps restant : %.1f%% \n",((tempsExecution - tempsRestant_1) / tempsRestant_1)*100);
     else
         fichierOuvert = 0;
         Config = zeros(1,2);
@@ -207,7 +207,7 @@ function ChargerTxt (dataPath)
         NumCompteur = zeros(1);
     end
     
-    [Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure, Papp, Base, NumCompteur, Config);
+    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config] = resume (CreationTxt, donnee_mesure(2:nbrLignes,1), Papp, Base, NumCompteur, Config);
 endfunction
     
 function SauveVariables (filePath)
@@ -217,8 +217,8 @@ function SauveVariables (filePath)
     temp = [temp(1)+temp(2)+temp(3)+temp(4) temp(5)+temp(6) temp(7)+temp(8)];
 //    filePath = dataPath+"\Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
     cd(filePath);
-    fileName = "Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
-    save(fileName,"Gbl_CreationTxt", "Gbl_donnee_mesure", "Gbl_Papp", "Gbl_Index", "Gbl_NumCompteur", "Gbl_Config");
+    fileName = Gbl_NumCompteur + "_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
+    save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", "Gbl_NumCompteur", "Gbl_Config");
    
    cd(originPath);
     disp("Variables sauvegardées dans " + pwd() + "\" + fileName);
