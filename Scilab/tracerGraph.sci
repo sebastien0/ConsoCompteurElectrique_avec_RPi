@@ -53,7 +53,7 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
     
         for i = 1:(x_pas+1)
             locations_labels(i)= (i-1)*increment;
-            noms_labels(i) = Gbl_donnee_mesure((i-1)*increment+2);
+            noms_labels(i) = Gbl_Heure((i)*increment);
         end
         
         // Effectuer la mise à jour des abscisses
