@@ -9,6 +9,8 @@ function ChargerTxt (dataPath)
         fichierOuvert = 1;
         tempsExecution = 0;
         progression = -1;
+        tempsRestant = 0;
+        tempsRestant_1 = 0;
         
         printf("Ouverture du fichier %s \n", cheminFichier);
         BarreProgression = progressionbar('Import en cours: 0% fait');
@@ -19,7 +21,7 @@ function ChargerTxt (dataPath)
         mclose(cheminFichier);  // Fermeture du fichier
         
         // ***** Identification configuration Base ou HPHC ********************
-        configuration(donnee);
+        configuration(donnee);  // Retourne  titres, configBase_N, configHPHC_N
 
         
         // ******* Obtention de la date et l'heure ****************************
@@ -51,14 +53,12 @@ function ChargerTxt (dataPath)
         // *** Conversion des donnée de chaine de caractère en valeur numérique *******
         printf("Extraction et mise en forme des données ...\n");
         
-        // En tête des colonnes
+        // En-tête des colonnes
         if configBase_N == 0 then
-            donnee_mesure = msscanf(donnee(offset,1),'%s %s %s %s');
+            donnee_mesure = titres;
         elseif configHPHC_N == 0 then
-            temp = msscanf(donnee(offset,1),'%s %s %s %s %s %s %s');
-            donnee_mesure = [temp(1) temp(3)+" "+temp(4) temp(5)+" "+ ...
-            temp(6) temp(7)];
-            clear temp;
+            donnee_mesure = [titres(1) titres(3)+" "+titres(4) titres(5)+" "+ ...
+            titres(6) titres(7)];
         end
 
         nbrLignes = size(donnee)-1;
@@ -74,34 +74,12 @@ function ChargerTxt (dataPath)
             Hcreuses = zeros(nbrLignes,1);
         end
 
+        // Extraction des données, création des matrices
         for ligne = 1:(nbrLignes-1)
             // Barre de progression
             if (floor(ligne*100/nbrLignes) > progression) then
-                // Calcul du temps restant
-                progression = progression + 1;
-                tempsExecution = tempsExecution + toc();
-                tic;
-                // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
-                tempsRestant = (tempsExecution / (progression + 1)) * ...
-                 (145 - progression);
-                if (progression == 0 | tempsRestant > tempsRestant_1) then
-                    disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
-                    tempsRestant_1 = tempsRestant;
-                end
-                // Affichage du pourcentage d'avancement et temps restant
-                if tempsRestant < 60 then
-                    progressionbar(BarreProgression, 'Import en cours, ' + ...
-                    string(floor(ligne*100/nbrLignes)) + ...
-                    '% fait. Temps restant : ' + ...
-                    string(round(tempsRestant)) + 's');
-                else
-                    tempTRestant = [floor(tempsRestant/60) ...
-                    round(modulo(round(tempsRestant),60))];
-                    progressionbar(BarreProgression, 'Import en cours, ' + ...
-                    string(floor(ligne*100/nbrLignes)) + ...
-                    '% fait. Temps restant : ' + string(tempTRestant(1)) + ...
-                    'min '+ string(tempTRestant(2)) + 's');
-                end
+                barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
+            tempsRestant, tempsRestant_1);
             end
 
             // Reconstitution des colonnes
@@ -219,7 +197,7 @@ function configuration(donnee)
     // Lecture des en-têtes de colonnes
     try
         titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
-    catch
+     catch
         try
             titres = msscanf(donnee(5,1),'%s %s %s %s');
         catch
@@ -245,6 +223,45 @@ function configuration(donnee)
     [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
 endfunction
 
+
+//* ***************************************************************************
+//*
+//*
+//*
+//*****************************************************************************
+function barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
+            tempsRestant, tempsRestant_1)
+    // Calcul du temps restant
+    progression = progression + 1;
+    tempsExecution = tempsExecution + toc();
+    tic;
+    // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
+    tempsRestant = (tempsExecution / (progression + 1)) * ...
+     (145 - progression);
+    if (progression == 0 | tempsRestant > tempsRestant_1) then
+        disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
+        tempsRestant_1 = tempsRestant;
+    end
+    
+    // Affichage du pourcentage d'avancement et temps restant
+    if tempsRestant < 60 then
+        progressionbar(BarreProgression, 'Import en cours, ' + ...
+        string(floor(ligne*100/nbrLignes)) + ...
+        '% fait. Temps restant : ' + ...
+        string(round(tempsRestant)) + 's');
+    else
+        tempTRestant = [floor(tempsRestant/60) ...
+        round(modulo(round(tempsRestant),60))];
+        progressionbar(BarreProgression, 'Import en cours, ' + ...
+        string(floor(ligne*100/nbrLignes)) + ...
+        '% fait. Temps restant : ' + string(tempTRestant(1)) + ...
+        'min '+ string(tempTRestant(2)) + 's');
+    end
+    
+    [ligne, nbrLignes, progression, tempsExecution, tempsRestant, ...
+    tempsRestant_1] = resume(ligne, nbrLignes, progression, tempsExecution, ...
+    tempsRestant, tempsRestant_1);
+endfunction
 
     
 //* ***************************************************************************

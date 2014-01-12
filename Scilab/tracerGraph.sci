@@ -1,7 +1,6 @@
 function tracerGraph(data2plot, NumCompteur, Titre, Config)
     if Config <> 0 then
         // **** Tracer la puissance en fonction du temps **********************
-        printf("Tracer le graph ...\n");
         nbrLignes = size(data2plot);
         nbrLignes = nbrLignes(1);
         
