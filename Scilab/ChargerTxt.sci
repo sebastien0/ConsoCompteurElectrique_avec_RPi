@@ -19,27 +19,8 @@ function ChargerTxt (dataPath)
         mclose(cheminFichier);  // Fermeture du fichier
         
         // ***** Identification configuration Base ou HPHC ********************
-        try
-            titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
-        catch
-            try
-                titres = msscanf(donnee(5,1),'%s %s %s %s');
-            catch
-                disp(lasterror());
-            end
-        end
-        temp = titres(3);
-        configBase_N = strcmp('Base',temp); // =0 si compteur en Base 
-        if configBase_N <> 0 then
-            temp = titres(3) + titres(4);
-        else
-            printf("Compteur configuré en Base\n");
-        end
-        configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
-        clear temp;
-        if configHPHC_N == 0 then
-            printf("Compteur configuré en HCHP\n");
-        end
+        configuration(donnee);
+
         
         // ******* Obtention de la date et l'heure ****************************
         offset = 5; // Ligne des en-tête de colonnes
@@ -227,7 +208,50 @@ function ChargerTxt (dataPath)
     [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
     Gbl_Config] = resume (CreationTxt, Heure, Papp, Base, NumCompteur, Config);
 endfunction
+
+
+//* ***************************************************************************
+//*
+//*
+//*
+//*****************************************************************************
+function configuration(donnee)
+    // Lecture des en-têtes de colonnes
+    try
+        titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
+    catch
+        try
+            titres = msscanf(donnee(5,1),'%s %s %s %s');
+        catch
+            disp(lasterror());
+        end
+    end
     
+    // Détectionde la configuration en Base ou HCHP
+    temp = titres(3);
+    configBase_N = strcmp('Base',temp); // =0 si compteur en Base 
+    if configBase_N <> 0 then
+        temp = titres(3) + titres(4);
+    else
+        printf("Compteur configuré en Base\n");
+    end
+
+    configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
+    if configHPHC_N == 0 then
+        printf("Compteur configuré en HCHP\n");
+    end
+
+    // Retour des variables
+    [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
+endfunction
+
+
+    
+//* ***************************************************************************
+//*
+//*
+//*
+//*****************************************************************************
 function SauveVariables (filePath)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
