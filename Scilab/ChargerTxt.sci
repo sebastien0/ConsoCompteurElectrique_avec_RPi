@@ -1,3 +1,8 @@
+//* ***************************************************************************
+//* Importe les données depuis le fichier texte
+//*
+//*
+//*****************************************************************************
 function ChargerTxt (dataPath)
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath, ...
@@ -21,22 +26,9 @@ function ChargerTxt (dataPath)
         mclose(cheminFichier);  // Fermeture du fichier
         
         // ***** Identification configuration Base ou HPHC ********************
-        configuration(donnee);  // Retourne  titres, configBase_N, configHPHC_N
+        configuration(donnee);  // Retourne: titres, configBase_N, configHPHC_N
 
-        
         // ******* Obtention de la date et l'heure ****************************
-        offset = 5; // Ligne des en-tête de colonnes
-        HEURE = 1;  // Colonne contenant l'heure
-        IMAX = 4;   // Colonne contenant le courant max journalier
-        INVALIDE = 4;   // Colonne contenant l'invalidité de la trame
-        if configBase_N == 0 then
-            PAPP = 2;   // Colonne contenant la puissance apparente
-            BASE = 3;   // Colonne contenant l'index Base
-        elseif configHPHC_N == 0 then
-            HEURECREUSE = 2;   // Colonne contenant l'index Heure Creuse
-            HEUREPLEINE = 3;   // Colonne contenant l'index Heure Pleine
-        end
-        
         //Date du relevé
         Creation = msscanf(donnee(1,1),'%s %s %s %s');
         CreationDateTxt = msscanf(Creation(1,3),'%s');
@@ -50,103 +42,24 @@ function ChargerTxt (dataPath)
         printf("\nRelevé créé le %s à %s par le compteur n°%s\n", ...
         CreationDateTxt, CreationHeureTxt, NumCompteur);
         
-        // *** Conversion des donnée de chaine de caractère en valeur numérique *******
+        // *** Extraction des données *****************************************
         printf("Extraction et mise en forme des données ...\n");
         
         // En-tête des colonnes
         if configBase_N == 0 then
-            donnee_mesure = titres;
+            donnee_mesure(1,:) = titres;
         elseif configHPHC_N == 0 then
-            donnee_mesure = [titres(1) titres(3)+" "+titres(4) titres(5)+" "+ ...
-            titres(6) titres(7)];
+            donnee_mesure(1,:) = [titres(1) titres(3)+" "+titres(4) ...
+            titres(5)+" "+titres(6) titres(7)];
         end
-
-        nbrLignes = size(donnee)-1;
-        nbrLignes = nbrLignes(1,1)-offset;
         
-        //Création de matrices vides
-        donnee_mesure(nbrLignes,:) = ["" "" "" ""];
-        if configBase_N == 0 then
-            Papp = zeros(nbrLignes,1);
-            Base = zeros(nbrLignes,1);
-        elseif configHPHC_N == 0 then
-            Hpleines = zeros(nbrLignes,1);
-            Hcreuses = zeros(nbrLignes,1);
-        end
-
         // Extraction des données, création des matrices
-        for ligne = 1:(nbrLignes-1)
-            // Barre de progression
-            if (floor(ligne*100/nbrLignes) > progression) then
-                barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
-            tempsRestant, tempsRestant_1);
-            end
+        // Retourne: Config, nbrLignes, HEURE, Config, nbrLignes, 
+        // donnee_mesure, tempsExecution, tempsRestant_1
+        extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
 
-            // Reconstitution des colonnes
-            try
-                if configBase_N == 0 then
-                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
-                    '%s %s %s') ""];
-                elseif configHPHC_N == 0 then
-                    temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s %s')];
-                    donnee_mesure(ligne+1,:) = [temp(1) temp(3) temp(4) temp(5)];
-                    clear temp;
-                end
-            catch
-                if configBase_N == 0 then
-                    donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
-                    '%s %s') donnee_mesure(ligne,BASE) ""];
-                elseif configHPHC_N == 0 then
-                    temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s')];
-                    donnee_mesure(ligne+1,:) = [temp(1) temp(2) temp(3) ""];
-                    clear temp;
-                else
-                    disp(lasterror());
-                end
-            end
-            
-            // Conversion des chaines de caractères en nombre
-            if ligne >= 2 then
-                if configBase_N == 0 then
-                    if donnee_mesure(ligne,PAPP) <> "-" then
-                        Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
-                        Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
-                        //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
-                    end
-                    
-                elseif configHPHC_N == 0 then
-                    if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & ...
-                        donnee_mesure(ligne,HEURECREUSE) <> "-") then
-                        if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
-                            index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
-                            index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
-                        else
-                            Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) - index_Hpleines;
-                            Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) - index_Hcreuses;
-                        end
-                        //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
-                    else
-                        //Recopier la valeur de l'échantillon précédent pour ne pas avoir de 0 dans le tableau
-                        Hpleines(ligne-1,1) = Hpleines(ligne-2,1);
-                        Hcreuses(ligne-1,1) = Hcreuses(ligne-2,1);
-                    end
-                end
-            end
-        end
-
-        // Courant max de la journée
-        try
-            ligne = offset+ligne+2;
-            Imax = msscanf(donnee(ligne,1),'%s %s %s %s');
-            Imax = evstr(Imax(IMAX));
-            printf("Courant max sur la journée: %dA\n", Imax);
-        catch
-        end
-        
         FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
-        
         CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
-        Config = [configBase_N configHPHC_N 0];
         
         tempsExecution = tempsExecution + toc();
         printf("Fin du traitement en %d secondes\n", ceil(tempsExecution));
@@ -189,7 +102,7 @@ endfunction
 
 
 //* ***************************************************************************
-//*
+//* Détecte la configuration du compteur
 //*
 //*
 //*****************************************************************************
@@ -225,8 +138,8 @@ endfunction
 
 
 //* ***************************************************************************
-//*
-//*
+//* Affiche la barre de progression
+//* Calcul la progression et estime le temps restant
 //*
 //*****************************************************************************
 function barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
@@ -263,9 +176,125 @@ function barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
     tempsRestant, tempsRestant_1);
 endfunction
 
+//* ***************************************************************************
+//* Extrait les données depuis le fichier texte
+//* Fonction d'ectraction à proprement parler
+//*
+//*****************************************************************************
+function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
+    offset = 5; // Ligne des en-tête de colonnes
+    HEURE = 1;  // Colonne contenant l'heure
+    IMAX = 4;   // Colonne contenant le courant max journalier
+    INVALIDE = 4;   // Colonne contenant l'invalidité de la trame
+    if configBase_N == 0 then
+        PAPP = 2;   // Colonne contenant la puissance apparente
+        BASE = 3;   // Colonne contenant l'index Base
+    elseif configHPHC_N == 0 then
+        HEURECREUSE = 2;   // Colonne contenant l'index Heure Creuse
+        HEUREPLEINE = 3;   // Colonne contenant l'index Heure Pleine
+    end
+    
+    nbrLignes = size(donnee)-1;
+    nbrLignes = nbrLignes(1,1)-offset;
+    
+    //Création de matrices vides
+    donnee_mesure(nbrLignes,:) = ["" "" "" ""];
+    if configBase_N == 0 then
+        Papp = zeros(nbrLignes,1);
+        Base = zeros(nbrLignes,1);
+    elseif configHPHC_N == 0 then
+        Hpleines = zeros(nbrLignes,1);
+        Hcreuses = zeros(nbrLignes,1);
+    end
+    
+    for ligne = 1:(nbrLignes-1)
+        // Barre de progression
+        if (floor(ligne*100/nbrLignes) > progression) then
+            barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
+        tempsRestant, tempsRestant_1);
+        end
+    
+        // Reconstitution des colonnes
+        try
+            if configBase_N == 0 then
+                donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
+                '%s %s %s') ""];
+            elseif configHPHC_N == 0 then
+                temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s %s')];
+                donnee_mesure(ligne+1,:) = [temp(1) temp(3) temp(4) temp(5)];
+                clear temp;
+            end
+        catch
+            if configBase_N == 0 then
+                donnee_mesure(ligne+1,:) = [msscanf(donnee(offset+ligne,1),...
+                '%s %s') donnee_mesure(ligne,BASE) ""];
+            elseif configHPHC_N == 0 then
+                temp = [msscanf(donnee(offset+ligne,1),'%s %s %s %s')];
+                donnee_mesure(ligne+1,:) = [temp(1) temp(2) temp(3) ""];
+                clear temp;
+            else
+                disp(lasterror());
+            end
+        end
+        
+        // Conversion des chaines de caractères en nombre
+        if ligne >= 2 then
+            if configBase_N == 0 then
+                if donnee_mesure(ligne,PAPP) <> "-" then
+                    Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
+                    Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
+                    //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
+                end
+                
+            elseif configHPHC_N == 0 then
+                if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & ...
+                    donnee_mesure(ligne,HEURECREUSE) <> "-") then
+                    if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
+                        index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
+                        index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
+                    else
+                        Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) - index_Hpleines;
+                        Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) - index_Hcreuses;
+                    end
+                    //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
+                else
+                    //Recopier la valeur de l'échantillon précédent pour ne pas avoir de 0 dans le tableau
+                    Hpleines(ligne-1,1) = Hpleines(ligne-2,1);
+                    Hcreuses(ligne-1,1) = Hcreuses(ligne-2,1);
+                end
+            end
+        end
+    end
+    
+    // Courant max de la journée
+    try
+        ligne = offset+ligne+2;
+        Imax = msscanf(donnee(ligne,1),'%s %s %s %s');
+        Imax = evstr(Imax(IMAX));
+        printf("Courant max sur la journée: %dA\n", Imax);
+    catch
+    end
+    
+    Config = [configBase_N configHPHC_N 0];
+
+    // Retourne
+    if configBase_N == 0 then
+        [Papp, Base, nbrLignes, HEURE, Config, donnee_mesure, ...
+        tempsExecution, tempsRestant_1] = resume(Papp, Base, nbrLignes, ...
+        HEURE, Config, donnee_mesure, tempsExecution, tempsRestant_1);
+    elseif configHPHC_N == 0 then
+        [Hpleines, Hcreuses, nbrLignes, HEURE, Config, donnee_mesure, ...
+        tempsExecution, tempsRestant_1] = resume(Hpleines, Hcreuses, ...
+        nbrLignes, HEURE, Config, tempsExecution, tempsRestant_1);
+    else
+        [nbrLignes, HEURE, Config, tempsExecution, tempsRestant_1] = ...
+        resume(nbrLignes, HEURE, Config, donnee_mesure, tempsExecution, ...
+        tempsRestant_1);
+    end
+endfunction
     
 //* ***************************************************************************
-//*
+//* Enregistre les variables dans un fichier .sod
 //*
 //*
 //*****************************************************************************
