@@ -26,7 +26,7 @@ while(choix <> "0" & choix <> []) do
         // *** Importer le fichier txt ***************
         ChargerTxt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
-        if Gbl_Config <> zeros(1,2) then
+        if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
             //Sauvegarder les variables globales
             // TODO: sélection du répertoire ?!
             SauveVariables(dataPath2Save);
@@ -53,10 +53,11 @@ while(choix <> "0" & choix <> []) do
         printf("Tracer le graphique\n");
         // Connaitre la configuration du compteur
         try
-            if Gbl_Config <> [0 0] then
-                if Gbl_Config (1) == 0 then
+            if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
+                printf("Données valide à tracer\n");
+                if Gbl_Config(1) == 0 then
                     Config = 1;
-                elseif Gbl_Config (2) == 0 then
+                elseif Gbl_Config(2) == 0 then
                     Config = 2;
                 else
                     Config = 0;
@@ -64,7 +65,7 @@ while(choix <> "0" & choix <> []) do
         
                 // *** Tracer la Papp *****************
                 if Config == 1 then
-                    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Index de la puissance", Config);
+                    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Puissance apparente", Config);
                     
                 // *** Tracer les index *****************    
                 elseif Config == 2 then
@@ -73,11 +74,12 @@ while(choix <> "0" & choix <> []) do
                     legende.font_size = 3;
                 end
              else
-                 printf("Aucune donnée valide à tracer\n")
+                 printf("Aucune donnée valide à tracer (depuis if)\n");
              end
-    catch
-        printf("Aucune donnée valide à tracer\n")
-    end
+        catch
+            printf("Aucune donnée valide à tracer (depuis catch)\n");
+            disp(lasterror());
+        end
 
     // *** 0   Quitter ********************************************************
     elseif size(choix) == [1 1] then

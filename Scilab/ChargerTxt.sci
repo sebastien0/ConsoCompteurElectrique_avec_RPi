@@ -27,6 +27,8 @@ function ChargerTxt (dataPath)
         
         // ***** Identification configuration Base ou HPHC ********************
         configuration(donnee);  // Retourne: titres, configBase_N, configHPHC_N
+//        disp("configBase_N ="+string(configBase_N));
+//        disp("configHPHC_N ="+string(configHPHC_N));
 
         // ******* Obtention de la date et l'heure ****************************
         //Date du relevé
@@ -57,6 +59,7 @@ function ChargerTxt (dataPath)
         // Retourne: Config, nbrLignes, HEURE, Config, nbrLignes, 
         // donnee_mesure, tempsExecution, tempsRestant_1
         extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
+//        disp("Config ="+string(Config));
 
         FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
         CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
@@ -275,7 +278,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     catch
     end
     
-    Config = [configBase_N configHPHC_N 0];
+    Config = [configBase_N configHPHC_N];
 
     // Retourne
     if configBase_N == 0 then
@@ -285,7 +288,8 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     elseif configHPHC_N == 0 then
         [Hpleines, Hcreuses, nbrLignes, HEURE, Config, donnee_mesure, ...
         tempsExecution, tempsRestant_1] = resume(Hpleines, Hcreuses, ...
-        nbrLignes, HEURE, Config, tempsExecution, tempsRestant_1);
+        nbrLignes, HEURE, Config, donnee_mesure, tempsExecution, ...
+        tempsRestant_1);
     else
         [nbrLignes, HEURE, Config, tempsExecution, tempsRestant_1] = ...
         resume(nbrLignes, HEURE, Config, donnee_mesure, tempsExecution, ...

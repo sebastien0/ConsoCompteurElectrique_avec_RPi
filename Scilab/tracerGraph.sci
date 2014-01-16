@@ -1,4 +1,4 @@
-function tracerGraph(data2plot, NumCompteur, Titre, Config)
+﻿function tracerGraph(data2plot, NumCompteur, Titre, Config)
     if Config <> 0 then
         // **** Tracer la puissance en fonction du temps **********************
         nbrLignes = size(data2plot);
@@ -55,14 +55,14 @@ function tracerGraph(data2plot, NumCompteur, Titre, Config)
         end
         increment = floor(nbrLignes/x_pas);
     
-        for i = 1:x_pas
+        for i = 1:(x_pas+1)
             locations_labels(i)= (i-1)*increment;
-            noms_labels(i) = Gbl_Heure(i*increment);
+            noms_labels(i) = Gbl_Heure((i-1)*increment+2);
         end
-        i = i+1;
-        locations_labels(i) = nbrLignes;
-        temp = size(Gbl_Heure);
-        noms_labels(i) = Gbl_Heure(temp(1));
+//        i = i+1;
+//        locations_labels(i) = nbrLignes;
+//        temp = size(Gbl_Heure);
+//        noms_labels(i) = Gbl_Heure(temp(1));
         
         // Effectuer la mise à jour des abscisses
         graphique.x_ticks = tlist(["ticks" "locations" "labels"],...
