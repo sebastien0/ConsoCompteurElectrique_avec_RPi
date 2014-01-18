@@ -14,13 +14,15 @@ function Puissance_HCHP ()
     Energie_1 = 0;
     
     for Energie_1 = 2 : nbrLignes-4
+        //Différence de temps entre les 2 échantillons
         Energie_2 = Energie_1 + 1;
         temp_1 = msscanf(Gbl_donnee_mesure(Energie_1,1),'%d:%d:%d');
         temp_1 = temp_1(2)*60+temp_1(3);
         temp_2 = msscanf(Gbl_donnee_mesure(Energie_2,1),'%d:%d:%d');
         temp_2 = temp_2(2)*60+temp_2(3);
         Dtemp = temp_2 - temp_1;
-        // Heures Pleines
+
+        //Puissance
         if Dtemp <> 0 then
             tempHP = (Gbl_Index(Energie_2,HEUREPLEINE) - Gbl_Index(Energie_1, HEUREPLEINE)) / Dtemp;
             tempHC = (Gbl_Index(Energie_2,HEURECREUSE) - Gbl_Index(Energie_1, HEURECREUSE)) / Dtemp;
@@ -39,5 +41,5 @@ function Puissance_HCHP ()
     end
 endfunction
 
-Puiss = [PuissHC PuissHP];
-plot(Puiss);
+Papp = PuissHC+PuissHP;
+plot(Papp); // Papp en kW TBC!!!
