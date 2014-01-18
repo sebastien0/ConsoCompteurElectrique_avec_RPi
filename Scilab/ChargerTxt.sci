@@ -3,7 +3,7 @@
 //*
 //*
 //*****************************************************************************
-function ChargerTxt (dataPath)
+function cheminFichier = Charger_Txt (dataPath)
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath, ...
     "Choisir le fichier à ouvrir", %f);
@@ -59,7 +59,6 @@ function ChargerTxt (dataPath)
         // Retourne: Config, nbrLignes, HEURE, Config, nbrLignes, 
         // donnee_mesure, tempsExecution, tempsRestant_1
         extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
-//        disp("Config ="+string(Config));
 
         FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
         CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
@@ -97,8 +96,8 @@ function ChargerTxt (dataPath)
         Papp = zeros(1);
         Base = zeros(1);
         NumCompteur = zeros(1);
-    end
-    
+     end
+     
     [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
     Gbl_Config] = resume (CreationTxt, Heure, Papp, Base, NumCompteur, Config);
 endfunction
@@ -145,7 +144,7 @@ endfunction
 //* Calcul la progression et estime le temps restant
 //*
 //*****************************************************************************
-function barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
+function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
             tempsRestant, tempsRestant_1)
     // Calcul du temps restant
     progression = progression + 1;
@@ -213,7 +212,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     for ligne = 1:(nbrLignes-1)
         // Barre de progression
         if (floor(ligne*100/nbrLignes) > progression) then
-            barreProgression(ligne, nbrLignes, progression, tempsExecution, ...
+            barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
         tempsRestant, tempsRestant_1);
         end
     
@@ -302,7 +301,7 @@ endfunction
 //*
 //*
 //*****************************************************************************
-function SauveVariables (filePath)
+function Sauve_Variables (filePath)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
     temp = msscanf(Gbl_CreationTxt(1), '%c%c%c%c / %c%c / %c%c');

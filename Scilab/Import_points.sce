@@ -13,8 +13,10 @@ exec(fnctPath+"\ChargerTxt.sci");
 exec(fnctPath+"\tracerGraph.sci");
 
 //*** Début du programme *******************************************************
+printf("*************************************************************\n");
 printf("Programme de gestion des données acquise avec la Raspberry-Pi\n");
 printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
+printf("*************************************************************\n\n");
 
 choix = "-1";
 while(choix <> "0" & choix <> []) do
@@ -24,14 +26,14 @@ while(choix <> "0" & choix <> []) do
     if choix == "1" then
         printf("Chargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
-        ChargerTxt(dataPath2Read);
+        cheminFichier = Charger_Txt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
-        if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
+        if (cheminFichier <> "" & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
             // TODO: sélection du répertoire ?!
-            SauveVariables(dataPath2Save);
+            Sauve_Variables(dataPath2Save);
         end
-    
+        
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then
         printf("Chargement d''un fichier de données\n");
@@ -54,7 +56,7 @@ while(choix <> "0" & choix <> []) do
         // Connaitre la configuration du compteur
         try
             if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
-                printf("Données valide à tracer\n");
+//                printf("Données valide à tracer\n");
                 if Gbl_Config(1) == 0 then
                     Config = 1;
                 elseif Gbl_Config(2) == 0 then
@@ -63,14 +65,22 @@ while(choix <> "0" & choix <> []) do
                     Config = 0;
                 end
         
+                // Utilise subplot pour tracer Papp et Index
+                // TODO: Reprendre la création de index en Base et Papp en HCHP
+//                tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
+        
                 // *** Tracer la Papp *****************
                 if Config == 1 then
-                    tracerGraph(Gbl_Papp, Gbl_NumCompteur, "Puissance apparente", Config);
+                    tracer_Graph(Gbl_Papp, Gbl_NumCompteur,...
+                     "Puissance apparente", Config);
                     
                 // *** Tracer les index *****************    
                 elseif Config == 2 then
-                    tracerGraph(Gbl_Index, Gbl_NumCompteur, "Index des consommations Heures pleines et creuses", Config);
-                    legende = legend(["Index heures creuses"; "Index heures pleines"],2);
+                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
+                    "Index des consommations Heures pleines et creuses",...
+                    Config);
+                    legende = legend(["Index heures creuses";...
+                    "Index heures pleines"],2);
                     legende.font_size = 3;
                 end
              else
