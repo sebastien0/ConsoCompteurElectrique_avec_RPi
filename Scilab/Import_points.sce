@@ -28,6 +28,7 @@ while(choix <> "0" & choix <> []) do
         // *** Importer le fichier txt ***************
         cheminFichier = Charger_Txt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
+        // TODO: Gbl_donnee_mesure n'est utile que pour la mise au point de Puissance_HCHP
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
             // TODO: sélection du répertoire ?!

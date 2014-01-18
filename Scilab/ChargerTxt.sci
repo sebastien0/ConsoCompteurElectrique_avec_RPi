@@ -99,7 +99,8 @@ function cheminFichier = Charger_Txt (dataPath)
      end
      
     [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
-    Gbl_Config] = resume (CreationTxt, Heure, Papp, Base, NumCompteur, Config);
+    Gbl_Config, Gbl_donnee_mesure] = resume (CreationTxt, Heure, Papp, Base,...
+     NumCompteur, Config, donnee_mesure);
 endfunction
 
 
@@ -310,8 +311,8 @@ function Sauve_Variables (filePath)
     cd(filePath);
     fileName = Gbl_NumCompteur + "_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
     save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
-    "Gbl_NumCompteur", "Gbl_Config");
+    "Gbl_NumCompteur", "Gbl_Config", "Gbl_donnee_mesure");
    
-   cd(originPath);
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
+    cd(originPath);
 endfunction
