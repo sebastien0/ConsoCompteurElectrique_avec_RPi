@@ -4,7 +4,7 @@ clc;
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
-fnctPath = "E:\Documents\Documents\Divers\Communication cpt Linky\Scilab";
+fnctPath = pwd();
 dataPath2Read = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur_Linky\Relevés";
 dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur_Linky\Relevés\Variables";
 

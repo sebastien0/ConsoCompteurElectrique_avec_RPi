@@ -6,6 +6,7 @@
         
         plot(data2plot);
         set(gca(),"grid",[1 1]);    // Grid on
+        // Titre du graphique
         if Config == 1 then
             xtitle([Titre;"Relevé du " + Gbl_CreationTxt(1) + " de " + ...
         Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + ...
@@ -46,31 +47,31 @@
         graphique.data_bounds(2,2) = ceil(graphique.data_bounds(2,2)/200 + ...
         1)*200;
     
-        //Obtenir le pas du quadrillage vertical
-        if fenetre.figure_size(1) <= 700 then
-            x_pas = size(graphique.x_ticks.locations);
-            x_pas = x_pas(1);
-        else
-            x_pas = 17;   //Affichage plein écran
-        end
-        increment = floor(nbrLignes/x_pas);
-    
-        for i = 1:(x_pas+1)
-            locations_labels(i)= (i-1)*increment;
-            noms_labels(i) = Gbl_Heure((i-1)*increment+2);
-        end
-//        i = i+1;
-//        locations_labels(i) = nbrLignes;
-//        temp = size(Gbl_Heure);
-//        noms_labels(i) = Gbl_Heure(temp(1));
-        
-        // Effectuer la mise à jour des abscisses
-        graphique.x_ticks = tlist(["ticks" "locations" "labels"],...
-        locations_labels, noms_labels);
-        
+        // Ajouter les heures sur les abscisses
+        heuresAbscisses(nbrLignes, fenetre, graphique);
         printf("Graph tracé\n");
-
     else
         printf("Erreur de config\n");
     end
+endfunction
+
+
+function heuresAbscisses(nbrLignes, fenetre, graphique)
+    //Obtenir le pas du quadrillage vertical
+    if fenetre.figure_size(1) <= 700 then
+        x_pas = size(graphique.x_ticks.locations);
+        x_pas = x_pas(1);
+    else
+        x_pas = 17;   //Affichage plein écran
+    end
+    increment = floor(nbrLignes/x_pas);
+    
+    for i = 1:(x_pas+1)
+        locations_labels(i)= (i-1)*increment;
+        noms_labels(i) = Gbl_Heure((i-1)*increment+2);
+    end
+    
+    // Effectuer la mise à jour des abscisses
+    graphique.x_ticks = tlist(["ticks" "locations" "labels"],...
+    locations_labels, noms_labels);
 endfunction
