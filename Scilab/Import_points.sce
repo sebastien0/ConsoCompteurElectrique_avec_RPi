@@ -5,10 +5,8 @@ clc;
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
 fnctPath = pwd();
-dataPath2Read = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\...
-Compteur_Linky\Relevés";
-dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\...
-Compteur_Linky\Relevés\Variables";
+dataPath2Read = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur_Linky\Relevés";
+dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur_Linky\Relevés\Variables";
 
 // Charger les fonctions dans l'environnement
 exec(fnctPath+"\Charger_Txt.sci");
@@ -33,13 +31,12 @@ while(choix <> "0" & choix <> []) do
     //* 1   Charger un fichier texte
     //*************************************************************************
     if choix == "1" then
-        printf("\nChargement d''un fichier texte\n");
+        printf("Chargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
         cheminFichier = Charger_Txt(dataPath2Read);
         // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, 
         //           Gbl_NumCompteur, Gbl_Config
-        if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
-            Gbl_Config(2) == 0)) then
+        if (cheminFichier <> "" & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
             // TODO: sélection du répertoire ?!
             Sauve_Variables(dataPath2Save);
@@ -49,7 +46,7 @@ while(choix <> "0" & choix <> []) do
     //* 2   Charger un fichier de données
     //*************************************************************************
     elseif choix == "2" then
-        printf("\nChargement d''un fichier de données\n\n");
+        printf("Chargement d''un fichier de données\n\n");
         charger_variables(dataPath2Save);
 
     //*************************************************************************
@@ -57,53 +54,40 @@ while(choix <> "0" & choix <> []) do
     //*************************************************************************
     elseif choix == "3" then
         close;
-        printf("\nTracer la puissance apparente\n");
-        try
-            size(Gbl_Papp);
-            erreur = 0;
-        catch
-            printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
-            erreur = 1;
-        end
-
-        if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
+        printf("Tracer la puissance apparente\n");
+        if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
             tracer_Graph(Gbl_Papp, Gbl_NumCompteur,"Puissance apparente");
         else
-            printf("Erreur! \t Aucune donnée valide à tracer\n");
+            printf("Aucune donnée valide à tracer\n");
         end
 
     //*************************************************************************
     //* 4   Tracer la Puissance apparente et les Index
+    // TODO: vérifier l'existence des variables avant de commencer
     //*************************************************************************
     elseif choix == "4" then
         close;
-        printf("\nTracer la puissance apparente et les index\n");
-        try
-            size(Gbl_Papp);
-            size(Gbl_Index);
-            erreur = 0;
-        catch
-            printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
-            erreur = 1;
-        end
-        
-        if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
+        printf("Tracer la puissance apparente et les index\n");
+        if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
             tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
         else
-            printf("Erreur! \t Aucune donnée valide à tracer\n");
+            printf("Aucune donnée valide à tracer\n");
         end
 
     //*************************************************************************
     //* 0   Quitter
     //*************************************************************************
-    elseif (choix == "0" | (choix == [] & size(choix) == [0 0])) then
-            printf("\nFin de l''application\n");
+    elseif size(choix) == [1 1] then
+        if choix == "0" then
+            printf("Fin de l''application\n");
+        end
+    elseif (choix == [] & size(choix) == [0 0]) then
+        printf("Fin de l''application\n");
 
     //*************************************************************************
     //*    Défaut
     //*************************************************************************
     else
-        printf("Erreur! \t Mauvaise saisie. \n...
-        \t Validez en cliquant sur OK et non ENTREE\n");
+        printf("Mauvaise saisie, validez en cliquant sur OK et non ENTREE\n");
     end
 end
