@@ -27,8 +27,6 @@ function cheminFichier = Charger_Txt (dataPath)
         
         // ***** Identification configuration Base ou HPHC ********************
         configuration(donnee);  // Retourne: titres, configBase_N, configHPHC_N
-//        disp("configBase_N ="+string(configBase_N));
-//        disp("configHPHC_N ="+string(configHPHC_N));
 
         // ******* Obtention de la date et l'heure ****************************
         //Date du relevé

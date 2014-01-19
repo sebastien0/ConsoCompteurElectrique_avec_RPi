@@ -12,6 +12,7 @@ dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Comp
 exec(fnctPath+"\ChargerTxt.sci");
 exec(fnctPath+"\tracerGraph.sci");
 exec(fnctPath+"\Puissance_HPHC.sci");
+exec(fnctPath+"\ChargerVariables.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -39,53 +40,33 @@ while(choix <> "0" & choix <> []) do
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then
         printf("Chargement d''un fichier de données\n");
-        cheminFichier = uigetfile(["*.sod"],dataPath2Save, "Choisir le fichier à ouvrir", %f);
-        
-        // Si un fichier est bien sélectionné
-        if (cheminFichier ~= "") then
-            load(cheminFichier);
-            printf("Variables chargées\n");
-        else
-            printf("Aucun fichier sélectionné\n");
-        end
-        clear cheminFichier;
+        config = charger_variables(dataPath2Save);
         
     //*************************************************************************
     //* 3   Tracer les graphiques 
     //*************************************************************************
     elseif choix == "3" then
         printf("Tracer le graphique\n");
-        // Connaitre la configuration du compteur
         try
-            if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
-//                printf("Données valide à tracer\n");
-                if Gbl_Config(1) == 0 then
-                    Config = 1;
-                elseif Gbl_Config(2) == 0 then
-                    Config = 2;
-                else
-                    Config = 0;
-                end
-        
-                // Utilise subplot pour tracer Papp et Index
-                // TODO: Reprendre la création de index en Base et Papp en HCHP
+            // Utilise subplot pour tracer Papp et Index
+            // TODO: Reprendre la création de index en Base et Papp en HCHP
 //                tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
-        
-                // *** Tracer la Papp *****************
-                if Config == 1 then
-                    tracer_Graph(Gbl_Papp, Gbl_NumCompteur,...
-                     "Puissance apparente", Config);
-                    
-                // *** Tracer les index *****************    
-                elseif Config == 2 then
-                    tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
+    
+            // *** Tracer la Papp *****************
+            if Config == 1 then
+                tracer_Graph(Gbl_Papp, Gbl_NumCompteur,...
+                 "Puissance apparente", Config);
+                
+            // *** Tracer les index *****************    
+            elseif Config == 2 then
+                tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
 //                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
 //                    "Index des consommations Heures pleines et creuses",...
 //                    Config);
-                end
-             else
-                 printf("Aucune donnée valide à tracer (depuis if)\n");
-             end
+            end
+         else
+             printf("Aucune donnée valide à tracer (depuis if)\n");
+         end
         catch
             printf("Aucune donnée valide à tracer (depuis catch)\n");
             disp(lasterror());
