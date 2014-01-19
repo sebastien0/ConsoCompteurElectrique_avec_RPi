@@ -39,15 +39,15 @@ while(choix <> "0" & choix <> []) do
         
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then
-        printf("Chargement d''un fichier de données\n");
-        config = charger_variables(dataPath2Save);
+        printf("Chargement d''un fichier de données\n\n");
+        Config = charger_variables(dataPath2Save);
         
     //*************************************************************************
     //* 3   Tracer les graphiques 
     //*************************************************************************
     elseif choix == "3" then
         printf("Tracer le graphique\n");
-        try
+//        try
             // Utilise subplot pour tracer Papp et Index
             // TODO: Reprendre la création de index en Base et Papp en HCHP
 //                tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
@@ -63,14 +63,13 @@ while(choix <> "0" & choix <> []) do
 //                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
 //                    "Index des consommations Heures pleines et creuses",...
 //                    Config);
-            end
-         else
-             printf("Aucune donnée valide à tracer (depuis if)\n");
-         end
-        catch
-            printf("Aucune donnée valide à tracer (depuis catch)\n");
-            disp(lasterror());
-        end
+             else
+                 printf("Aucune donnée valide à tracer (depuis if)\n");
+             end
+//        catch
+//            printf("Aucune donnée valide à tracer (depuis catch)\n");
+//            disp(lasterror());
+//        end
 
     // *** 0   Quitter ********************************************************
     elseif size(choix) == [1 1] then

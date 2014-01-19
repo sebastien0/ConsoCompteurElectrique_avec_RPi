@@ -22,13 +22,19 @@ function Config = charger_variables(dataPath2Save)
                 printf("Compteur configuré en HCHP\n");
             end
             
-            printf("\nRelevé créé le %s de %s à %s par le compteur n°%s\n", ...
-        Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3), Gbl_NumCompteur);
+            printf("Relevé créé le %s de %s à %s par le compteur n°%s\n\n", ...
+            Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3), ...
+            Gbl_NumCompteur);
         else
             Config = 0;
             printf("Configuration du compteur non reconnue\n");
         end
     else
+        Config = -1;
         printf("Aucun fichier sélectionné\n");
     end
+    
+    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
+    Gbl_Config] = resume (Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, ...
+    Gbl_NumCompteur, Gbl_Config);
 endfunction
