@@ -9,10 +9,10 @@ dataPath2Read = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Comp
 dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Compteur_Linky\Relevés\Variables";
 
 // Charger les fonctions dans l'environnement
-exec(fnctPath+"\ChargerTxt.sci");
-exec(fnctPath+"\tracerGraph.sci");
+exec(fnctPath+"\Charger_Txt.sci");
+exec(fnctPath+"\Tracer_Graph.sci");
 exec(fnctPath+"\Puissance_HPHC.sci");
-exec(fnctPath+"\ChargerVariables.sci");
+exec(fnctPath+"\Charger_Variables.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -40,16 +40,28 @@ while(choix <> "0" & choix <> []) do
     // *** 2   Charger un fichier de données **********************************
     elseif choix == "2" then
         printf("Chargement d''un fichier de données\n\n");
-        Config = charger_variables(dataPath2Save);
+        charger_variables(dataPath2Save);
         
     //*************************************************************************
     //* 3   Tracer les graphiques 
     //*************************************************************************
     elseif choix == "3" then
         printf("Tracer le graphique\n");
+        // Connaitre la configuration du compteur
 //        try
-            // Utilise subplot pour tracer Papp et Index
-            // TODO: Reprendre la création de index en Base et Papp en HCHP
+            if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
+//                printf("Données valide à tracer\n");
+                if Gbl_Config(1) == 0 then
+                    Config = 1;
+                elseif Gbl_Config(2) == 0 then
+                    Config = 2;
+                else
+                    Config = 0;
+                end
+            end
+        
+                // Utilise subplot pour tracer Papp et Index
+                // TODO: Reprendre la création de index en Base
 //                tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
     
             // *** Tracer la Papp *****************
@@ -60,12 +72,9 @@ while(choix <> "0" & choix <> []) do
             // *** Tracer les index *****************    
             elseif Config == 2 then
                 tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
-//                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
-//                    "Index des consommations Heures pleines et creuses",...
-//                    Config);
-             else
-                 printf("Aucune donnée valide à tracer (depuis if)\n");
-             end
+            else
+                printf("Aucune donnée valide à tracer (depuis if)\n");
+            end
 //        catch
 //            printf("Aucune donnée valide à tracer (depuis catch)\n");
 //            disp(lasterror());

@@ -3,7 +3,7 @@
 //*
 //*
 //*****************************************************************************
-function Config = charger_variables(dataPath2Save)
+function charger_variables(dataPath2Save)
     cheminFichier = uigetfile(["*.sod"],dataPath2Save,...
      "Choisir le fichier à ouvrir", %f);
         
