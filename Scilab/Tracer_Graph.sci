@@ -3,38 +3,29 @@
 //*
 //*
 //*****************************************************************************
-function tracer_Graph(data2plot, NumCompteur, Titre, Config)
-    if Config <> 0 then
-        // **** Tracer la puissance en fonction du temps **********************
-        nbrLignes = size(data2plot);
-        nbrLignes = nbrLignes(1);
-        
-        plot(data2plot);
-        fenetre = gcf();
-        graphique = gca();
-        
-        if Config == 1 then
-            mise_en_forme(graphique, fenetre, Titre, "Puissance en VA");
-        
-        elseif Config == 2 then
-            mise_en_forme(graphique, fenetre, Titre, "Variation d''index en Wh");
-        end
+function tracer_Graph(data2plot, NumCompteur, Titre)
+    // **** Tracer la puissance en fonction du temps **********************
+    nbrLignes = size(data2plot);
+    nbrLignes = nbrLignes(1);
     
-        //*********************************************************************
-        //* TODO: 
-        //* - Obtenir la taille de la fenêtre pour ajuster au mieux
-        //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-        // UTILISER event handler functions 
-        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-        // pour avoir un zoom dynamique.
-        //*************************************************************************
+    plot(data2plot, 'r');
+    fenetre = gcf();
+    graphique = gca();
+    
+    mise_en_forme(graphique, fenetre, Titre, "Puissance en VA");
+        
+    //*********************************************************************
+    //* TODO: 
+    //* - Obtenir la taille de la fenêtre pour ajuster au mieux
+    //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
+    // UTILISER event handler functions 
+    // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+    // pour avoir un zoom dynamique.
+    //*************************************************************************
 
-        // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique);
-        printf("Graph tracé\n");
-    else
-        printf("Erreur de config\n");
-    end
+    // Ajouter les heures sur les abscisses
+    heures_Abscisses(nbrLignes, fenetre, graphique);
+    printf("Puissance apparente tracée\n");
 endfunction
 
 //* ***************************************************************************

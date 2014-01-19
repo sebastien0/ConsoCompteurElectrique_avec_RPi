@@ -40,5 +40,5 @@ function Papp = Puissance_HCHP (Heure, Index)
         end
     end
     
-    Papp = (PuissHC+PuissHP)*360;
+    Papp = (PuissHC+PuissHP)*3600;
 endfunction
