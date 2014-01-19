@@ -80,7 +80,8 @@ function cheminFichier = Charger_Txt (dataPath)
             //NOP
         elseif configHPHC_N == 0 then
             Base = [Hpleines Hcreuses];
-            Papp = zeros(1);
+//            Papp = zeros(1);
+            Papp = Puissance_HCHP(Heure, Base);
         else
             CreationTxt = zeros(1);
             donnee_mesure = zeros(1);
@@ -99,8 +100,8 @@ function cheminFichier = Charger_Txt (dataPath)
      end
      
     [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
-    Gbl_Config, Gbl_donnee_mesure] = resume (CreationTxt, Heure, Papp, Base,...
-     NumCompteur, Config, donnee_mesure);
+    Gbl_Config] = resume (CreationTxt, Heure, Papp, Base,...
+     NumCompteur, Config);
 endfunction
 
 
@@ -305,13 +306,13 @@ endfunction
 function Sauve_Variables (filePath)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
-    temp = msscanf(Gbl_CreationTxt(1), '%c%c%c%c / %c%c / %c%c');
-    temp = [temp(1)+temp(2)+temp(3)+temp(4) temp(5)+temp(6) temp(7)+temp(8)];
-//    filePath = dataPath+"\Releves_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
+    dateReleve = msscanf(Gbl_CreationTxt(1), '%c%c%c%c / %c%c / %c%c');
+    dateReleve = [dateReleve(1)+dateReleve(2)+dateReleve(3)+dateReleve(4) dateReleve(5)+dateReleve(6) dateReleve(7)+dateReleve(8)];
+//    filePath = dataPath+"\Releves_"+dateReleve(1)+"-"+dateReleve(2)+"-"+dateReleve(3)+".sod";
     cd(filePath);
-    fileName = Gbl_NumCompteur + "_"+temp(1)+"-"+temp(2)+"-"+temp(3)+".sod";
+    fileName = Gbl_NumCompteur + "_"+dateReleve(1)+"-"+dateReleve(2)+"-"+dateReleve(3)+".sod";
     save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
-    "Gbl_NumCompteur", "Gbl_Config", "Gbl_donnee_mesure");
+    "Gbl_NumCompteur", "Gbl_Config");
    
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
     cd(originPath);

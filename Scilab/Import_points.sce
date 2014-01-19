@@ -11,6 +11,7 @@ dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\Comp
 // Charger les fonctions dans l'environnement
 exec(fnctPath+"\ChargerTxt.sci");
 exec(fnctPath+"\tracerGraph.sci");
+exec(fnctPath+"\Puissance_HPHC.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -27,8 +28,8 @@ while(choix <> "0" & choix <> []) do
         printf("Chargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
         cheminFichier = Charger_Txt(dataPath2Read);
-        // Retourne: Gbl_CreationTxt, Gbl_donnee_mesure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, Gbl_Config
-        // TODO: Gbl_donnee_mesure n'est utile que pour la mise au point de Puissance_HCHP
+        // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, 
+        //           Gbl_NumCompteur, Gbl_Config
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
             // TODO: sélection du répertoire ?!
@@ -77,12 +78,10 @@ while(choix <> "0" & choix <> []) do
                     
                 // *** Tracer les index *****************    
                 elseif Config == 2 then
-                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
-                    "Index des consommations Heures pleines et creuses",...
-                    Config);
-                    legende = legend(["Index heures creuses";...
-                    "Index heures pleines"],2);
-                    legende.font_size = 3;
+                    tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
+//                    tracer_Graph(Gbl_Index, Gbl_NumCompteur,...
+//                    "Index des consommations Heures pleines et creuses",...
+//                    Config);
                 end
              else
                  printf("Aucune donnée valide à tracer (depuis if)\n");
