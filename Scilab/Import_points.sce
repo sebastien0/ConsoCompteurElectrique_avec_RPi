@@ -5,10 +5,9 @@ clc;
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
 fnctPath = pwd();
-dataPath2Read = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\...
-Compteur_Linky\Relevés";
-dataPath2Save = "E:\Documents\Documents\Divers\Communication cpt Linky\Code\...
-Compteur_Linky\Relevés\Variables";
+projectPath = strncpy(pwd(),length(pwd())-length("\Scilab"));
+dataPath2Read = projectPath + "\Code\Compteur_Linky\Releves";
+dataPath2Save = dataPath2Read + "\Variables";
 
 // Charger les fonctions dans l'environnement
 exec(fnctPath+"\Charger_Txt.sci");

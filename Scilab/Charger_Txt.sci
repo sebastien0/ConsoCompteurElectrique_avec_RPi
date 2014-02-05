@@ -142,7 +142,7 @@ endfunction
 //* ***************************************************************************
 //* Affiche la barre de progression
 //* Calcul la progression et estime le temps restant
-//*
+//* Est appelée à chaque nouveau pourcent réalisé
 //*****************************************************************************
 function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
             tempsRestant, tempsRestant_1)
@@ -151,8 +151,10 @@ function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
     tempsExecution = tempsExecution + toc();
     tic;
     // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
-    tempsRestant = (tempsExecution / (progression + 1)) * ...
-     (145 - progression);
+//    tempsRestant = (tempsExecution / (progression + 1)) * ...
+//     (145 - progression);
+     tempsRestant = tempsExecution * (100-progression) / progression;
+     
     if (progression == 0 | tempsRestant > tempsRestant_1) then
         disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
         tempsRestant_1 = tempsRestant;
@@ -184,6 +186,7 @@ endfunction
 //*
 //*****************************************************************************
 function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
+    progression = 0;
     offset = 5; // Ligne des en-tête de colonnes
     HEURE = 1;  // Colonne contenant l'heure
     IMAX = 4;   // Colonne contenant le courant max journalier
@@ -205,6 +208,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
         Papp = zeros(nbrLignes,1);
         Base = zeros(nbrLignes,1);
     elseif configHPHC_N == 0 then
+
         Hpleines = zeros(nbrLignes,1);
         Hcreuses = zeros(nbrLignes,1);
     end
