@@ -150,10 +150,10 @@ function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
     progression = progression + 1;
     tempsExecution = tempsExecution + toc();
     tic;
-    // Ajuster le coef (145 - progression) pour approximer le temps réel écoulé
-//    tempsRestant = (tempsExecution / (progression + 1)) * ...
-//     (145 - progression);
+
      tempsRestant = tempsExecution * (100-progression) / progression;
+     // Prise en compte des derniers traitements; valeur arbitraire
+     tempsRestant = 1.03 * tempsRestant;
      
     if (progression == 0 | tempsRestant > tempsRestant_1) then
         disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
@@ -202,7 +202,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     nbrLignes = size(donnee)-1;
     nbrLignes = nbrLignes(1,1)-offset;
     
-    //Création de matrices vides
+    // Création de matrices vides
     donnee_mesure(nbrLignes,:) = ["" "" "" ""];
     if configBase_N == 0 then
         Papp = zeros(nbrLignes,1);
@@ -213,6 +213,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
         Hcreuses = zeros(nbrLignes,1);
     end
     
+    // Parcour des lignes du fichier
     for ligne = 1:(nbrLignes-1)
         // Barre de progression
         if (floor(ligne*100/nbrLignes) > progression) then
@@ -310,7 +311,7 @@ function Sauve_Variables (filePath)
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
     dateReleve = msscanf(Gbl_CreationTxt(1), '%c%c%c%c / %c%c / %c%c');
     dateReleve = [dateReleve(1)+dateReleve(2)+dateReleve(3)+dateReleve(4) dateReleve(5)+dateReleve(6) dateReleve(7)+dateReleve(8)];
-//    filePath = dataPath+"\Releves_"+dateReleve(1)+"-"+dateReleve(2)+"-"+dateReleve(3)+".sod";
+
     cd(filePath);
     fileName = Gbl_NumCompteur + "_"+dateReleve(1)+"-"+dateReleve(2)+"-"+dateReleve(3)+".sod";
     save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
