@@ -54,8 +54,14 @@ function cheminFichier = Charger_Txt (dataPath)
         end
         
         // Extraction des données, création des matrices
-        // Retourne: Config, nbrLignes, HEURE, Config, nbrLignes, 
-        // donnee_mesure, tempsExecution, tempsRestant_1
+        // Retourne:
+        //  BASE:
+        //      Papp, index_Base, Base, nbrLignes, HEURE, Config, 
+        //      donnee_mesure, tempsExecution, tempsRestant_1
+        // HCHP:
+        //      index_Hpleines, Hpleines, index_Hcreuses, Hcreuses, 
+        //      nbrLignes, HEURE, Config, donnee_mesure, tempsExecution,
+        //      tempsRestant_1
         extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
 
         FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
@@ -75,10 +81,10 @@ function cheminFichier = Charger_Txt (dataPath)
     if fichierOuvert <> 0 then
         Heure = donnee_mesure(2:nbrLignes,1);
         if configBase_N == 0 then
-            //NOP
+            index0 = index_Base;
         elseif configHPHC_N == 0 then
+            index0 = [index_Hpleines, index_Hcreuses]
             Base = [Hpleines Hcreuses];
-//            Papp = zeros(1);
             Papp = Puissance_HCHP(Heure, Base);
         else
             CreationTxt = zeros(1);
@@ -86,6 +92,7 @@ function cheminFichier = Charger_Txt (dataPath)
             Papp = zeros(1);
             Base = zeros(1);
             NumCompteur = zeros(1);
+            index0 = 0;
         end
         close(BarreProgression);
     else
@@ -95,10 +102,11 @@ function cheminFichier = Charger_Txt (dataPath)
         Papp = zeros(1);
         Base = zeros(1);
         NumCompteur = zeros(1);
+        index0 = 0;
      end
      
-    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
-    Gbl_Config] = resume (CreationTxt, Heure, Papp, Base,...
+    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, Gbl_Index, Gbl_NumCompteur, ...
+    Gbl_Config] = resume (CreationTxt, Heure, Papp, index0, Base,...
      NumCompteur, Config);
 endfunction
 
@@ -249,23 +257,36 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
             if configBase_N == 0 then
                 if donnee_mesure(ligne,PAPP) <> "-" then
                     Papp(ligne-1,1) = evstr(donnee_mesure(ligne,PAPP));
-                    Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE));
+                    // Enregistrement de la différence d'index
+                    if ligne == 2 then
+                        index_Base = evstr(donnee_mesure(ligne,BASE));
+                    end
+                    Base(ligne-1,1) = evstr(donnee_mesure(ligne,BASE)) ...
+                                        - index_Base;
+                    //Recopier la valeur de l'échantillon précédent
+                    if Base(ligne-1,1) < 0 then
+                        Base(ligne-1,1) = Base(ligne-2,1);
+                    end
+                    
                     //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
                 end
                 
             elseif configHPHC_N == 0 then
                 if (donnee_mesure(ligne,HEUREPLEINE) <> "-" & ...
                     donnee_mesure(ligne,HEURECREUSE) <> "-") then
+                    // Enregistrement de la différence d'index
                     if ligne == 2 then  // TODO: à MAJ lorsque le programme R-Pi sera mis à jour
                         index_Hpleines = evstr(donnee_mesure(2,HEUREPLEINE));
                         index_Hcreuses = evstr(donnee_mesure(2,HEURECREUSE));
-                    else
-                        Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) - index_Hpleines;
-                        Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) - index_Hcreuses;
                     end
+                    Hpleines(ligne-1,1) = evstr(donnee_mesure(ligne,HEUREPLEINE)) ...
+                                            - index_Hpleines;
+                    Hcreuses(ligne-1,1) = evstr(donnee_mesure(ligne,HEURECREUSE)) ...
+                                            - index_Hcreuses;
+
                     //Invalide(ligne-1,1) = evstr(donnee_mesure(ligne,INVALIDE));
                 else
-                    //Recopier la valeur de l'échantillon précédent pour ne pas avoir de 0 dans le tableau
+                    //Recopier la valeur de l'échantillon précédent
                     Hpleines(ligne-1,1) = Hpleines(ligne-2,1);
                     Hcreuses(ligne-1,1) = Hcreuses(ligne-2,1);
                 end
@@ -282,16 +303,25 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     catch
     end
     
+    // Affichage des index
+    if configBase_N == 0 then
+        printf("\nIndex à %s : %dkWh\n",donnee_mesure(2,HEURE),index_Base/1000);
+    elseif configHPHC_N == 0 then
+        printf("\nIndex à %s :\n HC: %dkWh\n HP: %dkWh\n",...
+                donnee_mesure(2,HEURE),index_Hcreuses/1000,index_Hpleines/1000);
+    end
+    
     Config = [configBase_N configHPHC_N];
 
     // Retourne
     if configBase_N == 0 then
-        [Papp, Base, nbrLignes, HEURE, Config, donnee_mesure, ...
-        tempsExecution, tempsRestant_1] = resume(Papp, Base, nbrLignes, ...
-        HEURE, Config, donnee_mesure, tempsExecution, tempsRestant_1);
+        [Papp, index_Base, Base, nbrLignes, HEURE, Config, donnee_mesure, ...
+        tempsExecution, tempsRestant_1] = resume(Papp, index_Base, Base, ...
+        nbrLignes, HEURE, Config, donnee_mesure, tempsExecution, tempsRestant_1);
     elseif configHPHC_N == 0 then
-        [Hpleines, Hcreuses, nbrLignes, HEURE, Config, donnee_mesure, ...
-        tempsExecution, tempsRestant_1] = resume(Hpleines, Hcreuses, ...
+        [index_Hpleines, Hpleines, index_Hcreuses, Hcreuses, nbrLignes, ...
+        HEURE, Config, donnee_mesure, tempsExecution, tempsRestant_1] = ...
+        resume(index_Hpleines, Hpleines, index_Hcreuses, Hcreuses, ...
         nbrLignes, HEURE, Config, donnee_mesure, tempsExecution, ...
         tempsRestant_1);
     else
@@ -313,9 +343,10 @@ function Sauve_Variables (filePath)
     dateReleve = [dateReleve(1)+dateReleve(2)+dateReleve(3)+dateReleve(4) dateReleve(5)+dateReleve(6) dateReleve(7)+dateReleve(8)];
 
     cd(filePath);
-    fileName = Gbl_NumCompteur + "_"+dateReleve(1)+"-"+dateReleve(2)+"-"+dateReleve(3)+".sod";
-    save(fileName,"Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
-    "Gbl_NumCompteur", "Gbl_Config");
+    fileName = strcat([Gbl_NumCompteur,"_",dateReleve(1),"-",dateReleve(2)...
+    ,"-",dateReleve(3),".sod"]);
+    save(fileName, "Gbl_CreationTxt", "Gbl_Heure", "Gbl_Papp", "Gbl_Index", ...
+    "Gbl_NumCompteur", "Gbl_Config", "Gbl_Index0");
    
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
     cd(originPath);

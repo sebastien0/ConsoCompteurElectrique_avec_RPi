@@ -35,8 +35,8 @@ while(choix <> "0" & choix <> []) do
         printf("\nChargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
         cheminFichier = Charger_Txt(dataPath2Read);
-        // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, 
-        //           Gbl_NumCompteur, Gbl_Config
+        // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, 
+        //           Gbl_Index, Gbl_NumCompteur, Gbl_Config
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
             Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
