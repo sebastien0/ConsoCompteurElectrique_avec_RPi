@@ -30,7 +30,9 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
         fenetre = gcf();
         graphique = gca();
         
-        mise_en_forme(graphique, fenetre, Titre, "Puissance en VA");
+        // Titre du graphique
+        xtitle(Titre,"Heure","Puissance en VA");
+        mise_en_forme(graphique, fenetre);
             
         //*********************************************************************
         //* TODO: 
@@ -81,14 +83,9 @@ endfunction
 //*
 //*****************************************************************************
 //titre1 = "Puissance apparente"; titre2 = "Puissance en VA";
-function mise_en_forme(graphique, fenetre, titre1, titre2)
+function mise_en_forme(graphique, fenetre)
     set(graphique,"grid",[1 1]);    // Grid on
     
-    // Titre du graphique
-    xtitle([titre1;"Relevé du " + Gbl_CreationTxt(1) + " de " + ...
-    Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3);"Par le compteur " + ...
-    NumCompteur],"Heure",titre2);
-
     //*********************************************************************
     //* TODO: 
     //* - Obtenir la taille de la fenêtre pour ajuster au mieux
@@ -125,7 +122,7 @@ endfunction
 //* Puissance peut contenir 1 ou plusieurs tableaux
 //*
 //*****************************************************************************
-//Puissance = Gbl_Papp; Index = Gbl_Index; NumCompteur = Gbl_NumCompteur;
+//Puissance = [Gbl_Papp tabMoy]; Index = Gbl_Index; NumCompteur = Gbl_NumCompteur;
 function tracer_2_Graph(Puissance, Index, NumCompteur)
     nbrLignes = size(Index);
     nbrLignes = nbrLignes(1);
@@ -154,8 +151,24 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         
         graphique = gca();
         fenetre = gcf();
+        
         //Ajouter le quadrillage, les titres, ...
-        mise_en_forme(graphique, fenetre, "Puissance apparente", "Puissance en VA");
+        // Mise en forme de la puissance moyenne
+        puissMoy = round(mean(Gbl_Papp));
+        if puissMoy > 1000 then
+            puissMoyStr = string(puissMoy /1000) + "kW";
+        else
+            puissMoyStr = string(puissMoy) + "W";
+        end
+        printf("Puissance active moyenne = %s\n",puissMoyStr);
+        
+        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
+                 + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
+                " par le compteur n° " + NumCompteur;...
+                "Puissance active, moyenne = " + puissMoyStr];
+        // Titre du graphique
+        xtitle(titre,"Heure","Puissance en VA");
+        mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique);
         
@@ -166,9 +179,16 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         graphique = gca();
         fenetre = gcf();
         //Ajouter le quadrillage, les titres, ...
-        mise_en_forme(graphique, fenetre, ...
-        "Index des consommations Heures pleines et creuses", ...
-        "Variation d''index en Wh");
+        energieInit = string(floor(Gbl_Index0/1000)) + "kWh";
+        energieFin = string(ceil((Gbl_Index0 + ...
+                                   Gbl_Index(nbrLignes-1))/1000)) + "kWh";
+        printf("Energie à %s = %s\nEnergie à %s = %s\n",...
+                Gbl_CreationTxt(2),energieInit,Gbl_CreationTxt(3),energieFin);
+        
+        titre = ["Index des consommations";
+                 "Index à " + Gbl_CreationTxt(2) + " = " + energieInit];
+        xtitle(titre, "Heure", "Variation d''index en Wh");
+        mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique);
         tailleIndex = size(Index);

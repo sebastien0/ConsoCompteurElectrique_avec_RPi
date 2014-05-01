@@ -22,13 +22,8 @@ function charger_variables(dataPath2Save)
                 printf("Compteur configuré en HCHP\n");
             end
             
-            // Obtention du nom du jour du relevé
-            tempDate = msscanf(Gbl_CreationTxt(1),"%d/%d/%d");
-            dateReleve = datenum(tempDate(1),tempDate(2),tempDate(3));
-            [N, nomJour] = weekday(dateReleve,'long');
-            
             printf("Relevé créé le %s %s de %s à %s par le compteur n°%s\n\n", ...
-            nomJour,Gbl_CreationTxt(1), Gbl_CreationTxt(2), ...
+            Gbl_CreationTxt(4),Gbl_CreationTxt(1), Gbl_CreationTxt(2), ...
             Gbl_CreationTxt(3), Gbl_NumCompteur);
         else
             Config = 0;
@@ -39,7 +34,7 @@ function charger_variables(dataPath2Save)
         printf("Aucun fichier sélectionné\n");
     end
     
-    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, Gbl_NumCompteur, ...
-    Gbl_Config] = resume (Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index, ...
+    [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, Gbl_Index, Gbl_NumCompteur, ...
+    Gbl_Config] = resume (Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, Gbl_Index, ...
     Gbl_NumCompteur, Gbl_Config);
 endfunction

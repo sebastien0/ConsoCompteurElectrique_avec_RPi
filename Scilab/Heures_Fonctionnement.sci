@@ -43,19 +43,21 @@ function [duree, moyenne] = HeuresFonctionnement()
         duree(1) = floor(tempsTotal/3600);
         duree(2) = floor(modulo(tempsTotal,3600)/60);
         duree(3) = modulo(tempsTotal - duree(1)*3600 - duree(2)*60, 60);
-        printf("Durée = %ih%im%is\n",duree(1), duree(2),duree(3));
+        printf("Durée des consommations hors veilles = %ih%im%is\n", ...
+                duree(1), duree(2),duree(3));
     // Temps en minutes & secondes
     elseif tempsTotal > 60 then
         duree(1) = 0;
         duree(2) = floor(tempsTotal/60);
         duree(3) = modulo(tempsTotal,60);
-        printf("Durée = %im%is\n",duree(2),duree(3));
+        printf("Durée des consommations hors veilles = %im%is\n", ...
+                duree(2),duree(3));
     // Temps en secondes
     else
         duree(1) = 0;
         duree(2) = 0;
         duree(3) = tempsTotal;
-        printf("Durée = %is\n",duree(3));
+        printf("Durée des consommations hors veilles = %is\n", duree(3));
     end
 endfunction
 

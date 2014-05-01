@@ -31,8 +31,8 @@ function cheminFichier = Charger_Txt (dataPath)
         // ******* Obtention de la date et l'heure ****************************
         //Date du relevé
         Creation = msscanf(donnee(1,1),'%s %s %s %s');
-        CreationDateTxt = msscanf(Creation(1,3),'%s');
-        CreationHeureTxt = msscanf(Creation(1,4),'%s');
+        CreationTxt(1) = msscanf(Creation(1,3),'%s');
+        CreationTxt(2) = msscanf(Creation(1,4),'%s');
     
         // Numéro du compteur
         temp = msscanf(donnee(3,1),'%s n°%s');
@@ -40,7 +40,7 @@ function cheminFichier = Charger_Txt (dataPath)
         clear temp;
     
         printf("\nRelevé créé le %s à %s par le compteur n°%s\n", ...
-        CreationDateTxt, CreationHeureTxt, NumCompteur);
+        CreationTxt(1), CreationTxt(2), NumCompteur);
         
         // *** Extraction des données *****************************************
         printf("Extraction et mise en forme des données ...\n");
@@ -64,8 +64,8 @@ function cheminFichier = Charger_Txt (dataPath)
         //      tempsRestant_1
         extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
 
-        FermetureHeureTxt = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
-        CreationTxt = [CreationDateTxt; CreationHeureTxt; FermetureHeureTxt];
+        CreationTxt(3) = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
+        CreationTxt(4) = nom_jour(CreationTxt(1));
         
         tempsExecution = tempsExecution + toc();
         printf("Fin du traitement en %d secondes\n", ceil(tempsExecution));
@@ -305,9 +305,9 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     
     // Affichage des index
     if configBase_N == 0 then
-        printf("\nIndex à %s : %dkWh\n",donnee_mesure(2,HEURE),index_Base/1000);
+        printf("Index à %s : %dkWh\n",donnee_mesure(2,HEURE),index_Base/1000);
     elseif configHPHC_N == 0 then
-        printf("\nIndex à %s :\n HC: %dkWh\n HP: %dkWh\n",...
+        printf("Index à %s :\n HC: %dkWh\n HP: %dkWh\n",...
                 donnee_mesure(2,HEURE),index_Hcreuses/1000,index_Hpleines/1000);
     end
     
@@ -350,4 +350,16 @@ function Sauve_Variables (filePath)
    
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
     cd(originPath);
+endfunction
+
+//* ***************************************************************************
+//* Retourne le nom du jour de dateReleve
+//* dateReleve au format "aaaa/mm/jj"
+//*
+//*****************************************************************************
+function nom = nom_jour(dateReleve)
+    // Obtention du nom du jour du relevé
+    tempDate = msscanf(dateReleve,"%d/%d/%d");
+    dateReleve = datenum(tempDate(1),tempDate(2),tempDate(3));
+    [N, nom] = weekday(dateReleve,'long');
 endfunction
