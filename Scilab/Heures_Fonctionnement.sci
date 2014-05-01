@@ -4,8 +4,9 @@
 //* Retourne duree [heures minutes secondes]
 //*
 //*****************************************************************************
-function duree = HeuresFonctionnement()
+function [duree, moyenne] = HeuresFonctionnement()
     tempsTotal = 0;
+    moyenne = 0;
     duree = zeros(1,3);
     
    //Nombre de ligne
@@ -13,20 +14,21 @@ function duree = HeuresFonctionnement()
     nbrLignes = nbrLignes(1,1);
 
     // Moyenne sur une période inactive
-    // inactivité = [moy(Papp(1:n)) / moy(Papp(1:2n))] > 95%
-    for (borne = 100:100:10000)
-        maxMoy1 = 1 * borne;
-        maxMoy2 = 2 * borne;
-        
-        moyenne1 = mean(Gbl_Papp(1:maxMoy1));
-        moyenne2 = mean(Gbl_Papp(1:maxMoy2));
-        if (abs(moyenne1/moyenne2) > 0.95) then
-            moyenne = moyenne2;
-        end
-     end
+    // inactivité = [moy(Papp(1:n)) / moy(Papp(1:2n))] > 90%
+//    for (borne = 100:100:ceil(nbrLignes*0.1))
+//        maxMoy1 = 1 * borne;
+//        maxMoy2 = 2 * borne;
+//        
+//        moyenne1 = mean(Gbl_Papp(1:maxMoy1));
+//        moyenne2 = mean(Gbl_Papp(1:maxMoy2));
+//        if (abs(moyenne1/moyenne2) > 0.90) then
+//            moyenne = moyenne2;
+//        end
+//     end
      
      // Autre méthode
-//    moyenne = mean(Gbl_Papp);
+//    moyenne = mean(Gbl_Papp(1:ceil(nbrLignes*0.1)));
+    moyenne = mean(Gbl_Papp);
 
     // Temps cumulé en secondes
     for (ligne = 2:nbrLignes-1)
@@ -79,4 +81,16 @@ function Dtemps = difTemps(heure1, heure2)
         printf("\nheure_1 = %i \nheure_2 = %d \nDtemps = %d\n",heure_1(3), ...
         heure_2(3), Dtemps);
     end
+endfunction
+
+//* ***************************************************************************
+//* Créer une matrice constante
+//*
+//* Retourne une matrice de dimensions (nbrLignes, 1) = nombre
+//*****************************************************************************
+function tab = matrice(tabEntree, nombre)
+    nbrLignes = size(tabEntree);
+    nbrLignes = nbrLignes(1,1);
+    
+    tab = ones(nbrLignes, 1)*nombre;
 endfunction

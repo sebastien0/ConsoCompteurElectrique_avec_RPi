@@ -67,8 +67,9 @@ while(choix <> "0" & choix <> []) do
         end
 
         if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
-            tracer_Graph(Gbl_Papp, Gbl_NumCompteur,"Puissance apparente");
-            duree = HeuresFonctionnement();
+            [duree, moyenne] = HeuresFonctionnement();
+            tabMoy = matrice(Gbl_Papp, moyenne);
+            tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur,"Puissance apparente");
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
@@ -89,8 +90,10 @@ while(choix <> "0" & choix <> []) do
         end
         
         if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
-            tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
-            duree = HeuresFonctionnement();
+            [duree, moyenne] = HeuresFonctionnement();
+            tabMoy = matrice(Gbl_Papp, moyenne);
+            tracer_2_Graph([Gbl_Papp tabMoy], Gbl_Index, Gbl_NumCompteur);
+
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end

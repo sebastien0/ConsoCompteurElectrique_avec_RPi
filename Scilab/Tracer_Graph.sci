@@ -8,24 +8,45 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
     nbrLignes = size(data2plot);
     nbrLignes = nbrLignes(1);
     
-    plot(data2plot, 'r');
-    fenetre = gcf();
-    graphique = gca();
-    
-    mise_en_forme(graphique, fenetre, Titre, "Puissance en VA");
+    nbrTab = size(data2plot);
+    nbrTab = nbrTab(2);
+    if nbrTab <= 5 then
         
-    //*********************************************************************
-    //* TODO: 
-    //* - Obtenir la taille de la fenêtre pour ajuster au mieux
-    //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-    // UTILISER event handler functions 
-    // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-    // pour avoir un zoom dynamique.
-    //*************************************************************************
-
-    // Ajouter les heures sur les abscisses
-    heures_Abscisses(nbrLignes, fenetre, graphique);
-    printf("Puissance apparente tracée\n");
+        // Définition des couleurs pour les graphs
+        couleur(1) = 'r';
+        couleur(2) = 'c';
+        couleur(3) = 'g';
+        couleur(4) = 'y';
+        couleur(5) = 'm';
+    
+            // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
+        if nbrTab == 1 then
+            plot(data2plot, 'r');
+        else
+            for i=1:nbrTab
+                plot(data2plot(:,i),couleur(i));
+            end
+        end
+        fenetre = gcf();
+        graphique = gca();
+        
+        mise_en_forme(graphique, fenetre, Titre, "Puissance en VA");
+            
+        //*********************************************************************
+        //* TODO: 
+        //* - Obtenir la taille de la fenêtre pour ajuster au mieux
+        //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
+        // UTILISER event handler functions 
+        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+        // pour avoir un zoom dynamique.
+        //*************************************************************************
+    
+        // Ajouter les heures sur les abscisses
+        heures_Abscisses(nbrLignes, fenetre, graphique);
+        printf("Puissance apparente tracée\n");
+    else
+        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
+    end
 endfunction
 
 //* ***************************************************************************
@@ -101,7 +122,7 @@ endfunction
 
 //* ***************************************************************************
 //* Tracer 2 courbes
-//*
+//* Puissance peut contenir 1 ou plusieurs tableaux
 //*
 //*****************************************************************************
 //Puissance = Gbl_Papp; Index = Gbl_Index; NumCompteur = Gbl_NumCompteur;
@@ -109,33 +130,54 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
     nbrLignes = size(Index);
     nbrLignes = nbrLignes(1);
     
-    //*** Puissance ******************
-    subplot(211);
-    plot(Puissance, 'r');
-    
-    graphique = gca();
-    fenetre = gcf();
-    //Ajouter le quadrillage, les titres, ...
-    mise_en_forme(graphique, fenetre, "Puissance apparente", "Puissance en VA");
-    // Ajouter les heures sur les abscisses
-    heures_Abscisses(nbrLignes, fenetre, graphique);
-    
-    //*** Index *********************
-    subplot(212);
-    plot(Index);
-    
-    graphique = gca();
-    fenetre = gcf();
-    //Ajouter le quadrillage, les titres, ...
-    mise_en_forme(graphique, fenetre, ...
-    "Index des consommations Heures pleines et creuses", ...
-    "Variation d''index en Wh");
-    // Ajouter les heures sur les abscisses
-    heures_Abscisses(nbrLignes, fenetre, graphique);
-    tailleIndex = size(Index);
-    if tailleIndex(2) > 1 then
-        legende = legend(["Index heures creuses"; "Index heures pleines"],2);
-        legende.font_size = 3;
+    nbrTab = size(Puissance);
+    nbrTab = nbrTab(2);
+    if nbrTab <= 5 then
+        
+        // Définition des couleurs pour les graphs
+        couleur(1) = 'r';
+        couleur(2) = 'c';
+        couleur(3) = 'g';
+        couleur(4) = 'y';
+        couleur(5) = 'm';
+        
+        //*** Puissance ******************
+        subplot(211);
+        // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
+        if nbrTab == 1 then
+            plot(Puissance, 'r');
+        else
+            for i=1:nbrTab
+                plot(Puissance(:,i),couleur(i));
+            end
+        end
+        
+        graphique = gca();
+        fenetre = gcf();
+        //Ajouter le quadrillage, les titres, ...
+        mise_en_forme(graphique, fenetre, "Puissance apparente", "Puissance en VA");
+        // Ajouter les heures sur les abscisses
+        heures_Abscisses(nbrLignes, fenetre, graphique);
+        
+        //*** Index *********************
+        subplot(212);
+        plot(Index);
+        
+        graphique = gca();
+        fenetre = gcf();
+        //Ajouter le quadrillage, les titres, ...
+        mise_en_forme(graphique, fenetre, ...
+        "Index des consommations Heures pleines et creuses", ...
+        "Variation d''index en Wh");
+        // Ajouter les heures sur les abscisses
+        heures_Abscisses(nbrLignes, fenetre, graphique);
+        tailleIndex = size(Index);
+        if tailleIndex(2) > 1 then
+            legende = legend(["Index heures creuses"; "Index heures pleines"],2);
+            legende.font_size = 3;
+        end
+        printf("Graphiques tracés\n");
+    else
+        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
     end
-    printf("Graphiques tracés\n");
 endfunction
