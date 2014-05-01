@@ -110,43 +110,6 @@ function cheminFichier = Charger_Txt (dataPath)
      NumCompteur, Config);
 endfunction
 
-
-//* ***************************************************************************
-//* Détecte la configuration du compteur
-//*
-//*
-//*****************************************************************************
-function configuration(donnee)
-    // Lecture des en-têtes de colonnes
-    try
-        titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
-     catch
-        try
-            titres = msscanf(donnee(5,1),'%s %s %s %s');
-        catch
-            disp(lasterror());
-        end
-    end
-    
-    // Détectionde la configuration en Base ou HCHP
-    temp = titres(3);
-    configBase_N = strcmp('Base',temp); // =0 si compteur en Base 
-    if configBase_N <> 0 then
-        temp = titres(3) + titres(4);
-    else
-        printf("Compteur configuré en Base\n");
-    end
-
-    configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
-    if configHPHC_N == 0 then
-        printf("Compteur configuré en HCHP\n");
-    end
-
-    // Retour des variables
-    [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
-endfunction
-
-
 //* ***************************************************************************
 //* Affiche la barre de progression
 //* Calcul la progression et estime le temps restant
@@ -190,7 +153,7 @@ endfunction
 
 //* ***************************************************************************
 //* Extrait les données depuis le fichier texte
-//* Fonction d'ectraction à proprement parler
+//* Fonction d'extraction à proprement parler
 //*
 //*****************************************************************************
 function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
@@ -350,16 +313,4 @@ function Sauve_Variables (filePath)
    
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
     cd(originPath);
-endfunction
-
-//* ***************************************************************************
-//* Retourne le nom du jour de dateReleve
-//* dateReleve au format "aaaa/mm/jj"
-//*
-//*****************************************************************************
-function nom = nom_jour(dateReleve)
-    // Obtention du nom du jour du relevé
-    tempDate = msscanf(dateReleve,"%d/%d/%d");
-    dateReleve = datenum(tempDate(1),tempDate(2),tempDate(3));
-    [N, nom] = weekday(dateReleve,'long');
 endfunction

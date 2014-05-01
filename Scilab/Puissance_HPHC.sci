@@ -24,8 +24,10 @@ function Papp = Puissance_HCHP (Heure, Index)
 
         //Puissance
         if Dtemp <> 0 then
-            tempHP = (Index(Energie_2,HEUREPLEINE) - Index(Energie_1, HEUREPLEINE)) / Dtemp;
-            tempHC = (Index(Energie_2,HEURECREUSE) - Index(Energie_1, HEURECREUSE)) / Dtemp;
+            tempHP = (Index(Energie_2,HEUREPLEINE) - ...
+                      Index(Energie_1, HEUREPLEINE)) / Dtemp;
+            tempHC = (Index(Energie_2,HEURECREUSE) - ...
+                      Index(Energie_1, HEURECREUSE)) / Dtemp;
             if tempHP < 0 then
                 tempHP = 0;
             end

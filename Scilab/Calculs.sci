@@ -1,4 +1,39 @@
 //* ***************************************************************************
+//* Détecter la configuration du compteur
+//*
+//*
+//*****************************************************************************
+function configuration(donnee)
+    // Lecture des en-têtes de colonnes
+    try
+        titres = msscanf(donnee(5,1),'%s %s %s %s %s %s %s');
+     catch
+        try
+            titres = msscanf(donnee(5,1),'%s %s %s %s');
+        catch
+            disp(lasterror());
+        end
+    end
+    
+    // Détectionde la configuration en Base ou HCHP
+    temp = titres(3);
+    configBase_N = strcmp('Base',temp); // =0 si compteur en Base 
+    if configBase_N <> 0 then
+        temp = titres(3) + titres(4);
+    else
+        printf("Compteur configuré en Base\n");
+    end
+
+    configHPHC_N = strcmp('Hcreuses',temp); // =0 si compteur en HCHP 
+    if configHPHC_N == 0 then
+        printf("Compteur configuré en HCHP\n");
+    end
+
+    // Retour des variables
+    [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
+endfunction
+
+//* ***************************************************************************
 //* Calculer le nombre d'heure de fonctionnement
 //* Critère fonctionnement = Gbl_Papp > moyenne(Gbl_Papp)
 //* Retourne duree [heures minutes secondes]
@@ -95,4 +130,42 @@ function tab = matrice(tabEntree, nombre)
     nbrLignes = nbrLignes(1,1);
     
     tab = ones(nbrLignes, 1)*nombre;
+endfunction
+
+
+//* ***************************************************************************
+//* Retourne le nom du jour de dateReleve
+//* dateReleve au format "aaaa/mm/jj"
+//*
+//*****************************************************************************
+function nom = nom_jour(dateReleve)
+    // Obtention du nom du jour du relevé
+    tempDate = msscanf(dateReleve,"%d/%d/%d");
+    dateReleve = datenum(tempDate(1),tempDate(2),tempDate(3));
+    [N, nom] = weekday(dateReleve,'long');
+endfunction
+
+//* ***************************************************************************
+//* Retourne la puissance moyenne au format string avec l'unité appropriée
+//*
+//*****************************************************************************
+function puissMoyStr = puissMoyenne()
+   // Mise en forme de la puissance moyenne
+    puissMoy = round(mean(Gbl_Papp));
+    if puissMoy > 1000 then
+        puissMoyStr = strcat([string(ceil(puissMoy /1000)), 'kW']);
+    else
+        puissMoyStr = strcat([string(round(puissMoy)), 'W']);
+    end
+endfunction
+
+
+//* ***************************************************************************
+//* Retourne les énergies de début et de fin au format string avec l'unité
+//*
+//*****************************************************************************
+function energieStr = energie(nbrLignes)
+    energieStr(1) = strcat([string(floor(Gbl_Index0/1000)), "kWh"]);
+    energieStr(2) = strcat([string(ceil((Gbl_Index0 + ...
+                            Gbl_Index(nbrLignes-1))/1000)), "kWh"]);
 endfunction

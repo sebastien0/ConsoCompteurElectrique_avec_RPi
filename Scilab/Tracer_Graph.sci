@@ -1,57 +1,4 @@
 //* ***************************************************************************
-//* Tracer une courbe
-//*
-//*
-//*****************************************************************************
-function tracer_Graph(data2plot, NumCompteur, Titre)
-    // **** Tracer la puissance en fonction du temps **********************
-    nbrLignes = size(data2plot);
-    nbrLignes = nbrLignes(1);
-    
-    nbrTab = size(data2plot);
-    nbrTab = nbrTab(2);
-    if nbrTab <= 5 then
-        
-        // Définition des couleurs pour les graphs
-        couleur(1) = 'r';
-        couleur(2) = 'c';
-        couleur(3) = 'g';
-        couleur(4) = 'y';
-        couleur(5) = 'm';
-    
-            // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
-        if nbrTab == 1 then
-            plot(data2plot, 'r');
-        else
-            for i=1:nbrTab
-                plot(data2plot(:,i),couleur(i));
-            end
-        end
-        fenetre = gcf();
-        graphique = gca();
-        
-        // Titre du graphique
-        xtitle(Titre,"Heure","Puissance en VA");
-        mise_en_forme(graphique, fenetre);
-            
-        //*********************************************************************
-        //* TODO: 
-        //* - Obtenir la taille de la fenêtre pour ajuster au mieux
-        //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-        // UTILISER event handler functions 
-        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-        // pour avoir un zoom dynamique.
-        //*************************************************************************
-    
-        // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique);
-        printf("Puissance apparente tracée\n");
-    else
-        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
-    end
-endfunction
-
-//* ***************************************************************************
 //* Afficher les abscisses en temps
 //*
 //*
@@ -116,6 +63,67 @@ function mise_en_forme(graphique, fenetre)
         end
 endfunction
 
+//* ***************************************************************************
+//* Tracer une courbe
+//*
+//*
+//*****************************************************************************
+function tracer_Graph(data2plot, NumCompteur, Titre)
+    // **** Tracer la puissance en fonction du temps **********************
+    nbrLignes = size(data2plot);
+    nbrLignes = nbrLignes(1);
+    
+    nbrTab = size(data2plot);
+    nbrTab = nbrTab(2);
+    if nbrTab <= 5 then
+        
+        // Définition des couleurs pour les graphs
+        couleur(1) = 'r';
+        couleur(2) = 'c';
+        couleur(3) = 'g';
+        couleur(4) = 'y';
+        couleur(5) = 'm';
+    
+            // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
+        if nbrTab == 1 then
+            plot(data2plot, 'r');
+        else
+            for i=1:nbrTab
+                plot(data2plot(:,i),couleur(i));
+            end
+        end
+        fenetre = gcf();
+        graphique = gca();
+        
+        puissMoyStr = puissMoyenne();
+        //Ajouter le quadrillage, les titres, ...
+        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
+                 + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
+                " par le compteur n° " + NumCompteur;...
+                "Puissance active, moyenne = " + puissMoyStr];
+        // Titre du graphique
+        xtitle(titre,"Heure","Puissance en VA");
+        mise_en_forme(graphique, fenetre);
+            
+        //*********************************************************************
+        //* TODO: 
+        //* - Obtenir la taille de la fenêtre pour ajuster au mieux
+        //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
+        // UTILISER event handler functions 
+        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+        // pour avoir un zoom dynamique.
+        //*************************************************************************
+    
+        // Ajouter les heures sur les abscisses
+        heures_Abscisses(nbrLignes, fenetre, graphique);
+
+        printf("Puissance active moyenne = %s\n", puissMoyStr);
+        printf("Puissance apparente tracée\n");
+    else
+        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
+    end
+endfunction
+
 
 //* ***************************************************************************
 //* Tracer 2 courbes
@@ -152,16 +160,8 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         graphique = gca();
         fenetre = gcf();
         
+        puissMoyStr = puissMoyenne();
         //Ajouter le quadrillage, les titres, ...
-        // Mise en forme de la puissance moyenne
-        puissMoy = round(mean(Gbl_Papp));
-        if puissMoy > 1000 then
-            puissMoyStr = string(puissMoy /1000) + "kW";
-        else
-            puissMoyStr = string(puissMoy) + "W";
-        end
-        printf("Puissance active moyenne = %s\n",puissMoyStr);
-        
         titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
                  + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
                 " par le compteur n° " + NumCompteur;...
@@ -178,17 +178,14 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         
         graphique = gca();
         fenetre = gcf();
+
+        energieStr = energie(nbrLignes);
         //Ajouter le quadrillage, les titres, ...
-        energieInit = string(floor(Gbl_Index0/1000)) + "kWh";
-        energieFin = string(ceil((Gbl_Index0 + ...
-                                   Gbl_Index(nbrLignes-1))/1000)) + "kWh";
-        printf("Energie à %s = %s\nEnergie à %s = %s\n",...
-                Gbl_CreationTxt(2),energieInit,Gbl_CreationTxt(3),energieFin);
-        
         titre = ["Index des consommations";
-                 "Index à " + Gbl_CreationTxt(2) + " = " + energieInit];
+                 "Index à " + Gbl_CreationTxt(2) + " = " + energieStr(1)];
         xtitle(titre, "Heure", "Variation d''index en Wh");
         mise_en_forme(graphique, fenetre);
+       
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique);
         tailleIndex = size(Index);
@@ -196,6 +193,10 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
             legende = legend(["Index heures creuses"; "Index heures pleines"],2);
             legende.font_size = 3;
         end
+        
+        printf("Puissance active moyenne = %s\n", puissMoyStr);
+        printf("Energie à %s = %s\nEnergie à %s = %s\n", Gbl_CreationTxt(2), ...
+               energieStr(1), Gbl_CreationTxt(3), energieStr(2));
         printf("Graphiques tracés\n");
     else
         printf("Trop de graph à tracer. Corriger le 1er argument! \n");

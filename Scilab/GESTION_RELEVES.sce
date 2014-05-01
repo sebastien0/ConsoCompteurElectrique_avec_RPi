@@ -14,7 +14,7 @@ exec(fnctPath+"\Charger_Txt.sci");
 exec(fnctPath+"\Tracer_Graph.sci");
 exec(fnctPath+"\Puissance_HPHC.sci");
 exec(fnctPath+"\Charger_Variables.sci");
-exec(fnctPath+"\Heures_Fonctionnement.sci");
+exec(fnctPath+"\Calculs.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
