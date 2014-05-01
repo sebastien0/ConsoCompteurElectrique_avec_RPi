@@ -6,25 +6,27 @@
 //*****************************************************************************
 function duree = HeuresFonctionnement()
     tempsTotal = 0;
+    duree = zeros(1,3);
     
    //Nombre de ligne
     nbrLignes = min(size(Gbl_Papp),size(Gbl_Heure))-1;
     nbrLignes = nbrLignes(1,1);
 
     // Moyenne sur une période inactive
-    // inactivité = [moy(Papp(1:n)) / moy(Papp(1:2n))] > 9%
-//    for (borne = 100:100:10000)
-//        maxMoy1 = 1 * borne;
-//        maxMoy2 = 2 * borne;
-//        
-//        moyenne1 = mean(Gbl_Papp(1:maxMoy1));
-//        moyenne2 = mean(Gbl_Papp(1:maxMoy2));
-//        if (abs(moyenne1/moyenne2) > 0.99) then
-//            moyenne = moyenne2;
-//        end
-//     end
+    // inactivité = [moy(Papp(1:n)) / moy(Papp(1:2n))] > 95%
+    for (borne = 100:100:10000)
+        maxMoy1 = 1 * borne;
+        maxMoy2 = 2 * borne;
+        
+        moyenne1 = mean(Gbl_Papp(1:maxMoy1));
+        moyenne2 = mean(Gbl_Papp(1:maxMoy2));
+        if (abs(moyenne1/moyenne2) > 0.95) then
+            moyenne = moyenne2;
+        end
+     end
      
-    moyenne = mean(Gbl_Papp);
+     // Autre méthode
+//    moyenne = mean(Gbl_Papp);
 
     // Temps cumulé en secondes
     for (ligne = 2:nbrLignes-1)
@@ -34,19 +36,24 @@ function duree = HeuresFonctionnement()
         end
     end
     
-    // Temps en minutes & secondes
+    // Temps en heure, minutes & secondes
     if tempsTotal > 3600 then
-        heure = floor(tempsTotal/3600);
-        minutes = floor(modulo(tempsTotal,3600)/60);
-        secondes = modulo(tempsTotal-heure*3600-minutes*60,60);
-        duree = [heure minutes secondes];
-        printf("Durée = %ih%im%is",duree(1), duree(2),duree(3));
+        duree(1) = floor(tempsTotal/3600);
+        duree(2) = floor(modulo(tempsTotal,3600)/60);
+        duree(3) = modulo(tempsTotal - duree(1)*3600 - duree(2)*60, 60);
+        printf("Durée = %ih%im%is\n",duree(1), duree(2),duree(3));
+    // Temps en minutes & secondes
     elseif tempsTotal > 60 then
-        heure = 0;
-        minutes = floor(tempsTotal/60);
-        secondes = modulo(tempsTotal,60);
-        duree = [heure minutes secondes];
-        printf("Durée = %i''%i",duree(2),duree(3));
+        duree(1) = 0;
+        duree(2) = floor(tempsTotal/60);
+        duree(3) = modulo(tempsTotal,60);
+        printf("Durée = %im%is\n",duree(2),duree(3));
+    // Temps en secondes
+    else
+        duree(1) = 0;
+        duree(2) = 0;
+        duree(3) = tempsTotal;
+        printf("Durée = %is\n",duree(3));
     end
 endfunction
 

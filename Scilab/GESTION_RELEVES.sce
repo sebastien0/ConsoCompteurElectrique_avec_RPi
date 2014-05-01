@@ -68,6 +68,7 @@ while(choix <> "0" & choix <> []) do
 
         if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             tracer_Graph(Gbl_Papp, Gbl_NumCompteur,"Puissance apparente");
+            duree = HeuresFonctionnement();
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
@@ -89,6 +90,7 @@ while(choix <> "0" & choix <> []) do
         
         if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             tracer_2_Graph(Gbl_Papp, Gbl_Index, Gbl_NumCompteur);
+            duree = HeuresFonctionnement();
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end

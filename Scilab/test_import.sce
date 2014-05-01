@@ -45,6 +45,9 @@ function decomposerSSSS(donneeStr)
     [Gbl_tabStr,Gbl_tabDbl] = resume(tabStr,tabDbl);
 endfunction
 
+//* ***************************************************************************
+//* Programme extraction du fichier texte
+//*****************************************************************************
 disp('Début du programme');
 
 fnctPath = pwd();
