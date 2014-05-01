@@ -33,6 +33,7 @@ while(choix <> "0" & choix <> []) do
     //* 1   Charger un fichier texte
     //*************************************************************************
     if choix == "1" then
+        close;
         printf("\nChargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
         cheminFichier = Charger_Txt(dataPath2Read);
@@ -49,6 +50,7 @@ while(choix <> "0" & choix <> []) do
     //* 2   Charger un fichier de données
     //*************************************************************************
     elseif choix == "2" then
+        close;
         printf("\nChargement d''un fichier de données\n\n");
         charger_variables(dataPath2Save);
 
