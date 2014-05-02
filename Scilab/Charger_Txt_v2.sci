@@ -13,7 +13,6 @@ endfunction
 
 //* ***************************************************************************
 //* Décomposer la ligne en %s %s %s %s
-// TODO: essayer la méthode [strings_out] = part(strings_in, v)
 //*****************************************************************************
 function decomposerSSSS(donneeStr)
     temp = msscanf(donneeStr,'%s %s %s %s');
@@ -46,8 +45,34 @@ function decomposerSSSS(donneeStr)
 endfunction
 
 //* ***************************************************************************
+//* Décomposer la ligne avec des largeures fixes
+//****************************************************************************
+function decomposerPart(donneeStr)
+    tabDbl = zeros(4,1);
+
+    tabStr = part(donneeStr,[1:8]); // Heure
+    tabDbl(1) = evstr(part(donneeStr,[12:16])); // Papp
+    tabDbl(2) = evstr(part(donneeStr,[20:29])); // Base / HC
+    try
+        tabDbl(3) = evstr(part(donneeStr,[33:42])); // Invalide / HP
+        try
+            tabDbl(4) = evstr(part(donneeStr,[46])); // - / Invalide
+        catch
+            tabDbl(4) = 0;
+        end
+    catch
+        tabDbl(3) = 0;
+        tabDbl(4) = 0;
+    end
+    
+    [Gbl_tabStr,Gbl_tabDbl] = resume(tabStr,tabDbl);
+endfunction
+
+//* ***************************************************************************
 //* Programme extraction du fichier texte
 //*****************************************************************************
+clc;
+
 disp('Début du programme');
 
 fnctPath = pwd();
@@ -82,7 +107,8 @@ ligne = 1;
 TabBase(ligne) = 0;
 
 // Fonction decomposer SSSS
-decomposerSSSS(donnee(offset+ligne));
+//decomposerSSSS(donnee(offset+ligne));
+decomposerPart(donnee(offset+ligne));
 TabHeure(ligne) = Gbl_tabStr;
 TabPapp(ligne) = Gbl_tabDbl(1);
 IndexBase = Gbl_tabDbl(2);
@@ -90,7 +116,8 @@ TabInval(ligne) = Gbl_tabDbl(3);
 
 // Remplissage des autres lignes
 for ligne = 2:(nbrLignes)
-        decomposerSSSS(donnee(offset+ligne));
+//        decomposerSSSS(donnee(offset+ligne));
+        decomposerPart(donnee(offset+ligne));
         TabHeure(ligne) = Gbl_tabStr;
         TabPapp(ligne) = Gbl_tabDbl(1);
         if Gbl_tabDbl(2) == 0 then
@@ -104,7 +131,11 @@ end
 disp(toc());
 disp('Fin de traitement');
 disp(cheminFichier);
-// Fichier Releve_2013-12-20.txt, temps de traitement avec SSSS = 239.471s (4min)
-// Fichier Releve_2013-12-16.txt, temps de traitement avec SSSS = 330.561s (5,5min)
+
+// Sur PC Seb
+// Fichier Releve_2013-Essai.txt avec decomposerSSSS, 33.387s
+// Fichier Releve_2013-Essai.txt avec decomposerSDDD, arreté après 5 minutes
+// Fichier Releve_2013-Essai.txt avec decomposerPart, 39.071s
+
 
 tracer(TabPapp, TabBase);
