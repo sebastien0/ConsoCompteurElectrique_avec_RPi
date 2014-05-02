@@ -43,4 +43,7 @@ function Papp = Puissance_HCHP (Heure, Index)
     end
     
     Papp = (PuissHC+PuissHP)*3600;
+
+    // Filtrer le signal sur 40 échantillons ~ 1min
+    Papp = moyenneGlissante(Papp, 40);
 endfunction

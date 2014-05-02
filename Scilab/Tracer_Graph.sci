@@ -179,10 +179,22 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         graphique = gca();
         fenetre = gcf();
 
-        energieStr = energie(nbrLignes);
+        // Configuration
+        config = size(Gbl_Index0);
+        config = config(1,2);
+        
+        energieStr = energie(nbrLignes, config);
         //Ajouter le quadrillage, les titres, ...
-        titre = ["Index des consommations";
-                 "Index à " + Gbl_CreationTxt(2) + " = " + energieStr(1)];
+        // Base
+        if config == 1 then
+            titre = ["Index des consommations";
+                     "Index à " + Gbl_CreationTxt(2) + " = " + energieStr(1,1)];
+        // HPHC
+        elseif config == 2 then
+            titre = ["Index des consommations";
+                     "Index à " + Gbl_CreationTxt(2) + " : HC = " + ...
+                     energieStr(1,1)+ " HP = " + energieStr(2,1)];
+        end
         xtitle(titre, "Heure", "Variation d''index en Wh");
         mise_en_forme(graphique, fenetre);
        
@@ -195,8 +207,15 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         end
         
         printf("Puissance active moyenne = %s\n", puissMoyStr);
-        printf("Energie à %s = %s\nEnergie à %s = %s\n", Gbl_CreationTxt(2), ...
-               energieStr(1), Gbl_CreationTxt(3), energieStr(2));
+        // Base
+        if config == 1 then
+            printf("Energie à %s = %s\nEnergie à %s = %s\n", Gbl_CreationTxt(2), ...
+                   energieStr(1), Gbl_CreationTxt(3), energieStr(2));
+        // HPHC
+        elseif config == 2 then
+            printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : HC = %s \t HP = %s\n",             Gbl_CreationTxt(2), energieStr(1,1),energieStr(2,1), Gbl_CreationTxt(3), ...
+            energieStr(1,2),energieStr(2,2));
+        end
         printf("Graphiques tracés\n");
     else
         printf("Trop de graph à tracer. Corriger le 1er argument! \n");

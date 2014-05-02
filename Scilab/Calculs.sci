@@ -150,10 +150,17 @@ endfunction
 //*
 //*****************************************************************************
 function puissMoyStr = puissMoyenne()
-   // Mise en forme de la puissance moyenne
+    // Calcul de la puissance moyenne
     puissMoy = round(mean(Gbl_Papp));
+   // Mise en forme de la puissance moyenne
+   // Affichage en kWh
     if puissMoy > 1000 then
-        puissMoyStr = strcat([string(ceil(puissMoy /1000)), 'kW']);
+        // Calcul du dixième de kWh
+        dixieme = modulo(puissMoy, 1000) - modulo(modulo(puissMoy, 1000), 100)
+        puissMoyStr = strcat([string(floor(puissMoy/1000)), '.', ...
+        string(dixieme), 'kW']);
+
+   // Affichage en Wh
     else
         puissMoyStr = strcat([string(round(puissMoy)), 'W']);
     end
@@ -162,10 +169,27 @@ endfunction
 
 //* ***************************************************************************
 //* Retourne les énergies de début et de fin au format string avec l'unité
-//*
 //*****************************************************************************
-function energieStr = energie(nbrLignes)
-    energieStr(1) = strcat([string(floor(Gbl_Index0/1000)), "kWh"]);
-    energieStr(2) = strcat([string(ceil((Gbl_Index0 + ...
-                            Gbl_Index(nbrLignes-1))/1000)), "kWh"]);
+function energieStr = energie(nbrLignes, config)
+    // Base: un seul index
+    if config == 1 then
+      // Energie au début
+        energieStr(1) = strcat([string(floor(Gbl_Index0/1000)), "kWh"]);
+        // Energie à la fin
+        energieStr(2) = strcat([string(ceil((Gbl_Index0 + ...
+                                Gbl_Index(nbrLignes-1))/1000)), "kWh"]);
+
+    // HCHP: 2 index
+    elseif config == 2 then
+        // Energie au début
+        energieStr(1,1) = strcat([string(floor(Gbl_Index0(1)/1000)), "kWh"]);
+        energieStr(2,1) = strcat([string(floor(Gbl_Index0(2)/1000)), "kWh"]);
+        // Energie à la fin
+        energieStr(1,2) = strcat([string(ceil((Gbl_Index0(1) + ...
+                                Gbl_Index(nbrLignes-2,1))/1000)), "kWh"]);
+        energieStr(2,2) = strcat([string(ceil((Gbl_Index0(2) + ...
+                                Gbl_Index(nbrLignes-2,2))/1000)), "kWh"]);
+    else
+        energieStr = ["0" "0"];
+    end
 endfunction
