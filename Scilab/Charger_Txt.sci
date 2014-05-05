@@ -1,9 +1,23 @@
-//* ***************************************************************************
-//* Importe les données depuis le fichier texte
-//*
-//*
-//*****************************************************************************
-function cheminFichier = Charger_Txt (dataPath)
+//*****************************
+/// \file Charger_Txt.sci
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Fonctions pour importer un fichier texte .txt
+//******************************
+
+//****************************************************************************
+/// \brief Importe les données depuis un fichier .txt
+/// \param [in] dataPath    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
+/// \return cheminFichier     \c string     Pointeur du fichier ouvert
+/// \return Gbl_CreationTxt     \c string     Tableau de date et heures de création
+/// \return Gbl_Heure   \c string   Tableau d'horodatage des relevés
+/// \return Gbl_Papp    \c double   Tableau des valeurs de la puissance
+/// \return Gbl_Index0  \c double   Index d'énergie au 1er échantillon du relevé
+/// \return Gbl_Index   \c double Tableau des index d'énergie
+/// \return Gbl_NumCompteur     \c string  Numéro du compteur
+/// \return Gbl_Config  \c double   Tableau contenant la configuration du compteur
+//****************************************************************************
+function cheminFichier = Charger_Txt(dataPath)
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath, ...
     "Choisir le fichier à ouvrir", %f);
@@ -110,10 +124,11 @@ function cheminFichier = Charger_Txt (dataPath)
      NumCompteur, Config);
 endfunction
 
-//* ***************************************************************************
-//* Affiche la barre de progression
-//* Calcul la progression et estime le temps restant
-//* Est appelée à chaque nouveau pourcent réalisé
+//****************************************************************************
+/// \brief Affiche la barre de progression \n Calcul la progression et estime 
+/// le temps restant \n Est appelée à chaque nouveau pourcent réalisé
+/// \param [in] dataPath    \b TODO
+/// \return cheminFichier     \b TODO
 //*****************************************************************************
 function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
             tempsRestant, tempsRestant_1)

@@ -1,7 +1,20 @@
-//* ***************************************************************************
-//* Charger les variables dans l'environnement depuis un fichier .sod
-//*
-//*
+//*****************************
+/// \file Charger_Variables.sci
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Fonctions pour importer un fichier binaire .sod
+//******************************
+
+//****************************************************************************
+/// \brief Charger les variables dans l'environnement depuis un fichier .sod
+/// \param [in] dataPath2Save string Chemin d'accès au répertoire où lire les fichiers .sod
+/// \return Gbl_CreationTxt     \c string     Tableau de date et heures de création
+/// \return Gbl_Heure   \c string   Tableau d'horodatage des relevés
+/// \return Gbl_Papp    \c double   Tableau des valeurs de la puissance
+/// \return Gbl_Index0  \c double   Index d'énergie au 1er échantillon du relevé
+/// \return Gbl_Index   \c double Tableau des index d'énergie
+/// \return Gbl_NumCompteur     \c string  Numéro du compteur
+/// \return Gbl_Config  \c double   Tableau contenant la configuration du compteur
 //*****************************************************************************
 function charger_variables(dataPath2Save)
     cheminFichier = uigetfile(["*.sod"],dataPath2Save,...

@@ -1,7 +1,15 @@
-//* ***************************************************************************
-//* Afficher les abscisses en temps
-//*
-//*
+//*****************************
+/// \file Tracer_Graph.sci
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Fonctions pour tracer les graphiques
+//******************************
+
+//****************************************************************************
+/// \brief Afficher les abscisses en temps
+/// \param [in] nbrLignes    \c double  Nombre d'abscisses
+/// \param [in] fenetre    \b TBC Objet graphique
+/// \param [in] graphique    \b TBC Objet graphique
 //*****************************************************************************
 function heures_Abscisses(nbrLignes, fenetre, graphique)
     //Obtenir le pas du quadrillage vertical
@@ -24,22 +32,21 @@ function heures_Abscisses(nbrLignes, fenetre, graphique)
 endfunction
 
 
-//* ***************************************************************************
-//* Mise en forme du graphique
-//*
-//*
+//****************************************************************************
+/// \brief Mise en forme du graphique
+/// \param [in] graphique    \b TBC Objet graphique
+/// \param [in] fenetre    \b TBC Objet graphique
 //*****************************************************************************
-//titre1 = "Puissance apparente"; titre2 = "Puissance en VA";
 function mise_en_forme(graphique, fenetre)
     set(graphique,"grid",[1 1]);    // Grid on
     
     //*********************************************************************
-    //* TODO: 
-    //* - Obtenir la taille de la fenêtre pour ajuster au mieux
-    //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-    // UTILISER event handler functions 
-    // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-    // pour avoir un zoom dynamique.
+    /// \TODO: 
+    /// - Obtenir la taille de la fenêtre pour ajuster au mieux
+    /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
+    /// UTILISER event handler functions 
+    /// (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+    /// pour avoir un zoom dynamique.
     //*************************************************************************
 
     fenetre.figure_name = "Graphiques";
@@ -63,10 +70,11 @@ function mise_en_forme(graphique, fenetre)
         end
 endfunction
 
-//* ***************************************************************************
-//* Tracer une courbe
-//*
-//*
+//****************************************************************************
+/// \brief Tracer une courbe
+/// \param [in] data2plot    \c double  Tableau des données à tracer
+/// \param [in] NumCompteur    \c   string Numéro du compteur
+/// \param [in] Titre    \c string  Titre du graphique \TODO obsolète
 //*****************************************************************************
 function tracer_Graph(data2plot, NumCompteur, Titre)
     // **** Tracer la puissance en fonction du temps **********************
@@ -106,12 +114,12 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
         mise_en_forme(graphique, fenetre);
             
         //*********************************************************************
-        //* TODO: 
-        //* - Obtenir la taille de la fenêtre pour ajuster au mieux
-        //* - Raffraichir l'affichage si la taille change (plein écran/réduit)
-        // UTILISER event handler functions 
-        // (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-        // pour avoir un zoom dynamique.
+        /// TODO: 
+        /// - Obtenir la taille de la fenêtre pour ajuster au mieux
+        /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
+        /// UTILISER event handler functions 
+        /// (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+        /// pour avoir un zoom dynamique.
         //*************************************************************************
     
         // Ajouter les heures sur les abscisses
@@ -125,10 +133,11 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
 endfunction
 
 
-//* ***************************************************************************
-//* Tracer 2 courbes
-//* Puissance peut contenir 1 ou plusieurs tableaux
-//*
+//****************************************************************************
+/// \brief Tracer 2 courbes. \n Puissance peut contenir 1 ou plusieurs tableaux
+/// \param [in] Puissance    \c double  Tableau des données Puissance à tracer
+/// \param [in] Index    \c string  Tableau des données Index à tracer
+/// \param [in] NumCompteur    \c   string Numéro du compteur
 //*****************************************************************************
 //Puissance = [Gbl_Papp tabMoy]; Index = Gbl_Index; NumCompteur = Gbl_NumCompteur;
 function tracer_2_Graph(Puissance, Index, NumCompteur)
@@ -213,8 +222,9 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
                    energieStr(1), Gbl_CreationTxt(3), energieStr(2));
         // HPHC
         elseif config == 2 then
-            printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : HC = %s \t HP = %s\n",             Gbl_CreationTxt(2), energieStr(1,1),energieStr(2,1), Gbl_CreationTxt(3), ...
-            energieStr(1,2),energieStr(2,2));
+            printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : HC = %s \t HP = %s\n",...
+                   Gbl_CreationTxt(2), energieStr(1,1),energieStr(2,1), Gbl_CreationTxt(3), ...
+                   energieStr(1,2),energieStr(2,2));
         end
         printf("Graphiques tracés\n");
     else

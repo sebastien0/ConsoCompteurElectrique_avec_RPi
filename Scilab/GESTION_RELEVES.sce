@@ -1,29 +1,50 @@
+//*****************************
+/// \file GESTION_RELEVES.sce
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Gestion de l'IHM et de l'envrionnement pour un post 
+/// traitement des relevés
+//******************************
+
 clear;
 close;
 clc;
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
+/// Chemin du répertoire courant, repertoire parent du projet Scilab
 fnctPath = pwd();
+/// Chemin du répertoire parent du projet Compteur Electronique
 projectPath = strncpy(pwd(),length(pwd())-length("\Scilab"));
+/// Chemin du répertoire où lire les fichiers .txt
 dataPath2Read = projectPath + "\Code\Compteur_Linky\Releves";
+/// Chemin du répertoire où écrire / lire les fichiers .sod
 dataPath2Save = dataPath2Read + "\Variables";
 
 // Charger les fonctions dans l'environnement
-exec(fnctPath+"\Charger_Txt.sci");
+// Charger les fonctions pour importer un fichier .txt
+exec(fnctPath+"\Charger_Txt.sci"); 
+// Charger les fonctions pour tracer les graphiques
 exec(fnctPath+"\Tracer_Graph.sci");
+// Charger les fonctions pour reconstituer les puissances depuis 
+// les index d'énergie
 exec(fnctPath+"\Puissance_HPHC.sci");
+// Charger les fonctions pour importer un fichier binaire .sod
 exec(fnctPath+"\Charger_Variables.sci");
+// Charger les fonctions de calculs
 exec(fnctPath+"\Calculs.sci");
+// Charger les fonctions de filtrage
 exec(fnctPath+"\Filtrage.sci");
+// Charger les fonctions de traitement de signal
 exec(fnctPath+"\GlrBrandtMoy.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
-printf("Programme de gestion des données acquise avec la Raspberry-Pi\n");
+printf("Programme de gestion des données acquises avec la Raspberry-Pi\n");
 printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
 printf("*************************************************************\n\n");
 
+///
 choix = "-1";
 while(choix <> "0" & choix <> []) do
     choix = x_dialog(["Que voulez-vous faire?";"";...
