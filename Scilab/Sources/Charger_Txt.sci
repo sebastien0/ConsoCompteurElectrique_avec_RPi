@@ -10,12 +10,12 @@
 /// \param [in] dataPath    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
 /// \return cheminFichier     \c string     Pointeur du fichier ouvert
 /// \return Gbl_CreationTxt     \c string     Tableau de date et heures de création
-/// \return Gbl_Heure   \c string   Tableau d'horodatage des relevés
-/// \return Gbl_Papp    \c double   Tableau des valeurs de la puissance
+/// \return Gbl_Heure   \c TabString   Horodatage des relevés
+/// \return Gbl_Papp    \c TabDouble   Mesures de la puissance apparente
 /// \return Gbl_Index0  \c double   Index d'énergie au 1er échantillon du relevé
-/// \return Gbl_Index   \c double Tableau des index d'énergie
+/// \return Gbl_Index   \c TabDouble Différence d'index d'énergie par rapport à \c Gbl_Index0
 /// \return Gbl_NumCompteur     \c string  Numéro du compteur
-/// \return Gbl_Config  \c double   Tableau contenant la configuration du compteur
+/// \return Gbl_Config  \c TabDouble   Tableau contenant la configuration du compteur
 //****************************************************************************
 function cheminFichier = Charger_Txt(dataPath)
     // Selection du fichier à traiter
@@ -127,8 +127,12 @@ endfunction
 //****************************************************************************
 /// \brief Affiche la barre de progression \n Calcul la progression et estime 
 /// le temps restant \n Est appelée à chaque nouveau pourcent réalisé
-/// \param [in] dataPath    \b TODO
-/// \return cheminFichier     \b TODO
+/// \param [in] ligne   \c double   Ligne courante
+/// \param [in] nbrLignes   \c double   Nombre total de ligne
+/// \param [in] progression \c double   \b TBC Compteur d'avancement
+/// \param [in] tempsExecution  \c double   Temps écoulé
+/// \param [in] tempsRestant    \c double   Temps restant estimé
+/// \param [in] tempsRestant_1  \c double   Temps restant estimé au %% précédent
 //*****************************************************************************
 function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
             tempsRestant, tempsRestant_1)
@@ -166,10 +170,36 @@ function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
     tempsRestant, tempsRestant_1);
 endfunction
 
-//* ***************************************************************************
-//* Extrait les données depuis le fichier texte
-//* Fonction d'extraction à proprement parler
-//*
+//****************************************************************************
+/// \brief Extrait les données depuis le fichier texte \n
+/// Fonction d'extraction à proprement parler
+/// \param [in] configBase_N    \c double   Configuration du compteur en Base
+/// \param [in] configHPHC_N    \c double   Configuration du compteur en HPHC
+/// \param [in] donnee_mesure    \c TabString   Remise en forme du fichier texte ouvert (plusieurs colonnes)
+/// \param [in] donnee    \c TabString   Fichier texte ouvert (1 colonne)
+
+/// Retourne en permanence:
+/// \li \return nbrLignes   \c double   Nombre de lignes
+/// \li \return HEURE   \c TabString    Timestamp des relevés
+/// \li \return Config  \c TabDouble    Configuration BASE ou HPHC
+/// \li \return tempsExecution  \c double   Temps écoulé
+/// \li \return tempsRestant_1  \c double   Temps restant estimé au %% précédent
+/// \todo \c tempsRestant_1 osbolète, à supprimer ?!
+
+/// Dans le cas d'une configuation en BASE, retourne aussi :
+/// \li \return Papp    \c TabDouble    Mesures de la puissance apparente
+/// \li \return index_Base  \c double    Index d'énergie au 1er échantillon du relevé
+/// \li \return Base  \c TabDouble    Différence d'index d'énergie par rapport à \c index_Base
+/// \li \return donnee_mesure    \c TabString   Remise en forme du fichier texte ouvert (plusieurs colonnes)
+/// \todo \c donnee_mesure ne doit pas être retourné !!
+
+/// Dans le cas d'une configuation en HPHC, retourne aussi :
+/// \li \return index_Hpleines  \c double   Index d'énergie au 1er échantillon en HP du relevé
+/// \li \return Hpleines  \c TabDouble    Différence d'index d'énergie par rapport à \c index_Hpleines
+/// \li \return index_Hcreuses  \c double   Index d'énergie au 1er échantillon en HC du relevé
+/// \li \return Hcreuses  \c TabDouble    Différence d'index d'énergie par rapport à \c index_Hcreuses
+/// \li \return donnee_mesure    \c TabString   Remise en forme du fichier texte ouvert (plusieurs colonnes)
+/// \todo \c donnee_mesure ne doit pas être retourné !!
 //*****************************************************************************
 function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     progression = 0;
@@ -309,10 +339,17 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
     end
 endfunction
     
-//* ***************************************************************************
-//* Enregistre les variables dans un fichier .sod
-//*
-//*
+//*****************************************************************************
+/// \brief Enregistre les variables dans un fichier .sod
+/// \param [in] filePath    \c string   Chemin où enregistrer le fichier
+/// Les variables suivantes sont sauvegardées
+/// \li \var Gbl_CreationTxt
+/// \li \var Gbl_NumCompteur
+/// \li \var Gbl_Heure
+/// \li \var Gbl_Papp
+/// \li \var Gbl_Index
+/// \li \var Gbl_Config
+/// \li \var Gbl_Index0
 //*****************************************************************************
 function Sauve_Variables (filePath)
     originPath = pwd();

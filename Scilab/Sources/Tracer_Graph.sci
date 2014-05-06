@@ -6,6 +6,7 @@
 //******************************
 
 //****************************************************************************
+// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
 /// \brief Afficher les abscisses en temps
 /// \param [in] nbrLignes    \c double  Nombre d'abscisses
 /// \param [in] fenetre    \b TBC Objet graphique
@@ -33,6 +34,7 @@ endfunction
 
 
 //****************************************************************************
+// \fn mise_en_forme(graphique, fenetre)
 /// \brief Mise en forme du graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] fenetre    \b TBC Objet graphique
@@ -41,7 +43,7 @@ function mise_en_forme(graphique, fenetre)
     set(graphique,"grid",[1 1]);    // Grid on
     
     //*********************************************************************
-    /// \TODO: 
+    /// \todo 
     /// - Obtenir la taille de la fenêtre pour ajuster au mieux
     /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
     /// UTILISER event handler functions 
@@ -71,10 +73,12 @@ function mise_en_forme(graphique, fenetre)
 endfunction
 
 //****************************************************************************
+// \fn tracer_Graph(data2plot, NumCompteur, Titre)
 /// \brief Tracer une courbe
 /// \param [in] data2plot    \c double  Tableau des données à tracer
 /// \param [in] NumCompteur    \c   string Numéro du compteur
-/// \param [in] Titre    \c string  Titre du graphique \TODO obsolète
+/// \param [in] Titre    \c string  Titre du graphique
+/// \todo le paramètre \c Titre est obsolète, à supprimer!
 //*****************************************************************************
 function tracer_Graph(data2plot, NumCompteur, Titre)
     // **** Tracer la puissance en fonction du temps **********************
@@ -114,7 +118,7 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
         mise_en_forme(graphique, fenetre);
             
         //*********************************************************************
-        /// TODO: 
+        /// todo: 
         /// - Obtenir la taille de la fenêtre pour ajuster au mieux
         /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
         /// UTILISER event handler functions 
@@ -134,12 +138,12 @@ endfunction
 
 
 //****************************************************************************
+// \fn tracer_2_Graph(Puissance, Index, NumCompteur)
 /// \brief Tracer 2 courbes. \n Puissance peut contenir 1 ou plusieurs tableaux
-/// \param [in] Puissance    \c double  Tableau des données Puissance à tracer
-/// \param [in] Index    \c string  Tableau des données Index à tracer
-/// \param [in] NumCompteur    \c   string Numéro du compteur
+/// \param [in] Puissance    \c Tab_double  Données Puissance à tracer
+/// \param [in] Index    \c Tab_string  Données Index à tracer
+/// \param [in] NumCompteur    \c string    Numéro du compteur
 //*****************************************************************************
-//Puissance = [Gbl_Papp tabMoy]; Index = Gbl_Index; NumCompteur = Gbl_NumCompteur;
 function tracer_2_Graph(Puissance, Index, NumCompteur)
     nbrLignes = size(Index);
     nbrLignes = nbrLignes(1);
@@ -204,6 +208,7 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
                      "Index à " + Gbl_CreationTxt(2) + " : HC = " + ...
                      energieStr(1,1)+ " HP = " + energieStr(2,1)];
         end
+
         xtitle(titre, "Heure", "Variation d''index en Wh");
         mise_en_forme(graphique, fenetre);
        
