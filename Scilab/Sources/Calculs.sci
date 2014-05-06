@@ -1,7 +1,18 @@
-//* ***************************************************************************
-//* Détecter la configuration du compteur
-//*
-//*
+//*****************************
+/// \file Calculs.sci
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Outils de calculs
+//******************************
+
+//****************************************************************************
+// \fn configuration(donnee)
+/// \brief Détecter la configuration du compteur
+
+/// \param [in] donnee    \c TabString  Fichier texte reconstitué
+/// \return titres  \c TabString    Entête des colonnes
+/// \return configBase_N    \c double   Configuration du compteur en BASE
+/// \return configHPHC_N    \c double   Configuration du compteur en HCHP
 //*****************************************************************************
 function configuration(donnee)
     // Lecture des en-têtes de colonnes
@@ -33,11 +44,14 @@ function configuration(donnee)
     [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
 endfunction
 
-//* ***************************************************************************
-//* Calculer le nombre d'heure de fonctionnement
-//* Critère fonctionnement = Gbl_Papp > moyenne(Gbl_Papp)
-//* Retourne duree [heures minutes secondes]
-//*
+//****************************************************************************
+// \fn [duree, moyenne] = HeuresFonctionnement()
+/// \brief Calculer le nombre d'heure de fonctionnement. \n 
+///     Temps compatibilisé dès que Papp >= moyenne(Papp)
+
+/// \details Les variables globales \c Gbl_Papp et \c Gbl_Heure sont utilisées
+/// \param [out] duree    \c TabDouble  Temps écoulé, au format [h m s]
+/// \param [out] moyenne    \c double   Moyenne de \c Papp
 //*****************************************************************************
 function [duree, moyenne] = HeuresFonctionnement()
     tempsTotal = 0;
@@ -96,10 +110,14 @@ function [duree, moyenne] = HeuresFonctionnement()
     end
 endfunction
 
-//* ***************************************************************************
-//* Calculer la différence de temps entre 2 instants
-//*
-//* Retourne la durée en seconde
+
+//****************************************************************************
+// \fn Dtemps = difTemps(heure1, heure2)
+/// \brief Calculer la différence de temps entre 2 instants
+
+/// \param [out]    Dtemps    \c Double  Différence de temps entre les 2 instants, en seconde
+/// \param [in]    heure1   \c String   Instant n°1 au format hh:mm:ss
+/// \param [in]    heure2   \c String   Instant n°2 au format hh:mm:ss, (heure2 > heure1)
 //*****************************************************************************
 function Dtemps = difTemps(heure1, heure2)
     heure_1 = msscanf(heure1(1),"%d:%d:%d");

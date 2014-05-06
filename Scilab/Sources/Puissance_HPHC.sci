@@ -1,7 +1,16 @@
-//* ***************************************************************************
-//* Reconstituer la puissance apparente depuis les index HC et HP
-//*
-//*
+//*****************************
+/// \file Puissance_HPHC.sci
+/// \author Sébastien Lemoine
+/// \date Avril 2014
+/// \brief Fonctions dans le cas d'une configuration HCHP
+//******************************
+
+//****************************************************************************
+// \fn Papp = Puissance_HCHP (Heure, Index)
+/// \brief Reconstituer la puissance apparente depuis les index HC et HP
+/// \param [out] Papp \c TabDouble   Puissance apparente recomposée
+/// \param [in] Heure   \c TabString    Horodate des échantillons
+/// \param [in] Index   \c TabDouble    Index d'énergie HC et HP
 //*****************************************************************************
 function Papp = Puissance_HCHP (Heure, Index)
     HEURECREUSE = 1;   // Colonne contenant l'index Heure Creuse
