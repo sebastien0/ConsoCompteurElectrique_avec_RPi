@@ -1,4 +1,21 @@
 //*****************************************************************************
+// * Mise en oeuvre
+exec("GlrBrandtMoy.sci");
+// h = 4; Nest = 10; Ndmax = 0;
+h = 6; Nest = 10; Ndmax = 0;    // Dans le cas des communs
+//h = 6; Nest = 10; Ndmax = 0;    // Dans le cas des communs
+//x = Gbl_Papp(1:10000);    // Fenetre pour la mise au point
+nbrLignes = size(Gbl_Papp);
+nbrLignes = nbrLignes(1);
+x = Gbl_Papp(1:(nbrLignes - Nest));
+tic;
+[g,mc,kd,krmv] = GlrBrandtMoy(x,h,Nest,Ndmax);
+toc
+reglerFctDeci(x, h, g, mc);
+//*****************************************************************************
+
+
+//*****************************************************************************
 //                GLR DE BRANDT POUR SAUT DE MOYENNE
 //        (détecter un saut de moyenne de valeur inconnue)
 // P. Granjon - pierre.granjon@grenoble-inp.fr - Grenoble INP, Ense3, Gipsa-Lab
@@ -115,11 +132,6 @@ endfunction
 // * Réglage de la fonction de décision
 // *
 //*****************************************************************************
-// x = Gbl_Papp(1:100);
-// exec("GlrBrandtMoy.sci");
-// x = rand(1:100)*100;
-// h = 4; Nest = 10; Ndmax = 0;
-// [g,mc,kd,krmv]=GlrBrandtMoy(x,h,Nest,Ndmax);
 function reglerFctDeci(x, h, g, mc)
     // Signal & signal moyenné par morceaux
     subplot(211);
@@ -129,6 +141,8 @@ function reglerFctDeci(x, h, g, mc)
     // Fonction de décision et seuil
     subplot(212);
     plot(g,'b');
-    htrace = h*ones(100,1);
+    nbrLignes = size(x);
+    nbrLignes = nbrLignes(1);
+    htrace = h*ones(nbrLignes,1);
     plot(htrace,'g');
 endfunction
