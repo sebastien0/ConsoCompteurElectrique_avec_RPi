@@ -15,7 +15,7 @@ clc;
 /// Chemin du répertoire courant, repertoire parent du projet Scilab
 fnctPath = pwd();
 /// Chemin du répertoire parent du projet Compteur Electronique
-projectPath = strncpy(pwd(),length(pwd())-length("\Scilab"));
+projectPath = strncpy(pwd(),length(pwd())-length("\Scilab\Sources"));
 /// Chemin du répertoire où lire les fichiers .txt
 dataPath2Read = projectPath + "\Code\Compteur_Linky\Releves";
 /// Chemin du répertoire où écrire / lire les fichiers .sod

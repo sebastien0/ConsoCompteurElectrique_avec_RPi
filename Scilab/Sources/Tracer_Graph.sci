@@ -7,24 +7,31 @@
 
 //****************************************************************************
 // \fn heures_Abscisses(nbrLignes, fenetre, graphique)
-/// \brief Afficher les abscisses en temps
+/// \brief Afficher les abscisses en temps, distribution par rapport 
+///  à la taille de l'écran
 /// \param [in] nbrLignes    \c double  Nombre d'abscisses
 /// \param [in] fenetre    \b TBC Objet graphique
 /// \param [in] graphique    \b TBC Objet graphique
 //*****************************************************************************
 function heures_Abscisses(nbrLignes, fenetre, graphique)
     //Obtenir le pas du quadrillage vertical
-//    if fenetre.figure_size(1) <= 700 then
-//        x_pas = size(graphique.x_ticks.locations);
-//        x_pas = x_pas(1);
-//    else
-        x_pas = 17;   //Affichage plein écran
-//    end
+    largeurEcran = get(0, "screensize_pt");  // Dimensions écran PC
+    largeurEcran = largeurEcran(3);
+    
+    // Pas de distribution
+    if largeurEcran <= 1000 then
+        x_pas = 24 / largeurEcran * 1080;
+    else
+        x_pas = 24;   //Affichage plein écran
+    end
     increment = floor(nbrLignes/x_pas);
     
+    // Extraction des heures correspondant aux pas calculés
     for i = 1:(x_pas+1)
         locations_labels(i)= (i-1)*increment;
-        noms_labels(i) = Gbl_Heure((i-1)*(increment-1)+1);
+        temp = Gbl_Heure((i-1)*(increment-1)+1);
+        // Ne conserver que le format hh:mm
+        noms_labels(i) = part(temp,1:5);
     end
     
     // Effectuer la mise à jour des abscisses
