@@ -13,7 +13,7 @@
 /// \param [in] fenetre    \b TBC Objet graphique
 /// \param [in] graphique    \b TBC Objet graphique
 //*****************************************************************************
-function heures_Abscisses(nbrLignes, fenetre, graphique)
+function heures_Abscisses(nbrLignes, fenetre, graphique, temps)
     //Obtenir le pas du quadrillage vertical
     largeurEcran = get(0, "screensize_pt");  // Dimensions écran PC
     largeurEcran = largeurEcran(3);
@@ -29,7 +29,7 @@ function heures_Abscisses(nbrLignes, fenetre, graphique)
     // Extraction des heures correspondant aux pas calculés
     for i = 1:(x_pas+1)
         locations_labels(i)= (i-1)*increment;
-        temp = Gbl_Heure((i-1)*(increment-1)+1);
+        temp = temps((i-1)*(increment-1)+1);
         // Ne conserver que le format hh:mm
         noms_labels(i) = part(temp,1:5);
     end
@@ -59,7 +59,7 @@ function mise_en_forme(graphique, fenetre)
     //*************************************************************************
 
     fenetre.figure_name = "Graphiques";
-    fenetre.figure_size = floor(fenetre.figure_size*1.1);
+//    fenetre.figure_size = floor(fenetre.figure_size*1.1);
 
     //Augmenter la taille des textes
     graphique.title.font_size = 3;
@@ -68,9 +68,9 @@ function mise_en_forme(graphique, fenetre)
     // Ajustement de la zone d'affichage
     graphique.tight_limits = "on";
     graphique.data_bounds(1,2) = 0;
-    // multiple de 200 pour affichage en réduit
+    // Ajuster la marge au-dessus des ordonnées
     ordonneeMax = graphique.data_bounds(2,2);
-    if ordonneeMax < 500 then
+    if ordonneeMax <= 750 then
         graphique.data_bounds(2,2) = ceil(ordonneeMax*1.2) - ...
          modulo(ceil(ordonneeMax*1.2),5);
     else
@@ -239,6 +239,63 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
                    energieStr(1,2),energieStr(2,2));
         end
         printf("Graphiques tracés\n");
+    else
+        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
+    end
+endfunction
+
+//****************************************************************************
+// TODO renseigner le chapeau
+// \fn tracer_D_Graph(data2plot, jour)
+/// \brief Tracer une courbe
+/// \param [in] data2plot    \c double  Tableau des données à tracer
+/// \param [in] NumCompteur    \c   string Numéro du compteur
+//*****************************************************************************
+function tracer_D_Graph(data2plot, jour, heure)
+    // Longueur de l'enregistrement
+    nbrLignes = size(data2plot);
+    nbrLignes = nbrLignes(1);
+    
+    // Nombre d'enregistrement
+    nbrTab = size(data2plot);
+    nbrTab = nbrTab(2);
+
+    if nbrTab <= 5 then
+        // Définition des couleurs pour les graphs
+        couleur(1) = 'r';
+        couleur(2) = 'c';
+        couleur(3) = 'g';
+        couleur(4) = 'y';
+        couleur(5) = 'm';
+    
+        // Tracer plusieurs courbes superposées
+        if nbrTab == 1 then
+            plot(data2plot, 'r');
+        else
+            for i=1:nbrTab
+                plot(data2plot(:,i),couleur(i));
+            end
+        end
+        
+        // Titre du graphique avec les jours de tous les relevés
+        releves = "";
+        for i = 1:nbrTab 
+            temp = msprintf('  - %s %s\n',jour(1,i), jour(2,i));
+            releves = msprintf('%s%s',releves,temp);
+        end
+
+        //Ajouter le quadrillage, les titres, ...
+        titre = msprintf('%s \n%s',"Relevés du ", releves);
+        xtitle(titre,"Heure","Puissance en VA");
+        
+        fenetre = gcf();
+        graphique = gca();
+        mise_en_forme(graphique, fenetre);
+    
+        // Ajouter les heures sur les abscisses
+        heures_Abscisses(nbrLignes, fenetre, graphique, heure);
+        
+        printf("Puissance apparente tracée\n");
     else
         printf("Trop de graph à tracer. Corriger le 1er argument! \n");
     end

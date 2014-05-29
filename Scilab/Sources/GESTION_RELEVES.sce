@@ -36,7 +36,7 @@ exec(fnctPath+"\Calculs.sci");
 // Charger les fonctions de filtrage
 exec(fnctPath+"\Filtrage.sci");
 // Charger les fonctions de traitement de signal
-exec(fnctPath+"\GlrBrandtMoy.sci");
+//exec(fnctPath+"\GlrBrandtMoy.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
