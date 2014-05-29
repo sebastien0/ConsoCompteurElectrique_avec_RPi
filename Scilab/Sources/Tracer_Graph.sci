@@ -61,6 +61,8 @@ function mise_en_forme(graphique, fenetre)
     fenetre.figure_name = "Graphiques";
 //    fenetre.figure_size = floor(fenetre.figure_size*1.1);
 
+    //Arrière plan des courbes en gris clair
+    graphique.background=color('gray95');
     //Augmenter la taille des textes
     graphique.title.font_size = 3;
     graphique.x_label.font_size = 2;
@@ -253,21 +255,21 @@ endfunction
 //*****************************************************************************
 function tracer_D_Graph(data2plot, jour, heure)
     // Longueur de l'enregistrement
-    nbrLignes = size(data2plot);
-    nbrLignes = nbrLignes(1);
+    nbrLignes = longueur(data2plot);
     
-    // Nombre d'enregistrement
-    nbrTab = size(data2plot);
-    nbrTab = nbrTab(2);
+    // Nombre d'enregistrements
+    nbrTab = largeur(data2plot);
 
-    if nbrTab <= 5 then
+    if nbrTab <= 7 then
         // Définition des couleurs pour les graphs
         couleur(1) = 'r';
         couleur(2) = 'c';
         couleur(3) = 'g';
-        couleur(4) = 'y';
+        couleur(4) = 'b';
         couleur(5) = 'm';
-    
+        couleur(6) = 'k';
+        couleur(7) = 'y';
+
         // Tracer plusieurs courbes superposées
         if nbrTab == 1 then
             plot(data2plot, 'r');
@@ -278,25 +280,31 @@ function tracer_D_Graph(data2plot, jour, heure)
         end
         
         // Titre du graphique avec les jours de tous les relevés
-        releves = "";
+        releves(1,1) = "Relevés du :";
         for i = 1:nbrTab 
-            temp = msprintf('  - %s %s\n',jour(1,i), jour(2,i));
-            releves = msprintf('%s%s',releves,temp);
+            releves(i+1,1) = msprintf('  - %s \t %s',jour(1,i), jour(2,i));
         end
 
         //Ajouter le quadrillage, les titres, ...
-        titre = msprintf('%s \n%s',"Relevés du ", releves);
-        xtitle(titre,"Heure","Puissance en VA");
+        xtitle(releves,"Heure","Puissance en VA");
         
         fenetre = gcf();
         graphique = gca();
+//pause   // Continuer en saisissant "resume" en console
         mise_en_forme(graphique, fenetre);
+
+        if largeur(data2plot) > 1 then
+//          Problème sur l'affichage: légende sans texte
+//            legende = legend(releves(2:longueur(releves),1),2);
+            legende = legend(string(ones(longueur(releves),1)),2);
+            legende.font_size = 3;
+        end
     
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique, heure);
         
         printf("Puissance apparente tracée\n");
     else
-        printf("Trop de graph à tracer. Corriger le 1er argument! \n");
+        printf("Erreur \t Trop de graph à tracer, 7 max\n");
     end
 endfunction

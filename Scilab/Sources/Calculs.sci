@@ -211,3 +211,25 @@ function energieStr = energie(nbrLignes, config)
         energieStr = ["0" "0"];
     end
 endfunction
+
+
+//* ***************************************************************************
+//* Retourne la longueur du tableau
+// TODO: remplir le chapeau
+//*****************************************************************************
+function nbrLignes = longueur(data)
+    // Longueur de l'enregistrement
+    nbrLignes = size(data);
+    nbrLignes = nbrLignes(1);    
+endfunction
+
+
+//* ***************************************************************************
+//* Retourne la largeur du tableau
+// TODO: remplir le chapeau
+//*****************************************************************************
+function nbrColonnes = largeur(data)
+    // Longueur de l'enregistrement
+    nbrColonnes = size(data);
+    nbrColonnes = nbrColonnes(2);
+endfunction
