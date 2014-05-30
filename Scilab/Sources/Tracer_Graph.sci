@@ -104,26 +104,27 @@ function tracer_Graph(data2plot, NumCompteur)
     // **** Tracer la puissance en fonction du temps **********************
     nbrLignes = dimensions(data2plot, "ligne");
     nbrTab  = dimensions(data2plot, "colonne");
+    nmbrMax = 8;
     
-    if nbrTab <= 5 then
-        // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
-        if nbrTab == 1 then
-            plot(data2plot, 'r');
-        else
-            couleur = couleur_plot(); // liste de couleur pour la fonction plot
-            for i=1:nbrTab
-                plot(data2plot(:,i),couleur(i));
-            end
+    if nbrTab <= nmbrMax then
+        couleur = couleur_plot(); // liste de couleur pour la fonction plot
+        for i=1:nbrTab
+            plot(data2plot(:,i),couleur(i));
         end
+        
         fenetre = gcf();
         graphique = gca();
         
         puissMoyStr = puiss_Moyenne();
         //Ajouter le quadrillage, les titres, ...
-        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
-                 + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
-                " par le compteur n° " + NumCompteur;...
-                "Puissance active, moyenne = " + puissMoyStr];
+//        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
+//         + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
+//        " par le compteur n° " + NumCompteur;...
+//        "Puissance active, moyenne = " + puissMoyStr];
+        titre = msprintf("Relevé du %s %s de %s à %s par le compteur n°%s ...
+                \nPuissance active, moyenne = %s", Gbl_CreationTxt(4), ...
+                Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3),...
+                NumCompteur, puissMoyStr);
         // Titre du graphique
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
@@ -158,8 +159,9 @@ endfunction
 function tracer_2_Graph(Puissance, Index, NumCompteur)
     nbrLignes = dimensions(Index, "ligne");
     nbrTab = dimensions(Puissance, "colonne");
+    nmbrMax = 8;
 
-    if nbrTab <= 8 then
+    if nbrTab <= nmbrMax then
         //*** Puissance ******************
         subplot(211);
         couleur = couleur_plot(); // liste de couleur pour la fonction plot
@@ -172,10 +174,15 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         
         puissMoyStr = puiss_Moyenne();
         //Ajouter le quadrillage, les titres, ...
-        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
-                 + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
-                " par le compteur n° " + NumCompteur;...
-                "Puissance active, moyenne = " + puissMoyStr];
+//        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
+//                 + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
+//                " par le compteur n° " + NumCompteur;...
+//                "Puissance active, moyenne = " + puissMoyStr];
+        titre = msprintf("Relevé du %s %s de %s à %s par le compteur n°%s ...
+                \nPuissance active, moyenne = %s", Gbl_CreationTxt(4), ...
+                Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3), ...
+                NumCompteur, puissMoyStr);
+
         // Titre du graphique
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
@@ -190,20 +197,19 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         fenetre = gcf();
 
         // Configuration
-        config = size(Gbl_Index0);
-        config = config(1,2);
-        
+        config = dimensions(Gbl_Index0, "colonne");
         energieStr = energie(nbrLignes, config);
+
         //Ajouter le quadrillage, les titres, ...
         // Base
         if config == 1 then
-            titre = ["Index des consommations";
-                     "Index à " + Gbl_CreationTxt(2) + " = " + energieStr(1,1)];
+            titre = msprintf("Index des consommations \nIndex à %s = %s", ...
+                    Gbl_CreationTxt(2), energieStr(1,1));
         // HPHC
         elseif config == 2 then
-            titre = ["Index des consommations";
-                     "Index à " + Gbl_CreationTxt(2) + " : HC = " + ...
-                     energieStr(1,1)+ " HP = " + energieStr(2,1)];
+            titre = msprintf("Index des consommations \nIndex à %s : ...
+                    HC = %s  Hp = %s", Gbl_CreationTxt(2), ...
+                    energieStr(1,1), energieStr(2,1));
         end
 
         xtitle(titre, "Heure", "Variation d''index en Wh");
@@ -224,9 +230,10 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
                    energieStr(1), Gbl_CreationTxt(3), energieStr(2));
         // HPHC
         elseif config == 2 then
-            printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : HC = %s \t HP = %s\n",...
-                   Gbl_CreationTxt(2), energieStr(1,1),energieStr(2,1), Gbl_CreationTxt(3), ...
-                   energieStr(1,2),energieStr(2,2));
+            printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : ...
+            HC = %s \t HP = %s\n",Gbl_CreationTxt(2), energieStr(1,1),...
+            energieStr(2,1), Gbl_CreationTxt(3), energieStr(1,2),...
+            energieStr(2,2));
         end
         printf("Graphiques tracés\n");
     else
