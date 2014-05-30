@@ -45,10 +45,10 @@ endfunction
 /// \brief Mise en forme du graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] fenetre    \b TBC Objet graphique
-// TODO: passer la couleur de fond en argument optionnel: argn()
+/// \param [in opt] opt_BackgndCouleur  \c string   Couleur de fond, à renseigner depuishelp color_list
 //*****************************************************************************
 function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
-    [lhs,rhs]=argn(0);  // nombre output arguments, nombre input arguments
+    [lhs,rhs] = argn(0);  // nombre output arguments, nombre input arguments
     set(graphique,"grid",[1 1]);    // Grid on
     
     //*********************************************************************
@@ -61,7 +61,6 @@ function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
     //*************************************************************************
 
     fenetre.figure_name = "Graphiques";
-//    fenetre.figure_size = floor(fenetre.figure_size*1.1);
 
     //Arrière plan des courbes
     if rhs == 3 then
@@ -76,12 +75,20 @@ function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
     // Ajustement de la zone d'affichage
     graphique.tight_limits = "on";
     graphique.data_bounds(1,2) = 0;
-    // Ajuster la marge au-dessus des ordonnées
+    
+    // Ajuster l'espace graphique au-dessus des ordonnées
     ordonneeMax = graphique.data_bounds(2,2);
-    if ordonneeMax <= 750 then
+    // x1.2 puis tronque au multiple de 10W inférieur
+    if ordonneeMax <= 500 then
         graphique.data_bounds(2,2) = ceil(ordonneeMax*1.2) - ...
-         modulo(ceil(ordonneeMax*1.2),5);
-    else
+         modulo(ceil(ordonneeMax*1.2),10);
+
+    // x1.2 puis tronque au multiple de 50W inférieur
+    elseif ordonneeMax <= 1000 then
+        graphique.data_bounds(2,2) = ceil(ordonneeMax*1.2) - ...
+        modulo(ceil(ordonneeMax*1.2),50);
+
+    else    // Arrondi à 200W au dessus
         graphique.data_bounds(2,2) = ceil(graphique.data_bounds(2,2)/200 + ...
     1)*200;
         end
@@ -92,29 +99,18 @@ endfunction
 /// \brief Tracer une courbe
 /// \param [in] data2plot    \c double  Tableau des données à tracer
 /// \param [in] NumCompteur    \c   string Numéro du compteur
-/// \param [in] Titre    \c string  Titre du graphique
-/// \todo le paramètre \c Titre est obsolète, à supprimer!
 //*****************************************************************************
-function tracer_Graph(data2plot, NumCompteur, Titre)
+function tracer_Graph(data2plot, NumCompteur)
     // **** Tracer la puissance en fonction du temps **********************
-    nbrLignes = size(data2plot);
-    nbrLignes = nbrLignes(1);
+    nbrLignes = dimensions(data2plot, "ligne");
+    nbrTab  = dimensions(data2plot, "colonne");
     
-    nbrTab = size(data2plot);
-    nbrTab = nbrTab(2);
     if nbrTab <= 5 then
-        
-        // Définition des couleurs pour les graphs
-        couleur(1) = 'r';
-        couleur(2) = 'c';
-        couleur(3) = 'g';
-        couleur(4) = 'y';
-        couleur(5) = 'm';
-    
-            // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
+        // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
         if nbrTab == 1 then
             plot(data2plot, 'r');
         else
+            couleur = couleur_plot(); // liste de couleur pour la fonction plot
             for i=1:nbrTab
                 plot(data2plot(:,i),couleur(i));
             end
@@ -122,7 +118,7 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
         fenetre = gcf();
         graphique = gca();
         
-        puissMoyStr = puissMoyenne();
+        puissMoyStr = puiss_Moyenne();
         //Ajouter le quadrillage, les titres, ...
         titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
                  + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
@@ -160,35 +156,21 @@ endfunction
 /// \param [in] NumCompteur    \c string    Numéro du compteur
 //*****************************************************************************
 function tracer_2_Graph(Puissance, Index, NumCompteur)
-    nbrLignes = size(Index);
-    nbrLignes = nbrLignes(1);
-    
-    nbrTab = size(Puissance);
-    nbrTab = nbrTab(2);
-    if nbrTab <= 5 then
-        
-        // Définition des couleurs pour les graphs
-        couleur(1) = 'r';
-        couleur(2) = 'c';
-        couleur(3) = 'g';
-        couleur(4) = 'y';
-        couleur(5) = 'm';
-        
+    nbrLignes = dimensions(Index, "ligne");
+    nbrTab = dimensions(Puissance, "colonne");
+
+    if nbrTab <= 8 then
         //*** Puissance ******************
         subplot(211);
-        // Possibilité de tracer 2 courbes superposées (Papp et moyenne par ex)
-        if nbrTab == 1 then
-            plot(Puissance, 'r');
-        else
-            for i=1:nbrTab
-                plot(Puissance(:,i),couleur(i));
-            end
+        couleur = couleur_plot(); // liste de couleur pour la fonction plot
+        for i=1:nbrTab
+            plot(Puissance(:,i),couleur(i));
         end
         
         graphique = gca();
         fenetre = gcf();
         
-        puissMoyStr = puissMoyenne();
+        puissMoyStr = puiss_Moyenne();
         //Ajouter le quadrillage, les titres, ...
         titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
                  + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
@@ -229,8 +211,8 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
        
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
-        tailleIndex = size(Index);
-        if tailleIndex(2) > 1 then
+        tailleIndex = dimensions(Index, "colonne");
+        if tailleIndex > 1 then
             legende = legend(["Index heures creuses"; "Index heures pleines"],2);
             legende.font_size = 3;
         end
@@ -253,39 +235,24 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
 endfunction
 
 //****************************************************************************
-// TODO renseigner le chapeau
-// \fn tracer_D_Graph(data2plot, jour)
-/// \brief Tracer une courbe
-/// \param [in] data2plot    \c double  Tableau des données à tracer
-/// \param [in] NumCompteur    \c   string Numéro du compteur
+// \fn tracer_D_Graph(data2plot, jour, heure)
+/// \brief Tracer des courbes supperposées; limitées à 8 courbes car 8 couleurs.
+/// \param [in] data2plot    \c double  Tableau, données à tracer (ordonnées)
+/// \param [in] jour    \c string   Tableau, jours et dates de création
+/// \param [in] heure   \c string   Tableau, instant des échantillons (abscisses)
 //*****************************************************************************
 function tracer_D_Graph(data2plot, jour, heure)
     nmbrMax = 8;
     // Longueur de l'enregistrement
-    nbrLignes = longueur(data2plot);
-    
+    nbrLignes = dimensions(data2plot, "ligne");
     // Nombre d'enregistrements
-    nbrTab = largeur(data2plot);
+    nbrTab = dimensions(data2plot, "colonne");
     strTabLegend = string((1:nbrTab)');
 
     if nbrTab <= nmbrMax then
-        // Définition des couleurs pour les graphs
-        couleur(1) = 'r';
-        couleur(2) = 'c';
-        couleur(3) = 'g';
-        couleur(4) = 'b';
-        couleur(5) = 'm';
-        couleur(6) = 'k';
-        couleur(7) = 'y';
-        couleur(8) = 'w';
-
-        // Tracer plusieurs courbes superposées
-        if nbrTab == 1 then
-            plot(data2plot, 'r');
-        else
-            for i=1:nbrTab
-                plot(data2plot(:,i),couleur(i));
-            end
+        couleur = couleur_plot(); // liste de couleur pour la fonction plot
+        for i=1:nbrTab
+            plot(data2plot(:,i),couleur(i));
         end
         
         // Titre du graphique avec les jours de tous les relevés
@@ -327,4 +294,21 @@ function tracer_D_Graph(data2plot, jour, heure)
     else
         printf("Erreur \t Trop de graph à tracer, %d max\n", nmbrMax);
     end
+endfunction
+
+
+//****************************************************************************
+// \fn couleur = couleur_plot()
+/// \brief Crée un tableau comportant les lettre des couleurs pour plot(). Limitation à 8 couleur
+/// \param [out] couleur    \c string  Tableau, abbréviation des couleurs
+//*****************************************************************************
+function couleur = couleur_plot()
+    couleur(1) = 'r';
+    couleur(2) = 'c';
+    couleur(3) = 'g';
+    couleur(4) = 'b';
+    couleur(5) = 'm';
+    couleur(6) = 'k';
+    couleur(7) = 'y';
+    couleur(8) = 'w';
 endfunction

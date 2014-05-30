@@ -43,6 +43,8 @@ while(nmbr_courbes <> 0) do
 
     if nmbr_courbes > 8 then
         erreur = 2;
+    
+    // Importer les différents relevés
     elseif nmbr_courbes > 0 then
         for nmbr_fichier = 1:nmbr_courbes
             // Importer les tableaux Gbl_Heure, Gbl_Papp et Gbl_CreationTxt
@@ -62,16 +64,21 @@ while(nmbr_courbes <> 0) do
                 // Sauvegarde des variables dans Heure, Papp et Jour
                 if nmbrFichierReels == 1 then
                     Heure(:,1) = Gbl_Heure;
+                    printf("Compteur n°%s : %s\n", ...
+                            Gbl_NumCompteur, nom_compteur(Gbl_NumCompteur));
                 end
+
                 //Ajustement des matrices
                 if DEBUG == 1 then
                     printf("DEBUG \t Longueur de Gbl_Papp = %d\n", ...
-                    longueur(Gbl_Papp));
+                    dimensions(Gbl_Papp, "ligne"));
                 end
                 
-                if longueur(Papp) <> longueur(Gbl_Papp) then
-                    Papp(1:longueur(Gbl_Heure)+1,nmbrFichierReels) = Gbl_Papp(:,1);
-                    Papp(longueur(Gbl_Heure)+2:longueur(Heure),nmbrFichierReels) = 0;
+                if dimensions(Papp, "ligne") <> dimensions(Gbl_Papp, "ligne") then
+                    Papp(1:dimensions(Gbl_Heure, "ligne")+1, ...
+                        nmbrFichierReels) = Gbl_Papp(:,1);
+                    Papp(dimensions(Gbl_Heure, "ligne")+2:...
+                        dimensions(Heure, "ligne"),nmbrFichierReels) = 0;
                 else
                     Papp(:,nmbrFichierReels) = Gbl_Papp;
                 end
@@ -83,9 +90,9 @@ while(nmbr_courbes <> 0) do
                 printf("!!  Erreur - Aucun fichier sélectionné\n");
             end
          end
-            
+        
+        // Tracer les courbes supperposées
         if (nmbr_fichier == nmbr_courbes & nmbrFichierReels <> 0) then
-            // Tracer des courbes, avec une couleur différentes
             printf("Tracé en cours ...\n");
             tracer_D_Graph(Papp, Jour, Heure);   // attention, nombre limité
             nmbr_courbes = 0;

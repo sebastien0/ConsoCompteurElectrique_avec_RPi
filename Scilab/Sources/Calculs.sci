@@ -44,6 +44,7 @@ function configuration(donnee)
     [titres, configBase_N, configHPHC_N] = resume(titres, configBase_N, configHPHC_N);
 endfunction
 
+
 //****************************************************************************
 // \fn [duree, moyenne] = HeuresFonctionnement()
 /// \brief Calculer le nombre d'heure de fonctionnement. \n 
@@ -114,7 +115,6 @@ endfunction
 //****************************************************************************
 // \fn Dtemps = difTemps(heure1, heure2)
 /// \brief Calculer la différence de temps entre 2 instants
-
 /// \param [out]    Dtemps    \c Double  Différence de temps entre les 2 instants, en seconde
 /// \param [in]    heure1   \c String   Instant n°1 au format hh:mm:ss
 /// \param [in]    heure2   \c String   Instant n°2 au format hh:mm:ss, (heure2 > heure1)
@@ -140,8 +140,8 @@ endfunction
 
 //* ***************************************************************************
 //* Créer une matrice constante
-//*
 //* Retourne une matrice de dimensions (nbrLignes, 1) = nombre
+// TODO Chapeau à remplir
 //*****************************************************************************
 function tab = matrice(tabEntree, nombre)
     nbrLignes = size(tabEntree);
@@ -154,7 +154,7 @@ endfunction
 //* ***************************************************************************
 //* Retourne le nom du jour de dateReleve
 //* dateReleve au format "aaaa/mm/jj"
-//*
+// TODO Chapeau à remplir
 //*****************************************************************************
 function nom = nom_jour(dateReleve)
     // Obtention du nom du jour du relevé
@@ -164,72 +164,82 @@ function nom = nom_jour(dateReleve)
 endfunction
 
 //* ***************************************************************************
-//* Retourne la puissance moyenne au format string avec l'unité appropriée
-//*
+/// \fn puissMoyStr = puiss_Moyenne()
+/// \brief Retourne la puissance moyenne avec l'unité appropriée
+/// \param [in global] Gbl_Papp    \c double   Tableau, données à moyenner
+/// \param [out] puissMoyStr    \c string   Valeur moyenne
 //*****************************************************************************
-function puissMoyStr = puissMoyenne()
+function puissMoyStr = puiss_Moyenne()
     // Calcul de la puissance moyenne
-    puissMoy = round(mean(Gbl_Papp));
+    puissMoy = mean(Gbl_Papp);
    // Mise en forme de la puissance moyenne
-   // Affichage en kWh
-    if puissMoy > 1000 then
-        // Calcul du dixième de kWh
-        dixieme = modulo(puissMoy, 1000) - modulo(modulo(puissMoy, 1000), 100)
-        puissMoyStr = strcat([string(floor(puissMoy/1000)), '.', ...
-        string(dixieme), 'kW']);
-
-   // Affichage en Wh
-    else
-        puissMoyStr = strcat([string(round(puissMoy)), 'W']);
+    if puissMoy > 1000 then   // Affichage en kWh
+        puissMoyStr = msprintf("%.1f kW", puissMoy/1000);
+    else   // Affichage en W
+        puissMoyStr = msprintf("%.1f W", puissMoy);
     end
 endfunction
 
 
 //* ***************************************************************************
-//* Retourne les énergies de début et de fin au format string avec l'unité
+/// \fn energieStr = energie(nbrLignes, config)
+/// \brief Retourne les énergies de début et de fin au format string avec l'unité
+/// \param [in global] Gbl_Index    \c double   Tableau, Index d'énergie
+/// \param [in] nbrLignes   \c double   Longueur de Gbl_Index
+/// \param [in] config  \c double   Configuration du compteur
+// TODO config est obsolète, utiliser dimensions("colonnes")
+/// \param [out] energieStr \c string   Tableau avec les index initiaux et finaux
 //*****************************************************************************
-function energieStr = energie(nbrLignes, config)
-    // Base: un seul index
-    if config == 1 then
-      // Energie au début
-        energieStr(1) = strcat([string(floor(Gbl_Index0/1000)), "kWh"]);
-        // Energie à la fin
-        energieStr(2) = strcat([string(ceil((Gbl_Index0 + ...
-                                Gbl_Index(nbrLignes-1))/1000)), "kWh"]);
-
-    // HCHP: 2 index
-    elseif config == 2 then
-        // Energie au début
-        energieStr(1,1) = strcat([string(floor(Gbl_Index0(1)/1000)), "kWh"]);
-        energieStr(2,1) = strcat([string(floor(Gbl_Index0(2)/1000)), "kWh"]);
-        // Energie à la fin
-        energieStr(1,2) = strcat([string(ceil((Gbl_Index0(1) + ...
-                                Gbl_Index(nbrLignes-2,1))/1000)), "kWh"]);
-        energieStr(2,2) = strcat([string(ceil((Gbl_Index0(2) + ...
-                                Gbl_Index(nbrLignes-2,2))/1000)), "kWh"]);
-    else
-        energieStr = ["0" "0"];
+function energieStr = energie(obs_nbrLignes, obs_config)
+    nbrLignes = dimensions(Gbl_Index, "ligne");
+    config = dimensions(Gbl_Index, "colonne");
+    energieStr(1,1) = msprintf("%.1f kWh", Gbl_Index0(1)/1000);
+    energieStr(1,2) = msprintf("%.1f kWh", ...
+                (Gbl_Index0(1) + Gbl_Index(nbrLignes-2,1))/1000);
+    if config == 2 then
+        energieStr(2,1) = msprintf("%.1f kWh", Gbl_Index0(2)/1000);
+        energieStr(2,2) = msprintf("%.1f kWh", ...
+                    (Gbl_Index0(2) + Gbl_Index(nbrLignes-2,2))/1000);
     end
 endfunction
 
 
 //* ***************************************************************************
-//* Retourne la longueur du tableau
-// TODO: remplir le chapeau
+/// \fn nombre = dimensions(data,choix)
+/// \brief Retourne la longueur ou la largeur du tableau (nombre de lignes ou colonnes)
+/// \param [in] data    \c double   Tableau à tester
+/// \param [in] choix   \c string   Dimensions à extraire: "ligne" ou "colonne"
+/// \param [out] nbrLignes  \c double   Nombre de lignes/colonne de \c data. -1 = erreur
 //*****************************************************************************
-function nbrLignes = longueur(data)
-    // Longueur de l'enregistrement
-    nbrLignes = size(data);
-    nbrLignes = nbrLignes(1);    
+function nombre = dimensions(data,choix)
+    nombre = size(data);
+    if choix == "ligne" then
+        nombre = nombre(1);
+    elseif choix == "colonne" then
+        nombre = nombre(2);
+    else
+        nombre = -1;
+    end
 endfunction
 
 
 //* ***************************************************************************
-//* Retourne la largeur du tableau
-// TODO: remplir le chapeau
+/// \fn nom = nom_compteur(numCompteur)
+/// \brief Retourne le nom du compteur à partir de son numéro
+/// \param [in] numCompteur \c string   Numéro du compteur
+/// \param [out] nom    \c  string  Nom du compteur
 //*****************************************************************************
-function nbrColonnes = largeur(data)
-    // Longueur de l'enregistrement
-    nbrColonnes = size(data);
-    nbrColonnes = nbrColonnes(2);
+function nom = nom_compteur(numCompteur)
+    select numCompteur
+    case "271067018318" then
+        nom = "Lyon - Communs";
+    case "049701078744" then
+        nom = "Mont-Saxonnex";
+    case "271067095836" then
+        nom = "Lyon - Seb & Julie";
+    case "059922013742" then
+        nom = "Claix";
+    else
+        nom = "Inconnu";
+    end
 endfunction

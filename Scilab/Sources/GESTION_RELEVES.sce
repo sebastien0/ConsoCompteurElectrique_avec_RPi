@@ -93,7 +93,7 @@ while(choix <> "0" & choix <> []) do
         if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
             [duree, moyenne] = HeuresFonctionnement();
             tabMoy = matrice(Gbl_Papp, moyenne);
-            tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur,"Puissance apparente");
+            tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur);
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
