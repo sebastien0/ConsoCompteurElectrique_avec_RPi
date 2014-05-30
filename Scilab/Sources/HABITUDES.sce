@@ -7,6 +7,7 @@ clc;
 
 // DEBUG = 1 : Activer les traces pour le débug
 DEBUG = 0;
+//pause   // Continuer en saisissant "resume" en console
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut

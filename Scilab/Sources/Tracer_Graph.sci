@@ -47,7 +47,8 @@ endfunction
 /// \param [in] fenetre    \b TBC Objet graphique
 // TODO: passer la couleur de fond en argument optionnel: argn()
 //*****************************************************************************
-function mise_en_forme(graphique, fenetre)
+function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
+    [lhs,rhs]=argn(0);  // nombre output arguments, nombre input arguments
     set(graphique,"grid",[1 1]);    // Grid on
     
     //*********************************************************************
@@ -62,8 +63,12 @@ function mise_en_forme(graphique, fenetre)
     fenetre.figure_name = "Graphiques";
 //    fenetre.figure_size = floor(fenetre.figure_size*1.1);
 
-    //Arrière plan des courbes en gris clair
-    graphique.background=color('gray80');   // Gris clair = 95
+    //Arrière plan des courbes
+    if rhs == 3 then
+        graphique.background=color(opt_BackgndCouleur);
+    else
+        graphique.background=color('gray95');
+    end
     //Augmenter la taille des textes
     graphique.title.font_size = 3;
     graphique.x_label.font_size = 2;
@@ -137,7 +142,7 @@ function tracer_Graph(data2plot, NumCompteur, Titre)
         //*************************************************************************
     
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique);
+        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
 
         printf("Puissance active moyenne = %s\n", puissMoyStr);
         printf("Puissance apparente tracée\n");
@@ -193,7 +198,7 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique);
+        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
         
         //*** Index *********************
         subplot(212);
@@ -223,7 +228,7 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         mise_en_forme(graphique, fenetre);
        
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique);
+        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
         tailleIndex = size(Index);
         if tailleIndex(2) > 1 then
             legende = legend(["Index heures creuses"; "Index heures pleines"],2);
@@ -309,8 +314,7 @@ function tracer_D_Graph(data2plot, jour, heure)
         
         fenetre = gcf();
         graphique = gca();
-//pause   // Continuer en saisissant "resume" en console
-        mise_en_forme(graphique, fenetre);
+        mise_en_forme(graphique, fenetre, 'gray80');
 
 //  Problème sur l'affichage: légende sans texte => juste couleur dans l'ordre
         legende = legend(strTabLegend,"in_upper_left");

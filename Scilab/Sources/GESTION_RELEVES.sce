@@ -65,7 +65,6 @@ while(choix <> "0" & choix <> []) do
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
             Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
-            // TODO: sélection du répertoire ?!
             Sauve_Variables(dataPath2Save);
         end
 
