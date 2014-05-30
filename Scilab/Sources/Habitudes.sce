@@ -28,33 +28,34 @@ printf("Programme pour étudier des points communs sur les relevés\n");
 printf("Choisir le nombre de relevé à charger puis les sélectionner\n");
 printf("*************************************************************\n\n");
 
+// Initialisation
+Papp = 1;
 nmbr_courbes = -1;
 nmbrFichierReels = 0;
 erreur = 0;
+
 while(nmbr_courbes <> 0) do
-    temp_txt = ['Choisir le nombre de courbes à charger (8 max)';...
+    temp_txt = ['Choisir le nombre de courbes à charger';...
                 'Annuler pour quitter'];
-    nmbr_courbes = evstr(x_mdialog(temp_txt, 'Nombre de courbes','1'));
+    nmbr_courbes = evstr(x_mdialog(temp_txt, 'Nombre de courbes (8 max)','1'));
     clear temp_txt
 
-    if nmbr_courbes >= 8 then
+    if nmbr_courbes > 8 then
         erreur = 2;
     elseif nmbr_courbes > 0 then
-        // Initialisation
-//        Papp = ones(1,nmbr_courbes);
-        Papp = 1;
-        
         for nmbr_fichier = 1:nmbr_courbes
             // Importer les tableaux Gbl_Heure, Gbl_Papp et Gbl_CreationTxt
             txt = msprintf('%s %d\n', ...
                 'Choisir le fichier à ouvrir n°',nmbr_fichier);
-            printf("%s\n", txt);    //TODO renseigner le nom et non le chemin
+            printf("%s\n", txt);
             cheminFichier = uigetfile(["*.sod"], dataPath, txt, %f);
-                
+               
             // Si un fichier est bien sélectionné
             if (cheminFichier ~= "") then
                 nmbrFichierReels = nmbrFichierReels +1;
-                printf("Import du fichier %s \n", cheminFichier);
+                nomFichier = part(cheminFichier, ...
+                             (length(dataPath)+2):length(cheminFichier));
+                printf("Import du fichier %s \n", nomFichier);
                 load(cheminFichier);
                 
                 // Sauvegarde des variables dans Heure, Papp et Jour
@@ -84,7 +85,6 @@ while(nmbr_courbes <> 0) do
             
         if (nmbr_fichier == nmbr_courbes & nmbrFichierReels <> 0) then
             // Tracer des courbes, avec une couleur différentes
-            // TODO: Reprendre l'affichage lors 8 > taille écran
             printf("Tracé en cours ...\n");
             tracer_D_Graph(Papp, Jour, Heure);   // attention, nombre limité
             nmbr_courbes = 0;

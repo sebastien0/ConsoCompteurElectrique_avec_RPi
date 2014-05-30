@@ -45,6 +45,7 @@ endfunction
 /// \brief Mise en forme du graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] fenetre    \b TBC Objet graphique
+// TODO: passer la couleur de fond en argument optionnel: argn()
 //*****************************************************************************
 function mise_en_forme(graphique, fenetre)
     set(graphique,"grid",[1 1]);    // Grid on
@@ -62,7 +63,7 @@ function mise_en_forme(graphique, fenetre)
 //    fenetre.figure_size = floor(fenetre.figure_size*1.1);
 
     //Arrière plan des courbes en gris clair
-    graphique.background=color('gray95');
+    graphique.background=color('gray80');   // Gris clair = 95
     //Augmenter la taille des textes
     graphique.title.font_size = 3;
     graphique.x_label.font_size = 2;
@@ -254,13 +255,15 @@ endfunction
 /// \param [in] NumCompteur    \c   string Numéro du compteur
 //*****************************************************************************
 function tracer_D_Graph(data2plot, jour, heure)
+    nmbrMax = 8;
     // Longueur de l'enregistrement
     nbrLignes = longueur(data2plot);
     
     // Nombre d'enregistrements
     nbrTab = largeur(data2plot);
+    strTabLegend = string((1:nbrTab)');
 
-    if nbrTab <= 7 then
+    if nbrTab <= nmbrMax then
         // Définition des couleurs pour les graphs
         couleur(1) = 'r';
         couleur(2) = 'c';
@@ -269,6 +272,7 @@ function tracer_D_Graph(data2plot, jour, heure)
         couleur(5) = 'm';
         couleur(6) = 'k';
         couleur(7) = 'y';
+        couleur(8) = 'w';
 
         // Tracer plusieurs courbes superposées
         if nbrTab == 1 then
@@ -281,8 +285,23 @@ function tracer_D_Graph(data2plot, jour, heure)
         
         // Titre du graphique avec les jours de tous les relevés
         releves(1,1) = "Relevés du :";
-        for i = 1:nbrTab 
-            releves(i+1,1) = msprintf('  - %s \t %s',jour(1,i), jour(2,i));
+        // 1 ligne
+        if nbrTab <= 4 then
+            for i = 1:nbrTab
+                releves(2,i) = msprintf(' %d - %s  %s   ', ...
+                                        i, jour(1,i), jour(2,i));
+            end
+        // 2 lignes
+        else
+            nmbrParLigne = ceil(nbrTab/2);
+            for i = 1:nmbrParLigne
+                releves(2,i) = msprintf(' %d - %s  %s   ', ...
+                                        i, jour(1,i), jour(2,i));
+            end
+            for i = nmbrParLigne+1:nbrTab
+                releves(3,i-nmbrParLigne) = msprintf(' %d - %s  %s   ', ...
+                                            i, jour(1,i), jour(2,i));
+            end
         end
 
         //Ajouter le quadrillage, les titres, ...
@@ -293,18 +312,15 @@ function tracer_D_Graph(data2plot, jour, heure)
 //pause   // Continuer en saisissant "resume" en console
         mise_en_forme(graphique, fenetre);
 
-        if largeur(data2plot) > 1 then
-//          Problème sur l'affichage: légende sans texte
-//            legende = legend(releves(2:longueur(releves),1),2);
-            legende = legend(string(ones(longueur(releves),1)),2);
-            legende.font_size = 3;
-        end
+//  Problème sur l'affichage: légende sans texte => juste couleur dans l'ordre
+        legende = legend(strTabLegend,"in_upper_left");
+        legende.font_size = 3;
     
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique, heure);
         
         printf("Puissance apparente tracée\n");
     else
-        printf("Erreur \t Trop de graph à tracer, 7 max\n");
+        printf("Erreur \t Trop de graph à tracer, %d max\n", nmbrMax);
     end
 endfunction
