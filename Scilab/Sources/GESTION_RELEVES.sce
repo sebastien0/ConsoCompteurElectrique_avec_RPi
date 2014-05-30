@@ -10,6 +10,10 @@ clear;
 close;
 clc;
 
+// DEBUG = 1 : Activer les traces pour le débug
+DEBUG = 0;
+//pause   // Continuer en saisissant "resume" en console
+
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
 /// Chemin du répertoire courant, repertoire parent du projet Scilab
@@ -45,21 +49,25 @@ printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
 printf("*************************************************************\n\n");
 
 ///
-choix = "-1";
-while(choix <> "0" & choix <> []) do
-    choix = x_dialog(["Que voulez-vous faire?";"";...
-    "1   Charger un fichier texte";"2   Charger un fichier de données";...
-    "3   Tracer la puissance apparente";"4   Tracer la Papp et les index";...
-    "0 ou CANCEL   Quitter"],"1");
+choix = -1;
+while(choix <> 0 & choix <> []) do
+    temp_txt = ["Que voulez-vous faire?";"";...
+                "1   Charger un fichier texte";...
+                "2   Charger un fichier de données";...
+                "3   Tracer la puissance apparente";...
+                "4   Tracer la Papp et les index";...
+                "0 ou CANCEL   Quitter"];
+    choix = evstr(x_mdialog(temp_txt, 'Choix (0 à 4)','1'));
+    clear temp_txt
     
     //*************************************************************************
     //* 1   Charger un fichier texte
     //*************************************************************************
-    if choix == "1" then
+    if choix == 1 then
         close;
         printf("\nChargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
-        cheminFichier = Charger_Txt(dataPath2Read);
+        cheminFichier = Charger_Txt(dataPath2Read, DEBUG);
         // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, 
         //           Gbl_Index, Gbl_NumCompteur, Gbl_Config
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
@@ -71,7 +79,7 @@ while(choix <> "0" & choix <> []) do
     //*************************************************************************
     //* 2   Charger un fichier de données
     //*************************************************************************
-    elseif choix == "2" then
+    elseif choix == 2 then
         close;
         printf("\nChargement d''un fichier de données\n\n");
         charger_variables(dataPath2Save);
@@ -79,7 +87,7 @@ while(choix <> "0" & choix <> []) do
     //*************************************************************************
     //* 3   Tracer la Puissance apparente
     //*************************************************************************
-    elseif choix == "3" then
+    elseif choix == 3 then
         close;
         printf("\nTracer la puissance apparente\n");
         try
@@ -101,7 +109,7 @@ while(choix <> "0" & choix <> []) do
     //*************************************************************************
     //* 4   Tracer la Puissance apparente et les Index
     //*************************************************************************
-    elseif choix == "4" then
+    elseif choix == 4 then
         close;
         printf("\nTracer la puissance apparente et les index\n");
         try
@@ -125,13 +133,13 @@ while(choix <> "0" & choix <> []) do
     //*************************************************************************
     //* 5   Développment en cours
     //*************************************************************************
-//    elseif choix == "5" then
+//    elseif choix == 5 then
 
 
     //*************************************************************************
     //* 0   Quitter
     //*************************************************************************
-    elseif (choix == "0" | (choix == [] & size(choix) == [0 0])) then
+    elseif (choix == 0 | (choix == [] & size(choix) == [0 0])) then
             printf("\nFin de l''application\n");
 
     //*************************************************************************

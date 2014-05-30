@@ -8,6 +8,7 @@
 //****************************************************************************
 /// \brief Importe les données depuis un fichier .txt
 /// \param [in] dataPath    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
+/// \param [in] DEBUG   \c double   Afficher des informations en console pour le debug
 /// \return cheminFichier     \c string     Pointeur du fichier ouvert
 /// \return Gbl_CreationTxt     \c string     Tableau de date et heures de création
 /// \return Gbl_Heure   \c TabString   Horodatage des relevés
@@ -17,7 +18,7 @@
 /// \return Gbl_NumCompteur     \c string  Numéro du compteur
 /// \return Gbl_Config  \c TabDouble   Tableau contenant la configuration du compteur
 //****************************************************************************
-function cheminFichier = Charger_Txt(dataPath)
+function cheminFichier = Charger_Txt(dataPath, DEBUG)
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath, ...
     "Choisir le fichier à ouvrir", %f);
@@ -31,7 +32,9 @@ function cheminFichier = Charger_Txt(dataPath)
         tempsRestant = 0;
         tempsRestant_1 = 0;
         
-        printf("Ouverture du fichier %s \n", cheminFichier);
+        nomFichier = part(cheminFichier, ...
+                     (length(dataPath)+2):length(cheminFichier));
+        printf("Ouverture du fichier %s \n", nomFichier);
         BarreProgression = progressionbar('Import en cours: 0% fait');
         tic;
 
@@ -53,19 +56,20 @@ function cheminFichier = Charger_Txt(dataPath)
         NumCompteur = temp(1,2);
         clear temp;
     
-        printf("\nRelevé créé le %s à %s par le compteur n°%s\n", ...
-        CreationTxt(1), CreationTxt(2), NumCompteur);
+        info_compteur(NumCompteur, CreationTxt);
         
         // *** Extraction des données *****************************************
         printf("Extraction et mise en forme des données ...\n");
         
         // En-tête des colonnes
+        // TODO obsolète, à retirer car configxx_N est défini plus tard
         if configBase_N == 0 then
             donnee_mesure(1,:) = titres;
         elseif configHPHC_N == 0 then
             donnee_mesure(1,:) = [titres(1) titres(3)+" "+titres(4) ...
             titres(5)+" "+titres(6) titres(7)];
         end
+        // TODO  fin
         
         // Extraction des données, création des matrices
         // Retourne:
@@ -76,7 +80,7 @@ function cheminFichier = Charger_Txt(dataPath)
         //      index_Hpleines, Hpleines, index_Hcreuses, Hcreuses, 
         //      nbrLignes, HEURE, Config, donnee_mesure, tempsExecution,
         //      tempsRestant_1
-        extraction(configBase_N, configHPHC_N, donnee_mesure, donnee);
+        extraction(configBase_N, configHPHC_N, donnee_mesure, donnee, DEBUG);
 
         CreationTxt(3) = msscanf(donnee_mesure(nbrLignes-1,HEURE),'%s');
         CreationTxt(4) = nom_jour(CreationTxt(1));
@@ -135,7 +139,7 @@ endfunction
 /// \param [in] tempsRestant_1  \c double   Temps restant estimé au %% précédent
 //*****************************************************************************
 function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
-            tempsRestant, tempsRestant_1)
+            tempsRestant, tempsRestant_1, DEBUG)
     // Calcul du temps restant
     progression = progression + 1;
     tempsExecution = tempsExecution + toc();
@@ -146,7 +150,9 @@ function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
      tempsRestant = 1.03 * tempsRestant;
      
     if (progression == 0 | tempsRestant > tempsRestant_1) then
-        disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
+        if DEBUG == 1 then
+            disp("TempsRestant estimé : "+ string(ceil(tempsRestant))); // DEBUG
+        end
         tempsRestant_1 = tempsRestant;
     end
     
@@ -201,7 +207,7 @@ endfunction
 /// \li \return donnee_mesure    \c TabString   Remise en forme du fichier texte ouvert (plusieurs colonnes)
 /// \todo \c donnee_mesure ne doit pas être retourné !!
 //*****************************************************************************
-function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
+function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee, DEBUG)
     progression = 0;
     offset = 5; // Ligne des en-tête de colonnes
     HEURE = 1;  // Colonne contenant l'heure
@@ -234,7 +240,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee)
         // Barre de progression
         if (floor(ligne*100/nbrLignes) > progression) then
             barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
-        tempsRestant, tempsRestant_1);
+        tempsRestant, tempsRestant_1, DEBUG);
         end
     
         // Reconstitution des colonnes
