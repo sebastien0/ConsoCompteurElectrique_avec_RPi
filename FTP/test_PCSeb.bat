@@ -24,3 +24,4 @@ REM		echo fichier %%F supprime
 echo %TIME%   Fin du programme
 
 pause
+
