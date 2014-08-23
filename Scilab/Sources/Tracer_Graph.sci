@@ -219,7 +219,7 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
         tailleIndex = dimensions(Index, "colonne");
         if tailleIndex > 1 then
-            legende = legend(["Index heures creuses"; "Index heures pleines"],2);
+            legende = legend(["Index heures pleines"; "Index heures creuses"],2);
             legende.font_size = 3;
         end
         

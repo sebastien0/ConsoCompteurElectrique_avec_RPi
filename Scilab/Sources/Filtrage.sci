@@ -21,6 +21,7 @@ function signal_f = moyenneGlissante(signal, fenetre)
     
     // Effectuer le moyennage glissant
     for i = fenetre:nbrLignes
-        signal_f(i) = mean(signal(fenetre+1:i));
+//        signal_f(i) = mean(signal(fenetre+1:i));
+        signal_f(i) = mean(signal(i-fenetre+1:i));
     end
 endfunction

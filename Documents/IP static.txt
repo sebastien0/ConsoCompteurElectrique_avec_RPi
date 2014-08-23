@@ -8,16 +8,11 @@ This will allow you to edit the file using nano.  Change the line that reads
 
 iface eth0 inet dhcp
 
-to
+to (adding more lines)
 
 iface eth0 inet static
-
-Below this line enter the following.
-
 address 192.168.2.101
 netmask 255.255.255.0
-network 192.168.2.100
-broadcast 192.168.100.255
 gateway 192.168.100.254
 
 
@@ -29,3 +24,5 @@ Aller dans le Panneau de configuration\Réseau et Internet\Connexions réseau
 Sélectionner la carte réseau désirée (Wifi ou LAN) puis faire propriété.
 Aller sur Protocole Internet version 4 puis propriétés.
 Cocher Utiliser l'adresse IP suivante et renseigner les champs.
+
+192.168.2.100

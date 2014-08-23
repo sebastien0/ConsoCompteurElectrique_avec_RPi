@@ -41,6 +41,8 @@ exec(fnctPath+"\Calculs.sci");
 exec(fnctPath+"\Filtrage.sci");
 // Charger les fonctions de traitement de signal
 //exec(fnctPath+"\GlrBrandtMoy.sci");
+// Charger les fonctions de filtrage
+exec(fnctPath+"\Modifier_Horodatage.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -70,6 +72,13 @@ while(choix <> 0 & choix <> []) do
         cheminFichier = Charger_Txt(dataPath2Read, DEBUG);
         // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, 
         //           Gbl_Index, Gbl_NumCompteur, Gbl_Config
+        
+        // Modifier l'horodatage
+        choixHorodatage = x_mdialog('Modifier l''horodatage ?', 'Choix (y ou n)','n');
+        if choixHorodatage == 'y'
+            Modifier_Horodatage(Gbl_Heure, [-3 -7 0])  // Uniquement MAJ de Gbl_Heure
+        end
+        
         if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
             Gbl_Config(2) == 0)) then
             //Sauvegarder les variables globales
