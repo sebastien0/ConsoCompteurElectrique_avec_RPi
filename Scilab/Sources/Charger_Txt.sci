@@ -221,8 +221,7 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee, DEBUG)
         HEUREPLEINE = 3;   // Colonne contenant l'index Heure Pleine
     end
     
-    nbrLignes = size(donnee)-1;
-    nbrLignes = nbrLignes(1,1)-offset;
+    nbrLignes = dimensions(donnee, "ligne")-offset-1;
     
     // Création de matrices vides
     donnee_mesure(nbrLignes,:) = ["" "" "" ""];
@@ -230,7 +229,6 @@ function extraction(configBase_N, configHPHC_N, donnee_mesure, donnee, DEBUG)
         Papp = zeros(nbrLignes,1);
         Base = zeros(nbrLignes,1);
     elseif configHPHC_N == 0 then
-
         Hpleines = zeros(nbrLignes,1);
         Hcreuses = zeros(nbrLignes,1);
     end
@@ -371,4 +369,39 @@ function Sauve_Variables (filePath)
    
     printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
     cd(originPath);
+endfunction
+
+//*****************************************************************************
+/// \brief Retourne la position des tabulations dans une trame
+/// \param [in] trame    \c string   Trame à analyser
+/// \param [in] config    \c string   Configuration du compteur
+/// \return Gbl_ReleveIndex \c Structure  Position des tabulations
+//*****************************************************************************
+function Localiser_Index(trame, config)
+    j= 1;
+    // Localisation des tabulations
+    for i = 1:length(trame)
+        // TODO: Remplacer le caractère recherché par ";"
+        if ascii(part(trame, i)) == 9 then
+            tabIndex(j) = i;
+            j = j+1;
+        end
+    end
+
+    // Retour des positions via structure (d'une structure si HCHP)
+    ReleveIndex = struct("Papp",tabIndex(1),"Index",tabIndex(2));
+    if config == "HCHP" then
+        ReleveIndex.Index = struct("HC",tabIndex(2),"HP",tabIndex(3));
+    end
+    
+    Gbl_ReleveIndex = resume (ReleveIndex)
+endfunction
+
+
+//*****************************************************************************
+/// \brief Retourne la position des tabulations dans une trame
+/// \param [in] trame    \c string   Trame à analyser
+/// \return Gbl_tabIndex \c tableau double  Position des tabulations
+//*****************************************************************************
+function Indexer_Trame (trame, tabIndex, indexGbl)
 endfunction

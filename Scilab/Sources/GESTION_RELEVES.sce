@@ -73,6 +73,12 @@ while(choix <> 0 & choix <> []) do
         // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, 
         //           Gbl_Index, Gbl_NumCompteur, Gbl_Config
         
+        // Structure
+        // TODO !!!!!!!!! WARNING Config en dur !!!!!
+        Releve = struct("Heure",Gbl_Heure,"Papp",Gbl_Papp,...
+                        "Index",Gbl_Index,"Index0",Gbl_Index0,...
+                        "Config","Base");
+        
         // Modifier l'horodatage
         choixHorodatage = x_mdialog('Modifier l''horodatage ?', 'Choix (y ou n)','n');
         if choixHorodatage == 'y'
