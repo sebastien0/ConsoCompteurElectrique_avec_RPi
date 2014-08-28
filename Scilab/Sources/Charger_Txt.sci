@@ -142,12 +142,8 @@ function barre_Progression(ligne, nbrLignes, progression, tempsExecution, ...
             tempsRestant, tempsRestant_1, DEBUG)
     // Calcul du temps restant
     progression = progression + 1;
-    tempsExecution = tempsExecution + toc();
-    tic;
-
-     tempsRestant = tempsExecution * (100-progression) / progression;
-     // Prise en compte des derniers traitements; valeur arbitraire
-     tempsRestant = 1.03 * tempsRestant;
+    tempsExecution = toc();
+    tempsRestant = tempsExecution * (100-progression) / progression;
      
     if (progression == 0 | tempsRestant > tempsRestant_1) then
         if DEBUG == 1 then
@@ -371,37 +367,175 @@ function Sauve_Variables (filePath)
     cd(originPath);
 endfunction
 
+
 //*****************************************************************************
-/// \brief Retourne la position des tabulations dans une trame
+/// \brief A partir de l'en-tête du tableau, retourne la position 
+///  des tabulations et la configuration
 /// \param [in] trame    \c string   Trame à analyser
-/// \param [in] config    \c string   Configuration du compteur
-/// \return Gbl_ReleveIndex \c Structure  Position des tabulations
+/// \return tmpConfig \c string  Configuration du compteur
+/// \return tmpPosiTab \c tableau double  Position des tabulations
 //*****************************************************************************
-function Localiser_Index(trame, config)
-    j= 1;
-    // Localisation des tabulations
+function posiCaract = LocaliserCaractere(trame,caractere)
+    j= 0;
     for i = 1:length(trame)
-        // TODO: Remplacer le caractère recherché par ";"
-        if ascii(part(trame, i)) == 9 then
-            tabIndex(j) = i;
+        if ascii(part(trame, i)) == caractere then
             j = j+1;
+            posiCaract(j) = i;
         end
     end
-
-    // Retour des positions via structure (d'une structure si HCHP)
-    ReleveIndex = struct("Papp",tabIndex(1),"Index",tabIndex(2));
-    if config == "HCHP" then
-        ReleveIndex.Index = struct("HC",tabIndex(2),"HP",tabIndex(3));
-    end
-    
-    Gbl_ReleveIndex = resume (ReleveIndex)
+    posiCaract(j+1) = length(trame);
+    return posiCaract;
 endfunction
-
 
 //*****************************************************************************
 /// \brief Retourne la position des tabulations dans une trame
 /// \param [in] trame    \c string   Trame à analyser
 /// \return Gbl_tabIndex \c tableau double  Position des tabulations
 //*****************************************************************************
-function Indexer_Trame (trame, tabIndex, indexGbl)
+function Indexer_Trame (trame, stcPosiTab, stcReleve)
+    Heure = part(trame, 1:stcPosiTab.Papp-2);
+    Papp = part(trame, stcPosiTab.Papp+2:stcPosiTab.Index-2);
+    if stcReleve.isConfigBase then
+        Index = part(trame, stcPosiTab.Index+2:stcPosiTab.Fin);
+    elseif stcReleve.isConfigHCHP then
+        Index(1) = part(trame, stcPosiTab.HC+2:stcPosiTab.HP-2);
+        Index(1,2) = part(trame, stcPosiTab.HP+2:stcPosiTab.Fin);
+    end
+    [tmpReleve] = resume([Heure Papp Index]);
+endfunction
+
+
+//*****************************************************************************
+///
+//*****************************************************************************
+function cheminFichier = Importer_Txt(dataPath, DEBUG)
+    caractereAChercher = 9; //Valeur décimale, utiliser ascii()
+    // Selection du fichier à traiter
+    cheminFichier = uigetfile(["*.txt"],dataPath, ...
+    "Choisir le fichier à ouvrir", %f);
+    
+    // Fichier sélectionné
+    if (cheminFichier ~= "") then
+        // Initialisation des variables
+        fichierOuvert = 1;
+        tempsExecution = 0;
+        progression = 0;
+        tempsRestant = 0;
+        tempsRestant_1 = 0;
+        lignesEnTete = 6;
+        
+        // ****** Ouverture Fichier *****
+        nomFichier = part(cheminFichier, ...
+                     (length(dataPath)+2):length(cheminFichier));
+        printf("Ouverture du fichier %s \n", nomFichier);
+        BarreProgression = progressionbar('Import en cours: Calcul du temps restant');
+        tic;
+        fichier = mopen(cheminFichier,'r'); // Ouverture du fichier
+        donnee = mgetl(cheminFichier);  // Lecture du fichier
+        mclose(cheminFichier);  // Fermeture du fichier
+        
+        // ***** Détection de la configuration *****
+        stcReleve = struct("Config", "");
+        posiCaract = LocaliserCaractere(donnee(5),caractereAChercher);
+        tmpConfig = part(donnee(5),posiCaract(3)+2:posiCaract(3)+5);
+        if tmpConfig == "Base" then
+            stcReleve.Config = "Base";
+            stcReleve.isConfigBase = %t;
+            stcReleve.isConfigHCHP = %f;
+        elseif tmpConfig == "H cr" then
+            stcReleve.Config = "HCHP";
+            stcReleve.isConfigBase = %f;
+            stcReleve.isConfigHCHP = %t;
+        else
+            stcReleve = struct("Config","");
+            stcReleve.isConfigBase = %f;
+            stcReleve.isConfigHCHP = %f;
+        end
+
+        // ***** En-tête et pied de fichier *****
+        nbrLignes = dimensions(donnee,"ligne")-1);  //Jusqu'à la fin des données
+        
+        // Imax = nbrLignes+1
+        
+        // ***** Indentation du tableau *****
+        tmpPosiTab = LocaliserCaractere(donnee(lignesEnTete),caractereAChercher);
+        stcPosiTab = struct("Papp",tmpPosiTab(1));
+        if stcReleve.isConfigBase then  // Base
+            stcPosiTab.Index = tmpPosiTab(2);
+            stcPosiTab.Fin = tmpPosiTab(3);
+        elseif stcReleve.isConfigHCHP then  // HCHP
+            stcPosiTab.HC = tmpPosiTab(2);
+            stcPosiTab.HP = tmpPosiTab(3);
+            stcPosiTab.Fin = tmpPosiTab(4);
+        end
+        
+        // ***** Index énergies à t0 *****
+        Indexer_Trame (donnee(lignesEnTete), stcPosiTab, stcReleve);
+        if stcReleve.isConfigBase then
+            stcReleve.Index0 = evstr(tmpReleve(3));
+        elseif stcReleve.isConfigHCHP then
+            stcReleve.HC0 = evstr(tmpReleve(3));
+            stcReleve.HP0 = evstr(tmpReleve(4));
+        end
+        
+        // ***** Extraction des points *****
+        // ***** Base *****
+        if stcReleve.isConfigBase then
+            // Rafraichissement de l'avancement tous les %
+            for centieme = 1:floor(nbrLignes/100)
+                for ligne = (centieme-1)*100+lignesEnTete : ...
+                            centieme*100+lignesEnTete-1
+                    Indexer_Trame (donnee(ligne), stcPosiTab, stcReleve);
+                    stcReleve.Heure(ligne-5) = tmpReleve(1);
+                    stcReleve.Papp(ligne-5) = evstr(tmpReleve(2));
+                    tmpEnergie = evstr(tmpReleve(3));
+                    if tmpEnergie == [] then
+                        stcReleve.Index(ligne-5) = stcReleve.Index(ligne-6);
+                    else
+                        stcReleve.Index(ligne-5) = tmpEnergie-stcReleve.Index0;
+                    end
+                end
+                barre_Progression(ligne, nbrLignes, progression, ...
+                           tempsExecution, tempsRestant, tempsRestant_1, DEBUG);
+            end
+            
+            for ligne = ligne : nbrLignes
+                Indexer_Trame (donnee(ligne), stcPosiTab, stcReleve);
+                stcReleve.Heure(ligne-5) = tmpReleve(1);
+                stcReleve.Papp(ligne-5) = evstr(tmpReleve(2));
+                tmpEnergie = evstr(tmpReleve(3));
+                if tmpEnergie == [] then
+                    stcReleve.Index(ligne-5) = stcReleve.Index(ligne-6);
+                else
+                    stcReleve.Index(ligne-5) = tmpEnergie-stcReleve.Index0;
+                end
+            end
+            barre_Progression(ligne, nbrLignes, progression, ...
+                           tempsExecution, tempsRestant, tempsRestant_1, DEBUG);
+
+        // TODO ***** HCHP *****
+        elseif stcReleve.isConfigHCHP then
+            for ligne = 7 : dimensions(donnee,"ligne")-1
+                tmpEnergie = evstr(tmpReleve(3));
+                if tmpEnergie == [] then
+                    stcReleve.HC(ligne-5) = stcReleve.HC(ligne-6);
+                    stcReleve.HP(ligne-5) = stcReleve.HP(ligne-6);
+                else
+                    stcReleve.HC(ligne-5) = tmpEnergie-stcReleve.HC0;
+                    stcReleve.HP(ligne-5) = evstr(tmpReleve(4))-stcReleve.HP0;
+                end
+            end
+        end
+        
+        
+        close(BarreProgression);
+
+        // ***** Retourne *****
+        [Gbl_stcReleve] = resume(stcReleve);
+
+    else
+        fichierOuvert = 0;
+        Config = zeros(1,2);
+        printf("Aucun fichier sélectionné\n");
+    end
 endfunction
