@@ -61,20 +61,12 @@ endfunction
 /// \param [in] CreationTxt     \c tabString(3)     Tableau de date et heures de création
 /// \param [in optionnel] texteConfig  \c string   Configuration du compteur
 //*****************************************************************************
-function info_compteur(numCompteur, creationTxt, opt_texteConfig)
-    [lhs,rhs] = argn(0);  // nombre output arguments, nombre input arguments
-    if rhs == 3 then
-        printf("Compteur ''%s'' n°%s, configuré en %s\n", ...
-                nom_compteur(numCompteur), numCompteur, opt_texteConfig);
-    else
-        printf("Compteur ''%s'' n°%s\n", nom_compteur(numCompteur), ...
-               numCompteur);
-    end
+function info_compteur(stcReleve)
+    printf("Compteur ''%s'' n°%s, configuré en %s\n", ...
+            stcReleve.residence, stcReleve.numCompteur,...
+            stcReleve.config);
 
-    if dimensions(creationTxt, "ligne") == 4 then
-        printf("Relevé créé le %s %s de %s à %s\n\n", ...
-                creationTxt(4), creationTxt(1), creationTxt(2), creationTxt(3));
-    else
-        printf("Relevé créé le %s à %s\n\n", creationTxt(1), creationTxt(2));
-    end
+    printf("Relevé créé le %s %s de %s à %s\n\n", ...
+            stcReleve.jour, stcReleve.date, stcReleve.heureDebut, ...
+            stcReleve.heureFin);
 endfunction

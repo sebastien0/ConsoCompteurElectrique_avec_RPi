@@ -156,9 +156,10 @@ endfunction
 /// \param [in] Index    \c Tab_string  Données Index à tracer
 /// \param [in] NumCompteur    \c string    Numéro du compteur
 //*****************************************************************************
-function tracer_2_Graph(Puissance, Index, NumCompteur)
-    nbrLignes = dimensions(Index, "ligne");
-    nbrTab = dimensions(Puissance, "colonne");
+function tracer_2_Graph(stcReleve)
+    tabMoy = matrice(dimensions(stcReleve.papp, "ligne"), stcReleve.pappMoy);
+    nbrLignes = dimensions(stcReleve.index, "ligne");
+    nbrTab = dimensions(stcReleve.papp, "colonne");
     nmbrMax = 8;
 
     if nbrTab <= nmbrMax then
@@ -166,7 +167,7 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         subplot(211);
         couleur = couleur_plot(); // liste de couleur pour la fonction plot
         for i=1:nbrTab
-            plot(Puissance(:,i),couleur(i));
+            plot(stcReleve.papp(:,i),couleur(i));
         end
         
         graphique = gca();
@@ -179,9 +180,9 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
 //                " par le compteur n° " + NumCompteur;...
 //                "Puissance active, moyenne = " + puissMoyStr];
         titre = msprintf("Relevé du %s %s de %s à %s par le compteur n°%s ...
-                \nPuissance active, moyenne = %s", Gbl_CreationTxt(4), ...
-                Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3), ...
-                NumCompteur, puissMoyStr);
+                \nPuissance active, moyenne = %s", stcReleve.jour, ...
+                stcReleve.date, stcReleve.heureDebut, stcReleve.heureFin, ...
+                stcReleve.numCompteur, puissMoyStr);
 
         // Titre du graphique
         xtitle(titre,"Heure","Puissance en VA");
@@ -191,24 +192,24 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         
         //*** Index *********************
         subplot(212);
-        plot(Index);
+        plot(stcReleve.index);
         
         graphique = gca();
         fenetre = gcf();
 
         // Configuration
-        config = dimensions(Gbl_Index0, "colonne");
-        energieStr = energie(nbrLignes, config);
+        config = dimensions(stcReleve.index0, "colonne");
+        energieStr = energie(nbrLignes, stcReleve.config);
 
         //Ajouter le quadrillage, les titres, ...
         // Base
         if config == 1 then
             titre = msprintf("Index des consommations \nIndex à %s = %s", ...
-                    Gbl_CreationTxt(2), energieStr(1,1));
+                    stcReleve.heureDebut, energieStr(1,1));
         // HPHC
         elseif config == 2 then
             titre = msprintf("Index des consommations \nIndex à %s : ...
-                    HC = %s  Hp = %s", Gbl_CreationTxt(2), ...
+                    HC = %s  Hp = %s", stcReleve.heureDebut, ...
                     energieStr(1,1), energieStr(2,1));
         end
 
@@ -216,8 +217,8 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         mise_en_forme(graphique, fenetre);
        
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
-        tailleIndex = dimensions(Index, "colonne");
+        heures_Abscisses(nbrLignes, fenetre, graphique, stcReleve.heure);
+        tailleIndex = dimensions(stcReleve.index, "colonne");
         if tailleIndex > 1 then
             legende = legend(["Index heures pleines"; "Index heures creuses"],2);
             legende.font_size = 3;
@@ -226,13 +227,13 @@ function tracer_2_Graph(Puissance, Index, NumCompteur)
         printf("Puissance active moyenne = %s\n", puissMoyStr);
         // Base
         if config == 1 then
-            printf("Energie à %s = %s\nEnergie à %s = %s\n", Gbl_CreationTxt(2), ...
-                   energieStr(1), Gbl_CreationTxt(3), energieStr(2));
+            printf("Energie à %s = %s\nEnergie à %s = %s\n", stcReleve.heureDebut, ...
+                   energieStr(1), stcReleve.heureFin, energieStr(2));
         // HPHC
         elseif config == 2 then
             printf("Index à %s : HC = %s \t HP = %s\nIndex à %s : ...
-            HC = %s \t HP = %s\n",Gbl_CreationTxt(2), energieStr(1,1),...
-            energieStr(2,1), Gbl_CreationTxt(3), energieStr(1,2),...
+            HC = %s \t HP = %s\n",stcReleve.heureDebut, energieStr(1,1),...
+            energieStr(2,1), stcReleve.heureFin, energieStr(1,2),...
             energieStr(2,2));
         end
         printf("Graphiques tracés\n");

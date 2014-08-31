@@ -10,8 +10,8 @@ clear;
 close;
 clc;
 
-// DEBUG = 1 : Activer les traces pour le débug
-DEBUG = 0;
+// DEBUG = %t : Activer les traces pour le débug
+DEBUG = %f;
 //pause   // Continuer en saisissant "resume" en console
 
 //*** Chargement de l'environnement *******************************************
@@ -50,7 +50,7 @@ printf("Programme de gestion des données acquises avec la Raspberry-Pi\n");
 printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
 printf("*************************************************************\n\n");
 
-///
+
 choix = -1;
 while(choix <> 0 & choix <> []) do
     temp_txt = ["Que voulez-vous faire?";"";...
@@ -69,27 +69,24 @@ while(choix <> 0 & choix <> []) do
         close;
         printf("\nChargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
-        cheminFichier = Charger_Txt(dataPath2Read, DEBUG);
-        // Retourne: Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, 
-        //           Gbl_Index, Gbl_NumCompteur, Gbl_Config
-        
-        // Structure
-        // TODO !!!!!!!!! WARNING Config en dur !!!!!
-        Releve = struct("Heure",Gbl_Heure,"Papp",Gbl_Papp,...
-                        "Index",Gbl_Index,"Index0",Gbl_Index0,...
-                        "Config","Base");
-        
-        // Modifier l'horodatage
-        choixHorodatage = x_mdialog('Modifier l''horodatage ?', 'Choix (y ou n)','n');
-        if choixHorodatage == 'y'
-            Modifier_Horodatage(Gbl_Heure, [-3 -7 0])  // Uniquement MAJ de Gbl_Heure
-        end
-        
-        if (cheminFichier <> "" & (Gbl_Config(1) == 0 | ...
-            Gbl_Config(2) == 0)) then
+        cheminFichier = Importer_Txt(dataPath2Read, DEBUG);
+        // Retourne: erreur, (stcReleve, stcStatistiques)
+
+        if erreur == 0 then
+          // Modifier l'horodatage
+            choixHorodatage = x_mdialog('Modifier l''horodatage ?', 'Choix (y ou n)','n');
+            if choixHorodatage == 'y'
+                //TODO 
+                //Modifier_Horodatage(stcReleve.heure, [-3 -7 0])  // Uniquement MAJ de Gbl_Heure
+            end
+    
             //Sauvegarder les variables globales
-            Sauve_Variables(dataPath2Save);
+            Sauve_Variables(dataPath2Save, stcReleve, stcStatistiques);
+
+        elseif erreur == 2 then
+             printf("Aucun fichier sélectionné\n");
         end
+
 
     //*************************************************************************
     //* 2   Charger un fichier de données
@@ -128,18 +125,20 @@ while(choix <> 0 & choix <> []) do
         close;
         printf("\nTracer la puissance apparente et les index\n");
         try
-            size(Gbl_Papp);
-            size(Gbl_Index);
+            size(stcReleve.heure);
             erreur = 0;
         catch
             printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
             erreur = 1;
         end
         
-        if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
-            [duree, moyenne] = HeuresFonctionnement();
-            tabMoy = matrice(dimensions(Gbl_Papp, "ligne"), moyenne);
-            tracer_2_Graph([Gbl_Papp tabMoy], Gbl_Index, Gbl_NumCompteur);
+        if (erreur == 0 & (stcReleve.isBase | stcReleve.isHCHP) then
+            if stcReleve.numCompteur == ""049701078744"" then
+                [duree, stcReleve.pappMoy] = HeuresFonctionnement();
+            else
+                 stcReleve.pappMoy = mean(stcReleve.papp);
+            end
+            tracer_2_Graph(stcReleve);
 
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
@@ -162,6 +161,6 @@ while(choix <> 0 & choix <> []) do
     //*************************************************************************
     else
         printf("Erreur! \t Mauvaise saisie. \n...
-        \t Validez en cliquant sur OK et non ENTREE\n");
+        \t Validez en cliquant sur OK\n");
     end
 end
