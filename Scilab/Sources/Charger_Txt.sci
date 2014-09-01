@@ -15,25 +15,20 @@
 //*****************************************************************************
 function barre_Progression(stcStatistiques, ligne, progression, isDEBUG)
     // Calcul du temps restant
-    progression = progression + 1;
     stcStatistiques.tempsTotal = toc();
-    stcStatistiques.tempsRestant(progression) = stcStatistiques.tempsTotal ...
+    progression = progression + 1;
+    stcStatistiques.tabTempsRestant(progression) = stcStatistiques.tempsTotal ...
                                             * (100-progression) / progression;
-     
-    if isDEBUG then
-        disp("TempsRestant estimé : "+ string(ceil(...
-            stcStatistiques.tempsRestant(progression)))); // DEBUG
-    end
     
     // Affichage du pourcentage d'avancement et temps restant
-    if stcStatistiques.tempsRestant(progression) < 60 then
+    if stcStatistiques.tabTempsRestant(progression) < 60 then
         progressionbar(BarreProgression, 'Import en cours, ' + ...
         string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
         '% fait. Temps restant : ' + ...
-        string(round(stcStatistiques.tempsRestant(progression))) + 's');
+        string(round(stcStatistiques.tabTempsRestant(progression))) + 's');
     else
-        tempTempsRestant = [floor(stcStatistiques.tempsRestant(progression)/60) ...
-        round(modulo(round(stcStatistiques.tempsRestant(progression)),60))];
+        tempTempsRestant = [floor(stcStatistiques.tabTempsRestant(progression)/60) ...
+        round(modulo(round(stcStatistiques.tabTempsRestant(progression)),60))];
         progressionbar(BarreProgression, 'Import en cours, ' + ...
         string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
         '% fait. Temps restant : ' + string(tempTempsRestant(1)) + ...
@@ -65,14 +60,16 @@ function Sauve_Variables (filePath, stcReleve, stcStatistiques)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
     dateReleve = msscanf(stcReleve.date, '%c%c%c%c / %c%c / %c%c');
-    dateReleve = [dateReleve(1)+dateReleve(2)+dateReleve(3)+dateReleve(4) dateReleve(5)+dateReleve(6) dateReleve(7)+dateReleve(8)];
+    dateReleve = [strcat(dateReleve(1), dateReleve(2), dateReleve(3), ...
+                  dateReleve(4)) strcat(dateReleve(5),dateReleve(6)) ...
+                  strcat(dateReleve(7),dateReleve(8))];
 
     cd(filePath);
     fileName = strcat([stcReleve.numCompteur,"_",dateReleve(1),"-",dateReleve(2)...
     ,"-",dateReleve(3),".sod"]);
     save(fileName, "stcReleve", "stcStatistiques");
    
-    printf("Variables sauvegardées dans %s\\%s\n", pwd(), fileName);
+    printf("Variables sauvegardées dans %s\\%s\n", filePath, fileName);
     cd(originPath);
 endfunction
 
@@ -100,7 +97,7 @@ endfunction
 /// \brief Retourne les valeurs dans une trame BASE
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
-///TODO \param [in] stcReleve   \c structure    Structure où enregistrer les valeurs
+///TODO \param [in] stcReleve   \c pointeur structure    Structure où enregistrer les valeurs
 /// \return tmpReleve \c tableau string  Valeurs
 //*****************************************************************************
 function Indexer_Trame_Base (trame, stcPosiTab)
@@ -114,7 +111,7 @@ endfunction
 /// \brief Retourne les valeurs dans une trame HCHP
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
-///TODO \param [in] stcReleve   \c structure    Structure où enregistrer les valeurs
+///TODO \param [in] stcReleve   \c pointeur structure    Structure où enregistrer les valeurs
 /// \return tmpReleve \c tableau string  Valeurs
 //*****************************************************************************
 function Indexer_Trame_HCHP (trame, stcPosiTab)
@@ -151,11 +148,13 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         tempsRestant_1 = 0;
         lignesEnTete = 6;
         
+        nomPC = "Seb";  // Nom de PC servant à l'importation
+        
         // ****** Ouverture Fichier *****
         nomFichier = part(cheminFichier, ...
                      (length(dataPath)+2):length(cheminFichier));
         printf("Ouverture du fichier %s \n", nomFichier);
-        BarreProgression = progressionbar('Import en cours: Calcul du temps restant');
+        BarreProgression = progressionbar('Import en cours: Calcul du temps restant...');
         tic;
         fichier = mopen(cheminFichier,'r'); // Ouverture du fichier
         donnee = mgetl(cheminFichier);  // Lecture du fichier
@@ -169,19 +168,30 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         
         // ***** En-tête et pied de fichier *****
         //Date et Heure du relevé
-        stcReleve = struct("date","");
-        temp = msscanf(donnee(1),'%s %s %s %s');
-        stcReleve.jour = "jourSemaine"; // TODO 
-        stcReleve.date = msscanf(temp(1,3),'%s');
+        // Date et heure de l'importation
+        tempDate = getdate();
+        stcReleve = struct("dateImportation", strcat([string(tempDate(1)), '/', ...
+           nombre_2_Chiffres(tempDate(2)), '/', nombre_2_Chiffres(tempDate(6))]));
+        stcReleve.heureImportation = strcat([nombre_2_Chiffres(tempDate(7)), ':', ...
+           nombre_2_Chiffres(tempDate(8)), ':', nombre_2_Chiffres(tempDate(9))]);
         // Numéro du compteur
         temp = msscanf(donnee(3),'%s n°%s');
-        stcReleve.numCompteur = temp(1,2);
+        stcReleve.numCompteur = temp(2);
         stcReleve.residence = nom_compteur(stcReleve.numCompteur);
+        // Date et heures du relevé
+        temp = msscanf(donnee(1),'%s %s %s %s');
+        tempDate = datenum(evstr(part(temp(3),1:4)), ...
+                           evstr(part(temp(3),6:7)), ...
+                           evstr(part(temp(3),9:10)));
+        [N, stcReleve.jour] = weekday(tempDate,'long');
+        stcReleve.date = strcat([part(temp(3),1:4), '/', part(temp(3),6:7), ...
+                                '/', part(temp(3),9:10)]);
         temp = msscanf(donnee(6),'%s %s %s %s');
         stcReleve.heureDebut = temp(1);
         temp = msscanf(donnee(nbrLignes),'%s %s %s %s');
         stcReleve.heureFin = temp(1);
         clear temp;
+        clear tempDate;
         
 
         // ***** Détection de la configuration *****
@@ -201,13 +211,13 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         end
         
         // Affichage en console des info du compteur
-        info_compteur(stcReleve);
+        info_compteur(stcReleve);   // BUG
         
         // Structure pour les statistique d'importation
         //TODO indiquer les variables
         stcStatistiques = struct("numCompteur",stcReleve.numCompteur);
         stcStatistiques.config = stcReleve.config;
-        stcStatistiques.nomPC = "PC untel";
+        stcStatistiques.nomPC = nomPC;
         stcStatistiques.date = stcReleve.date;
         stcStatistiques.heure = stcReleve.heureDebut;
         stcStatistiques.nbrLignes = nbrLignes;
@@ -224,10 +234,29 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
             stcPosiTab.indexDebut = tmpPosiTab(2)+2;
             stcPosiTab.indexFin = tmpPosiTab(3);
         elseif stcReleve.isConfigHCHP then  // HCHP
-            stcPosiTab.HCDebut = tmpPosiTab(2)+2;
+            stcPosiTab.HCDebut = tmpPosiTab(2)-1;
             stcPosiTab.HCFin = tmpPosiTab(3)-2;
-            stcPosiTab.HPDebut = tmpPosiTab(3)+2;
+            stcPosiTab.HPDebut = tmpPosiTab(3)-1;
             stcPosiTab.indexFin = tmpPosiTab(4);
+        end
+        
+        // Recherche d'une combinaison optimale de "progression" et "centiemeMax"
+        // pour avoir un nombre d'itération >=90 et < 99
+        // Cela permet de mettre à jour la barre d'avancement à chaque pourcent
+        denominateur = 100;
+        centiemeMax = floor(nbrLignes/denominateur);
+        while (centiemeMax <= 90 | centiemeMax > 99) do
+            if (centiemeMax < 99) then
+                denominateur = denominateur /2;
+                centiemeMax = floor(nbrLignes/denominateur);
+                if (centiemeMax > 99) then
+                    denominateur = denominateur *1.5;
+                    centiemeMax = floor(nbrLignes/denominateur);
+                end
+            else
+                denominateur = denominateur *10;
+                centiemeMax = floor(nbrLignes/denominateur);
+            end
         end
         
         // ****************
@@ -241,9 +270,9 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
             // Pour un nombre de lignes entier
-            for centieme = 1:floor(nbrLignes/100)
-                for ligne = (centieme-1)*100+lignesEnTete : ...
-                            centieme*100+lignesEnTete-1
+            for centieme = 1:centiemeMax
+                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
+                            centieme*denominateur+lignesEnTete-1
                     Indexer_Trame_Base (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
                     stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
@@ -275,22 +304,51 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         // ***** HCHP *****
         // ****************
         elseif stcReleve.isConfigHCHP then
-            stcReleve.HC0 = evstr(tmpReleve(3));
-            stcReleve.HP0 = evstr(tmpReleve(4));
-            // TODO ***** HCHP *****
-            for ligne = 7 : dimensions(donnee,"ligne")-1
-                tmpEnergie = evstr(tmpReleve(3));
+            // ***** Index énergies à t0 *****
+            Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
+            stcReleve.index0(1) = evstr(tmpReleve(3));
+            stcReleve.index0(1,2) = evstr(tmpReleve(4));
+        
+            // ***** Extraction des points *****
+            // Rafraichissement de l'avancement tous les %
+            
+            // Pour un multiple entier de lignes
+            for centieme = 1:centiemeMax
+                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
+                            centieme*denominateur+lignesEnTete-1
+                    Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
+                    stcReleve.heure(ligne-5) = tmpReleve(1);
+                    stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                    tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
+                    if tmpEnergie == [] then
+                        stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
+                        stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
+                    else
+                        stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
+                        stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
+                    end
+                end
+                barre_Progression(stcStatistiques, ligne, progression, isDEBUG);
+            end
+            
+            // Nombre de lignes restantes
+            for ligne = ligne : nbrLignes
+                Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
+                stcReleve.heure(ligne-5) = tmpReleve(1);
+                stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
                 if tmpEnergie == [] then
-                    stcReleve.HC(ligne-5) = stcReleve.HC(ligne-6);
-                    stcReleve.HP(ligne-5) = stcReleve.HP(ligne-6);
+                    stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
+                    stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
                 else
-                    stcReleve.HC(ligne-5) = tmpEnergie-stcReleve.HC0;
-                    stcReleve.HP(ligne-5) = evstr(tmpReleve(4))-stcReleve.HP0;
+                    stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
+                    stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
                 end
             end
+            barre_Progression(stcStatistiques, ligne, progression, isDEBUG);
         end
         
-        
+        stcStatistiques.tempsTotal = toc();
         close(BarreProgression);
 
         // ***** Retourne *****

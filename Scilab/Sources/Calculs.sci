@@ -261,3 +261,15 @@ function duree = conversion_temps(tempsSecondes, opt_affichage)
         printf("Durée des consommations hors veilles = %s\n", texte);
     end
 endfunction
+
+//* ***************************************************************************
+/// \fn strNombre = nombre_2_Chiffres (nombre)
+/// \brief Retourne un nombre sur 2 chiffres au format string
+//* ***************************************************************************
+function strNombre = nombre_2_Chiffres (nombre)
+    if nombre < 10 then
+        strNombre = strcat(['0', string(nombre)]);
+    else
+        strNombre = string(nombre);
+    end
+endfunction
