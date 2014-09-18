@@ -247,14 +247,14 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         centiemeMax = floor(nbrLignes/denominateur);
         while (centiemeMax <= 90 | centiemeMax > 99) do
             if (centiemeMax < 99) then
-                denominateur = denominateur /2;
+                denominateur = floor(denominateur /2);
                 centiemeMax = floor(nbrLignes/denominateur);
                 if (centiemeMax > 99) then
-                    denominateur = denominateur *1.5;
+                    denominateur = floor(denominateur *1.5);
                     centiemeMax = floor(nbrLignes/denominateur);
                 end
             else
-                denominateur = denominateur *10;
+                denominateur = floor(denominateur *10);
                 centiemeMax = floor(nbrLignes/denominateur);
             end
         end
@@ -271,8 +271,8 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
             // Rafraichissement de l'avancement tous les %
             // Pour un nombre de lignes entier
             for centieme = 1:centiemeMax
-                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
-                            centieme*denominateur+lignesEnTete-1
+                for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
+                            (centieme*denominateur+lignesEnTete-1)
                     Indexer_Trame_Base (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
                     stcReleve.papp(ligne-5) = evstr(tmpReleve(2));

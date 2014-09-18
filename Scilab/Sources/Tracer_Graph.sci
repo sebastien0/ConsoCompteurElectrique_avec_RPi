@@ -307,7 +307,7 @@ endfunction
 
 //****************************************************************************
 // \fn couleur = couleur_plot()
-/// \brief Crée un tableau comportant les lettre des couleurs pour plot(). Limitation à 8 couleur
+/// \brief Crée un tableau comportant les lettre des couleurs pour plot(). Limitation à 8 couleurs
 /// \param [out] couleur    \c string  Tableau, abbréviation des couleurs
 //*****************************************************************************
 function couleur = couleur_plot()
