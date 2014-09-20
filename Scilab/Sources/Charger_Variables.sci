@@ -8,15 +8,10 @@
 //****************************************************************************
 /// \brief Charger les variables dans l'environnement depuis un fichier .sod
 /// \param [in] dataPath2Save string Chemin d'accès au répertoire où lire les fichiers .sod
-/// \return Gbl_CreationTxt     \c string     Tableau de date et heures de création
-/// \return Gbl_Heure   \c string   Tableau d'horodatage des relevés
-/// \return Gbl_Papp    \c double   Tableau des valeurs de la puissance
-/// \return Gbl_Index0  \c double   Index d'énergie au 1er échantillon du relevé
-/// \return Gbl_Index   \c double Tableau des index d'énergie
-/// \return Gbl_NumCompteur     \c string  Numéro du compteur
-/// \return Gbl_Config  \c double   Tableau contenant la configuration du compteur
+/// \return stcReleve      \c Structure     Structure du relevé
+/// \return stcStatistiques   \c Structure  Structure de statistiques
 //*****************************************************************************
-function charger_variables(dataPath2Save)
+function erreur = charger_variables(dataPath2Save)
     cheminFichier = uigetfile(["*.sod"],dataPath2Save,...
      "Choisir le fichier à ouvrir", %f);
         
@@ -28,27 +23,19 @@ function charger_variables(dataPath2Save)
         load(cheminFichier);
 
         // Configuration du compteur
-        if (Gbl_Config(1) == 0 | Gbl_Config(2) == 0) then
-            if Gbl_Config(1) == 0 then
-                Config = 1;
-                texteConfig = "Base";
-            elseif Gbl_Config(2) == 0 then
-                Config = 2;
-                texteConfig = "HCHP";
-            end
+        if (stcReleve.isConfigBase | stcReleve.isConfigHCHP) then
+            erreur = %f;
 
             // Affichage en console des info du compteur
-            info_compteur(Gbl_NumCompteur, Gbl_CreationTxt, texteConfig);
+            info_compteur(stcReleve);
             
-            [Gbl_CreationTxt, Gbl_Heure, Gbl_Papp, Gbl_Index0, Gbl_Index, ...
-            Gbl_NumCompteur, Gbl_Config] = resume (Gbl_CreationTxt, Gbl_Heure, ...
-            Gbl_Papp, Gbl_Index0, Gbl_Index, Gbl_NumCompteur, Gbl_Config);
+            [stcReleve, stcStatistiques] = resume (stcReleve, stcStatistiques);
         else
-            Config = 0;
+            erreur = %t;
             printf("Configuration du compteur non reconnue\n");
         end
     else
-        Config = -1;
+        erreur = %t;
         printf("Aucun fichier sélectionné\n");
     end
 endfunction

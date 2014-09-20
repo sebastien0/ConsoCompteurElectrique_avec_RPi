@@ -13,6 +13,7 @@ clc;
 // DEBUG = %t : Activer les traces pour le débug
 DEBUG = %f;
 //pause   // Continuer en saisissant "resume" en console
+erreur = %t;
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
@@ -43,6 +44,8 @@ exec(fnctPath+"\Filtrage.sci");
 //exec(fnctPath+"\GlrBrandtMoy.sci");
 // Charger les fonctions de filtrage
 exec(fnctPath+"\Modifier_Horodatage.sci");
+// Charger les fonctions de statistiques
+exec(fnctPath+"\Statistiques.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -72,7 +75,7 @@ while(choix <> 0 & choix <> []) do
         cheminFichier = Importer_Txt(dataPath2Read, DEBUG);
         // Retourne: erreur, (stcReleve, stcStatistiques)
 
-        if erreur == 0 then
+        if ~erreur then
           // Modifier l'horodatage
             choixHorodatage = x_mdialog('Modifier l''horodatage ?', 'Choix (y ou n)','n');
             if choixHorodatage == 'y'
@@ -83,7 +86,7 @@ while(choix <> 0 & choix <> []) do
             //Sauvegarder les variables globales
             Sauve_Variables(dataPath2Save, stcReleve, stcStatistiques);
 
-        elseif erreur == 2 then
+        else
              printf("Aucun fichier sélectionné\n");
         end
 
@@ -94,7 +97,7 @@ while(choix <> 0 & choix <> []) do
     elseif choix == 2 then
         close;
         printf("\nChargement d''un fichier de données\n\n");
-        charger_variables(dataPath2Save);
+        erreur = charger_variables(dataPath2Save);
 
     //*************************************************************************
     //* 3   Tracer la Puissance apparente
@@ -102,17 +105,16 @@ while(choix <> 0 & choix <> []) do
     elseif choix == 3 then
         close;
         printf("\nTracer la puissance apparente\n");
-        try
-            size(Gbl_Papp);
-            erreur = 0;
-        catch
+        
+        if erreur then
             printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
-            erreur = 1;
-        end
-
-        if (erreur == 0 & (Gbl_Config(1) == 0 | Gbl_Config(2) == 0)) then
-            [duree, moyenne] = HeuresFonctionnement();
-            tabMoy = matrice(dimensions(Gbl_Papp, "ligne"), moyenne);
+        elseif (~erreur & (stcReleve.isConfigBase | stcReleve.isConfigHCHP)) then
+            if stcReleve.numCompteur == ""049701078744"" then
+                [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
+                HeuresFonctionnement(stcReleve);
+            else
+                 stcReleve.pappMoy = mean(stcReleve.papp);
+             end
             tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur);
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
@@ -124,22 +126,17 @@ while(choix <> 0 & choix <> []) do
     elseif choix == 4 then
         close;
         printf("\nTracer la puissance apparente et les index\n");
-        try
-            size(stcReleve.heure);
-            erreur = 0;
-        catch
+        if erreur then
             printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
-            erreur = 1;
-        end
-        
-        if (erreur == 0 & (stcReleve.isBase | stcReleve.isHCHP) then
-            if stcReleve.numCompteur == ""049701078744"" then
-                [duree, stcReleve.pappMoy] = HeuresFonctionnement();
+        elseif (~erreur & (stcReleve.isConfigBase | stcReleve.isConfigHCHP)) then
+            // Comptabiliser les heures de fonctionnement
+            if stcReleve.numCompteur == "049701078744" then
+                [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
+                HeuresFonctionnement(stcReleve);
             else
                  stcReleve.pappMoy = mean(stcReleve.papp);
             end
             tracer_2_Graph(stcReleve);
-
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end

@@ -139,7 +139,7 @@ function tracer_Graph(data2plot, NumCompteur)
         //*************************************************************************
     
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
+        heures_Abscisses(nbrLignes, fenetre, graphique, stcReleve.heure);
 
         printf("Puissance active moyenne = %s\n", puissMoyStr);
         printf("Puissance apparente tracée\n");
@@ -188,7 +188,7 @@ function tracer_2_Graph(stcReleve)
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique, Gbl_Heure);
+        heures_Abscisses(nbrLignes, fenetre, graphique, stcReleve.heure);
         
         //*** Index *********************
         subplot(212);

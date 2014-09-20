@@ -49,41 +49,42 @@ endfunction
 // \fn [duree, moyenne] = HeuresFonctionnement()
 /// \brief Calculer le nombre d'heure de fonctionnement. \n 
 ///     Temps compatibilisé dès que Papp >= moyenne(Papp)
-/// \details Les variables globales \c Gbl_Papp et \c Gbl_Heure sont utilisées
+/// \details La structure \c stcReleve est utilisée
 /// \param [in optionnel] opt_moyInact   \c string  si = 1 alors calculer la moyenne sur un temps d'inactivié
 /// \param [out] duree    \c TabDouble  Temps écoulé, au format [h m s]
 /// \param [out] moyenne    \c double   Moyenne de \c Papp
 //*****************************************************************************
-function [duree, moyenne] = HeuresFonctionnement(opt_moyInact)
-    [lhs,rhs] = argn(0);  // nombre output arguments, nombre input arguments
+function [duree, moyenne] = HeuresFonctionnement(stcReleve, opt_moyInact)
+    rhs = argn(2);  // nombre output arguments, nombre input arguments
     tempsTotal = 0;
     duree = zeros(1,3);
     
    //Nombre de ligne
-    nbrLignes = min(dimensions(Gbl_Papp, "ligne"),dimensions(Gbl_Heure, "ligne"))-1;
+    nbrLignes = min(dimensions(stcReleve.papp, "ligne"), ...
+                    dimensions(stcReleve.heure, "ligne"))-1;
 
-    if rhs == 1 then // Moyenne sur une période inactive
+    if rhs == 2 then // Moyenne sur une période inactive
     // Formule inactivité = [moy(Papp(1:n)) / moy(Papp(1:2*n))] > 90%
         for (borne = 100:100:ceil(nbrLignes*0.1))
             maxMoy1 = 1 * borne;
             maxMoy2 = 2 * borne;
             
-            moyenne1 = mean(Gbl_Papp(1:maxMoy1));
-            moyenne2 = mean(Gbl_Papp(1:maxMoy2));
+            moyenne1 = mean(stcReleve.papp(1:maxMoy1));
+            moyenne2 = mean(stcReleve.papp(1:maxMoy2));
             if (abs(moyenne1/moyenne2) > 0.90) then
                 moyenne = moyenne2;
             end
          end
      
     else    // Moyenne
-        moyenne = mean(Gbl_Papp);
+        moyenne = mean(stcReleve.papp);
     end
 
     // Temps cumulé en secondes
     for (ligne = 2:nbrLignes-1)
-        if (Gbl_Papp(ligne) >= moyenne & Gbl_Papp(ligne-1) >= moyenne) then
-            tempsTotal = tempsTotal + difTemps(Gbl_Heure(ligne-1), ...
-                                        Gbl_Heure(ligne));
+        if (stcReleve.papp(ligne) >= moyenne & stcReleve.papp(ligne-1) >= moyenne) then
+            tempsTotal = tempsTotal + difTemps(stcReleve.heure(ligne-1), ...
+                                        stcReleveeure(ligne));
         end
     end
     // Décomposition en h, m, s avec affichage console
@@ -126,7 +127,7 @@ endfunction
 /// \param [out] tab    \c tabDouble(nbrLignes)  Matrice constante
 // TODO     retrouver l'appel de cette fonction pour modifier avec matrice(dimensions(tab, "ligne"), nombre);
 //*****************************************************************************
-function tab = matrice(nbrLignes, nombre)
+function tab = matrice(nombre, nbrLignes)
     tab = ones(nbrLignes, 1)*nombre;
 endfunction
 
@@ -146,12 +147,12 @@ endfunction
 //* ***************************************************************************
 /// \fn puissMoyStr = puiss_Moyenne()
 /// \brief Retourne la puissance moyenne avec l'unité appropriée
-/// \param [in global] Gbl_Papp    \c double   Tableau, données à moyenner
+/// \param [in global] stcReleve    \c Structure   Structure du relevée
 /// \param [out] puissMoyStr    \c string   Valeur moyenne
 //*****************************************************************************
 function puissMoyStr = puiss_Moyenne()
     // Calcul de la puissance moyenne
-    puissMoy = mean(Gbl_Papp);
+    puissMoy = mean(stcReleve.papp);
    // Mise en forme de la puissance moyenne
     if puissMoy > 1000 then   // Affichage en kWh
         puissMoyStr = msprintf("%.1f kW", puissMoy/1000);
@@ -164,22 +165,22 @@ endfunction
 //* ***************************************************************************
 /// \fn energieStr = energie(nbrLignes, config)
 /// \brief Retourne les énergies de début et de fin au format string avec l'unité
-/// \param [in global] Gbl_Index    \c double   Tableau, Index d'énergie
-/// \param [in] nbrLignes   \c double   Longueur de Gbl_Index
+/// \param [in global] stcReleve.    \c Strcuture   Structure du relevé
+/// \param [in] nbrLignes   \c double   Longueur de stcReleve.index
 /// \param [in] config  \c double   Configuration du compteur
 // TODO config est obsolète, le retirer
 /// \param [out] energieStr \c string   Tableau avec les index initiaux et finaux
 //*****************************************************************************
 function energieStr = energie(obs_nbrLignes, obs_config)
-    nbrLignes = dimensions(Gbl_Index, "ligne");
-    config = dimensions(Gbl_Index, "colonne");
-    energieStr(1,1) = msprintf("%.1f kWh", Gbl_Index0(1)/1000);
+    nbrLignes = dimensions(stcReleve.index, "ligne");
+    config = dimensions(stcReleve.index, "colonne");
+    energieStr(1,1) = msprintf("%.1f kWh", stcReleve.index0(1)/1000);
     energieStr(1,2) = msprintf("%.1f kWh", ...
-                (Gbl_Index0(1) + Gbl_Index(nbrLignes-2,1))/1000);
+                (stcReleve.index0(1) + stcReleve.index(nbrLignes-2,1))/1000);
     if config == 2 then
-        energieStr(2,1) = msprintf("%.1f kWh", Gbl_Index0(2)/1000);
+        energieStr(2,1) = msprintf("%.1f kWh", stcReleve.index0(2)/1000);
         energieStr(2,2) = msprintf("%.1f kWh", ...
-                    (Gbl_Index0(2) + Gbl_Index(nbrLignes-2,2))/1000);
+                    (stcReleve.index0(2) + stcReleve.index(nbrLignes-2,2))/1000);
     end
 endfunction
 

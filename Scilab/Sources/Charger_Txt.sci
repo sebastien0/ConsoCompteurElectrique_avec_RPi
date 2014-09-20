@@ -60,9 +60,9 @@ function Sauve_Variables (filePath, stcReleve, stcStatistiques)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
     dateReleve = msscanf(stcReleve.date, '%c%c%c%c / %c%c / %c%c');
-    dateReleve = [strcat(dateReleve(1), dateReleve(2), dateReleve(3), ...
-                  dateReleve(4)) strcat(dateReleve(5),dateReleve(6)) ...
-                  strcat(dateReleve(7),dateReleve(8))];
+    dateReleve = [strcat([dateReleve(1), dateReleve(2), dateReleve(3), ...
+                  dateReleve(4)]) strcat([dateReleve(5),dateReleve(6)]) ...
+                  strcat([dateReleve(7),dateReleve(8)])];
 
     cd(filePath);
     fileName = strcat([stcReleve.numCompteur,"_",dateReleve(1),"-",dateReleve(2)...
@@ -155,7 +155,6 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
                      (length(dataPath)+2):length(cheminFichier));
         printf("Ouverture du fichier %s \n", nomFichier);
         BarreProgression = progressionbar('Import en cours: Calcul du temps restant...');
-        tic;
         fichier = mopen(cheminFichier,'r'); // Ouverture du fichier
         donnee = mgetl(cheminFichier);  // Lecture du fichier
         mclose(cheminFichier);  // Fermeture du fichier
@@ -170,13 +169,13 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         //Date et Heure du relevé
         // Date et heure de l'importation
         tempDate = getdate();
-        stcReleve = struct("dateImportation", strcat([string(tempDate(1)), '/', ...
+        stcStatistiques = struct("dateImportation", strcat([string(tempDate(1)), '/', ...
            nombre_2_Chiffres(tempDate(2)), '/', nombre_2_Chiffres(tempDate(6))]));
-        stcReleve.heureImportation = strcat([nombre_2_Chiffres(tempDate(7)), ':', ...
+        stcStatistiques.heureImportation = strcat([nombre_2_Chiffres(tempDate(7)), ':', ...
            nombre_2_Chiffres(tempDate(8)), ':', nombre_2_Chiffres(tempDate(9))]);
         // Numéro du compteur
         temp = msscanf(donnee(3),'%s n°%s');
-        stcReleve.numCompteur = temp(2);
+        stcReleve = struct("numCompteur", temp(2));
         stcReleve.residence = nom_compteur(stcReleve.numCompteur);
         // Date et heures du relevé
         temp = msscanf(donnee(1),'%s %s %s %s');
@@ -215,7 +214,7 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         
         // Structure pour les statistique d'importation
         //TODO indiquer les variables
-        stcStatistiques = struct("numCompteur",stcReleve.numCompteur);
+        stcStatistiques.numCompteur = stcReleve.numCompteur;
         stcStatistiques.config = stcReleve.config;
         stcStatistiques.nomPC = nomPC;
         stcStatistiques.date = stcReleve.date;
@@ -243,6 +242,7 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
         // Recherche d'une combinaison optimale de "progression" et "centiemeMax"
         // pour avoir un nombre d'itération >=90 et < 99
         // Cela permet de mettre à jour la barre d'avancement à chaque pourcent
+        stcStatistiques.nbBoucleCentDenum = 0;
         denominateur = 100;
         centiemeMax = floor(nbrLignes/denominateur);
         while (centiemeMax <= 90 | centiemeMax > 99) do
@@ -257,11 +257,13 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
                 denominateur = floor(denominateur *10);
                 centiemeMax = floor(nbrLignes/denominateur);
             end
+            stcStatistiques.nbBoucleCentDenum = stcStatistiques.nbBoucleCentDenum +1;
         end
         
         // ****************
         // ***** Base *****
         // ****************
+        tic;
         if stcReleve.isConfigBase then
             // ***** Index énergies à t0 *****
             Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
@@ -284,6 +286,7 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression, isDEBUG);
+                sleep(5);  // Pause de 5ms
             end
             
             // Nombre de lignes restantes
@@ -329,6 +332,7 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression, isDEBUG);
+                sleep(5);  // Pause de 5ms
             end
             
             // Nombre de lignes restantes
@@ -353,8 +357,8 @@ function cheminFichier = Importer_Txt(dataPath, isDEBUG)
 
         // ***** Retourne *****
         [stcReleve, stcStatistiques, erreur] = ...
-                                      resume(stcReleve, stcStatistiques, 0);
+                                      resume(stcReleve, stcStatistiques, %f);
     else
-        [erreur] = resume(2);    //Pas de fichier sélectionné
+        [erreur] = resume(%t);    //Pas de fichier sélectionné
     end
 endfunction
