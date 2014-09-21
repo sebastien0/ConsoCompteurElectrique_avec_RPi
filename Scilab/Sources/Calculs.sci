@@ -60,12 +60,12 @@ function [duree, moyenne] = HeuresFonctionnement(stcReleve, opt_moyInact)
     duree = zeros(1,3);
     
    //Nombre de ligne
-    nbrLignes = min(dimensions(stcReleve.papp, "ligne"), ...
-                    dimensions(stcReleve.heure, "ligne"))-1;
+//    nbrLignes = min(dimensions(stcReleve.papp, "ligne"), ...
+//                    dimensions(stcReleve.heure, "ligne"))-1;
 
     if rhs == 2 then // Moyenne sur une période inactive
     // Formule inactivité = [moy(Papp(1:n)) / moy(Papp(1:2*n))] > 90%
-        for (borne = 100:100:ceil(nbrLignes*0.1))
+        for (borne = 100:100:ceil(stcReleve.nbrLignes*0.1))
             maxMoy1 = 1 * borne;
             maxMoy2 = 2 * borne;
             
@@ -81,10 +81,10 @@ function [duree, moyenne] = HeuresFonctionnement(stcReleve, opt_moyInact)
     end
 
     // Temps cumulé en secondes
-    for (ligne = 2:nbrLignes-1)
+    for (ligne = 2:stcReleve.nbrLignes-1)
         if (stcReleve.papp(ligne) >= moyenne & stcReleve.papp(ligne-1) >= moyenne) then
             tempsTotal = tempsTotal + difTemps(stcReleve.heure(ligne-1), ...
-                                        stcReleveeure(ligne));
+                                        stcReleve.heure(ligne));
         end
     end
     // Décomposition en h, m, s avec affichage console
@@ -145,14 +145,12 @@ function nom = nom_jour(dateReleve)
 endfunction
 
 //* ***************************************************************************
-/// \fn puissMoyStr = puiss_Moyenne()
+/// \fn puissMoyStr = puiss_Moyenne(puissMoy)
 /// \brief Retourne la puissance moyenne avec l'unité appropriée
-/// \param [in global] stcReleve    \c Structure   Structure du relevée
+/// \param [in ] puissMoy    \c double   Puissance moyenne
 /// \param [out] puissMoyStr    \c string   Valeur moyenne
 //*****************************************************************************
-function puissMoyStr = puiss_Moyenne()
-    // Calcul de la puissance moyenne
-    puissMoy = mean(stcReleve.papp);
+function puissMoyStr = puiss_Moyenne(puissMoy)
    // Mise en forme de la puissance moyenne
     if puissMoy > 1000 then   // Affichage en kWh
         puissMoyStr = msprintf("%.1f kW", puissMoy/1000);
@@ -168,19 +166,17 @@ endfunction
 /// \param [in global] stcReleve.    \c Strcuture   Structure du relevé
 /// \param [in] nbrLignes   \c double   Longueur de stcReleve.index
 /// \param [in] config  \c double   Configuration du compteur
-// TODO config est obsolète, le retirer
 /// \param [out] energieStr \c string   Tableau avec les index initiaux et finaux
 //*****************************************************************************
-function energieStr = energie(obs_nbrLignes, obs_config)
-    nbrLignes = dimensions(stcReleve.index, "ligne");
-    config = dimensions(stcReleve.index, "colonne");
+function energieStr = energie(stcReleve)
     energieStr(1,1) = msprintf("%.1f kWh", stcReleve.index0(1)/1000);
     energieStr(1,2) = msprintf("%.1f kWh", ...
-                (stcReleve.index0(1) + stcReleve.index(nbrLignes-2,1))/1000);
-    if config == 2 then
+                (stcReleve.index0(1) + stcReleve.index(stcReleve.nbrLignes,1))/1000);
+
+    if stcReleve.isConfigHCHP then
         energieStr(2,1) = msprintf("%.1f kWh", stcReleve.index0(2)/1000);
         energieStr(2,2) = msprintf("%.1f kWh", ...
-                    (stcReleve.index0(2) + stcReleve.index(nbrLignes-2,2))/1000);
+                    (stcReleve.index0(2) + stcReleve.index(stcReleve.nbrLignes,2))/1000);
     end
 endfunction
 

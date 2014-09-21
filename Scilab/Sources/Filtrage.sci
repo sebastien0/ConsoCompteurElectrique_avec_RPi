@@ -13,8 +13,7 @@
 /// \param [in] fenetre     \c double   Fenetre sur laquelle moyenner le signal
 //*****************************************************************************
 function signal_f = moyenneGlissante(signal, fenetre)
-    nbrLignes = size(signal);
-    nbrLignes = nbrLignes(1);
+    nbrLignes = dimensions(signal,"ligne");
 
     // Initialiser à 0 pour conserver les même dimensions que signal
     signal_f(1:fenetre-1) = 0;

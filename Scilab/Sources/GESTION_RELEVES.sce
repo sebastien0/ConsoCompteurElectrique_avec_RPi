@@ -11,7 +11,7 @@ close;
 clc;
 
 // DEBUG = %t : Activer les traces pour le débug
-DEBUG = %f;
+isDEBUG = %f;
 //pause   // Continuer en saisissant "resume" en console
 erreur = %t;
 
@@ -50,7 +50,7 @@ exec(fnctPath+"\Statistiques.sci");
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
 printf("Programme de gestion des données acquises avec la Raspberry-Pi\n");
-printf("Saisissez votre choix puis valier par OK (et non ENTREE)\n");
+printf("Saisissez votre choix puis valier par OK\n");
 printf("*************************************************************\n\n");
 
 
@@ -72,7 +72,7 @@ while(choix <> 0 & choix <> []) do
         close;
         printf("\nChargement d''un fichier texte\n");
         // *** Importer le fichier txt ***************
-        cheminFichier = Importer_Txt(dataPath2Read, DEBUG);
+        cheminFichier = Importer_Txt(dataPath2Read, isDEBUG);
         // Retourne: erreur, (stcReleve, stcStatistiques)
 
         if ~erreur then
@@ -112,8 +112,6 @@ while(choix <> 0 & choix <> []) do
             if stcReleve.numCompteur == ""049701078744"" then
                 [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
                 HeuresFonctionnement(stcReleve);
-            else
-                 stcReleve.pappMoy = mean(stcReleve.papp);
              end
             tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur);
         else
@@ -129,14 +127,14 @@ while(choix <> 0 & choix <> []) do
         if erreur then
             printf("Erreur! \t Importer d''abord des données, choix 1 ou 2.\n");
         elseif (~erreur & (stcReleve.isConfigBase | stcReleve.isConfigHCHP)) then
-            // Comptabiliser les heures de fonctionnement
-            if stcReleve.numCompteur == "049701078744" then
+            // Comptabiliser les heures de fonctionnement (Lyon communs)
+            if stcReleve.numCompteur == "271067018318" then
                 [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
                 HeuresFonctionnement(stcReleve);
             else
                  stcReleve.pappMoy = mean(stcReleve.papp);
             end
-            tracer_2_Graph(stcReleve);
+            tracer_2_Graph(stcReleve, %t);
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
