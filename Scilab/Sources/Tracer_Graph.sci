@@ -6,7 +6,7 @@
 //******************************
 
 //****************************************************************************
-// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
+/// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
 /// \brief Afficher les abscisses en temps, distribution par rapport 
 ///  à la taille de l'écran
 /// \param [in] nbrLignes    \c double  Nombre d'abscisses
