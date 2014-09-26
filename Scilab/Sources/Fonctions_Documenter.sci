@@ -7,81 +7,96 @@
 
 //****************************************************************************
 // \fn indexLigne = Indexer_Ligne(contenu,indexLigne)
-/// \brief Identifie si la ligne (ou les suivantes dans le cas d'un paragraphe) 
-///     est à indexer. Retourne la ligne suivante à indexer et le contenu indexé
+/// \brief Idexe les lignes d'un fichier
 /// \param [in] contenu
 /// \param [in] indexLigne
 /// \param [out] indexLigne
 /// \param [out] strContenu
 //*****************************************************************************
-function Indexer_Ligne(stcFichierCourant, stcDocFichier, tabBalises)
-    // Initialiser le nombre de fonctions
-    try
-        temp = stcDocFichier.tab(stcDocFichier.indexFichierCourant).nbrFonctions;
-    catch
-        stcDocFichier.tab(stcDocFichier.indexFichierCourant).nbrFonctions = 0;
+function Indexer_Ligne(contenu, stcDoc, tabBalises)
+    indexFichier = stcDoc.fichiers.indexFichierCourant;
+    nomFichier = stcDoc.fichiers.tab(indexFichier).nom;
+
+//    for indexLigne = 1:dimensions(contenu, "ligne")
+    for indexLigne = 1:10
+        if  grep(contenu(indexLigne),"/// ") == 1 then
+            strContenu = extraire_Balise(contenu(indexLigne));
+            // si le nom de la balise est reconnue alors extract sinon erreur
+            // Todo
+            if strContenu.nom == tabBalises(1) then
+                stcDoc.todo.nbr = stcDoc.todo.nbr + 1;
+                stcDoc.todo.tab(stcDoc.todo.nbr) = strContenu.descr;
+            // Bug
+            elseif strContenu.nom == tabBalises(2) then
+                stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
+                stcDoc.bug.tab(stcDoc.bug.nbr) = strContenu.descr;
+            // File
+            elseif strContenu.nom == tabBalises(3) then
+                // Nom du fichier déjà connu
+            // Author
+            elseif strContenu.nom == tabBalises(4) then
+                stcDoc.fichiers.tab(indexFichier).auteur = strContenu.descr;
+            // Date
+            elseif strContenu.nom == tabBalises(5) then
+                stcDoc.fichiers.tab(indexFichier).date = strContenu.descr;
+            // Brief
+            elseif strContenu.nom == tabBalises(6) then
+                stcDoc.fichiers.tab(indexFichier).resume = strContenu.descr;
+            // Fonction
+            elseif strContenu.nom == tabBalises(7) then
+                nbrFonctions = stcDoc.fichiers.tab(indexFichier).nbrFonctions +1;
+                stcDoc.fichiers.tab(indexFichier).nbrFonctions = nbrFonctions;
+                stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).proto = strContenu.descr;
+                stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nbrparam = 0;
+            // Param
+             elseif strContenu.nom == tabBalises(8) then
+                nbrparam = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nbrparam +1;
+                stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nbrparam = nbrparam;
+                stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).param(nbrparam) = strContenu.descr;
+            // Return
+            elseif strContenu.nom == tabBalises(9) then
+                stcDoc.fichiers.tab(indexFichier).retourne = strContenu.descr;
+            // Version
+            elseif strContenu.nom == tabBalises(10) then
+                stcDoc.fichiers.tab(indexFichier).version = strContenu.descr;
+            // Balise non reconnue
+            else
+                printf("Erreur \t Fichier ''%s'', ligne %d: Balise non reconnue",...
+                        nomFichier, indexLigne);
+            end
+        end
     end
     
-    // Ligne à indexer
-    /// TODO : Bug avec grep
-//    if  (grep(stcFichierCourant.contenu(stcFichierCourant.indexLigne),"/// ") == 1) then
-//        strContenu = balise(stcFichierCourant);
-//        // si nom balise reconnu alors sauv sinon erreur
-////        if est_Mot_Contenu(tabBalises, strContenu.nom) then
-//        // Auteur
-//        if strContenu.nom == tabBalises(4) then
-//            stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).auteur = strContenu.descr;
-//        // Date
-//        elseif strContenu.nom == tabBalises(5) then
-//            stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).date = strContenu.descr;
-//        // Résumé
-//        elseif strContenu.nom == tabBalises(6) then
-//            stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).resume = strContenu.descr;
-//        // Fonction
-//        elseif strContenu.nom == tabBalises(7) then
-//            stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).nbrFonctions = stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).nbrFonctions +1;
-//            stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).tabFonctions(stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).nbrFonctions).proto = strContenu.descr;
-//        // Balise non reconnue
-//        else
-//            printf("Erreur \t Fichier ''%s'', ligne %d: Balise non reconnue",...
-//                    stcDocFichiers.tab(stcDocFichiers.indexFichierCourant).nom,...
-//                    stcFichierCourant.indexLigne);
-//        end
-//        stcFichierCourant.indexLigne = stcFichierCourant.indexLigne+1;
-//    
-//    // Paragraphe à indexer
-//    elseif  (grep(stcFichierCourant.contenu(stcFichierCourant.indexLigne),"//* " == 1))  then
-//        printf("Paragraphe a indexer trouve\n");
-//
-//
-//        stcFichierCourant.indexLigne = stcFichierCourant.indexLigne+1;
-//    // Aucun contenu à indexer
-//    else
-        stcFichierCourant.indexLigne = stcFichierCourant.indexLigne+1;
-//    end
-    
-    [stcFichierCourant, stcDocFichier] = resume(stcFichierCourant, stcDocFichier);
+    [stcDoc] = resume(stcDoc);
 endfunction
 
 
 
 //****************************************************************************
-// \fn contenu = balise(contenuLigne)
+// \fn strContenu = extraire_Balise(contenuLigne)
 /// \brief Localise et extrait le nom de la balise et sa description
 /// \param [in] contenuLigne    \c string   Ligne à analyser
-/// \param [out] contenu    \c structure    Nom et description de la balise
+/// \return strContenu    \c structure    Nom et description de la balise
 //*****************************************************************************
-function strContenu = balise(stcFichierCourant)
-    contenuLigne = stcFichierCourant.contenu(stcFichierCourant.indexLigne);
+function strContenu = extraire_Balise(contenuLigne)
+    strContenu = struct("nom","");
     finContenu = length(contenuLigne);
     
     // Localiser nom balise et description
     debutPosNom = strcspn(contenuLigne,"\")+2;
-
-    finPosNom = strcspn(part(contenuLigne,debutPosNom:finContenu),' ')+debutPosNom;
-    // Extraire nom et description
-    strContenu = struct("nom", part(contenuLigne,debutPosNom:finPosNom-1));
-    strContenu.descr = part(contenuLigne,finPosNom+1:finContenu);
+    // Si '\' trouvé
+    if debutPosNom < finContenu then
+        finPosNom = strcspn(part(contenuLigne,debutPosNom:finContenu),' ')+debutPosNom;
+        
+        // Extraire nom et description
+        strContenu.nom = part(contenuLigne,debutPosNom:finPosNom-1);
+        strContenu.descr = part(contenuLigne,finPosNom+1:finContenu);
+    end
 endfunction
 
 
@@ -118,6 +133,5 @@ function tabBalises = liste_Nom_Balises()
     tabBalises(7) = "fn";
     tabBalises(8) = "param";
     tabBalises(9) = "return";
-//    tabBalises(10) = "";
-//    tabBalises(11) = "";
+    tabBalises(10) = "version";
 endfunction
