@@ -6,7 +6,7 @@
 //******************************
 
 //****************************************************************************
-// \fn configuration(donnee)
+/// \fn configuration(donnee)
 /// \brief Détecter la configuration du compteur
 
 /// \param [in] donnee    \c TabString  Fichier texte reconstitué
@@ -46,7 +46,7 @@ endfunction
 
 
 //****************************************************************************
-// \fn [duree, moyenne] = HeuresFonctionnement()
+/// \fn [duree, moyenne] = HeuresFonctionnement()
 /// \brief Calculer le nombre d'heure de fonctionnement. \n 
 ///     Temps compatibilisé dès que Papp >= moyenne(Papp)
 /// \details La structure \c stcReleve est utilisée
@@ -93,7 +93,7 @@ endfunction
 
 
 //****************************************************************************
-// \fn Dtemps = difTemps(heure1, heure2)
+/// \fn Dtemps = difTemps(heure1, heure2)
 /// \brief Calculer la différence de temps entre 2 instants
 /// \param [out]    Dtemps    \c Double  Différence de temps entre les 2 instants, en seconde
 /// \param [in]    heure1   \c String   Instant n°1 au format hh:mm:ss

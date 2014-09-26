@@ -6,7 +6,7 @@
 //******************************
 
 //****************************************************************************
-// \fn Papp = Puissance_HCHP (Heure, Index)
+/// \fn Papp = Puissance_HCHP (Heure, Index)
 /// \brief Reconstituer la puissance apparente depuis les index HC et HP
 /// \param [out] Papp \c TabDouble   Puissance apparente recomposée
 /// \param [in] Heure   \c TabString    Horodate des échantillons

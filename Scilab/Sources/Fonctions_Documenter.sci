@@ -11,64 +11,102 @@
 /// \param [in] contenu
 /// \param [in] indexLigne
 /// \param [out] indexLigne
-/// \param [out] strContenu
+/// \param [out] stcContenu
 //*****************************************************************************
 function Indexer_Ligne(contenu, stcDoc, tabBalises)
     indexFichier = stcDoc.fichiers.indexFichierCourant;
     nomFichier = stcDoc.fichiers.tab(indexFichier).nom;
+    // Indexation précédente
+    stcContenu_1 = struct("nom","");
+    estFonction = %f;
 
-//    for indexLigne = 1:dimensions(contenu, "ligne")
-    for indexLigne = 1:10
-        if  grep(contenu(indexLigne),"/// ") == 1 then
-            strContenu = extraire_Balise(contenu(indexLigne));
+    for indexLigne = 1:dimensions(contenu, "ligne")
+        if grep(contenu(indexLigne),"/// ") == 1 then
+            stcContenu = extraire_Balise(contenu(indexLigne));
+            if ~stcContenu.contientBalise then
+                stcContenu.nom = stcContenu_1.nom;
+                stcContenu.est2Lignes = %t;
+            else
+                stcContenu.est2Lignes = %f;
+            end
             // si le nom de la balise est reconnue alors extract sinon erreur
             // Todo
-            if strContenu.nom == tabBalises(1) then
-                stcDoc.todo.nbr = stcDoc.todo.nbr + 1;
-                stcDoc.todo.tab(stcDoc.todo.nbr) = strContenu.descr;
+            if stcContenu.nom == tabBalises(1) then
+                if stcContenu.est2Lignes then
+                    // Concaténer avec la ligne précédente
+                    temp = stcDoc.todo.tab(stcDoc.todo.nbr);
+                    stcContenu.descr = descr_2_Lignes (temp, stcContenu);
+                else
+                    stcDoc.todo.nbr = stcDoc.todo.nbr + 1;
+                    stcDoc.todo.tab(stcDoc.todo.nbr) = stcContenu.descr;
+                end
             // Bug
-            elseif strContenu.nom == tabBalises(2) then
+            elseif stcContenu.nom == tabBalises(2) then
                 stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
-                stcDoc.bug.tab(stcDoc.bug.nbr) = strContenu.descr;
+                stcDoc.bug.tab(stcDoc.bug.nbr) = stcContenu.descr;
             // File
-            elseif strContenu.nom == tabBalises(3) then
+            elseif stcContenu.nom == tabBalises(3) then
                 // Nom du fichier déjà connu
             // Author
-            elseif strContenu.nom == tabBalises(4) then
-                stcDoc.fichiers.tab(indexFichier).auteur = strContenu.descr;
+            elseif stcContenu.nom == tabBalises(4) then
+                stcDoc.fichiers.tab(indexFichier).auteur = stcContenu.descr;
             // Date
-            elseif strContenu.nom == tabBalises(5) then
-                stcDoc.fichiers.tab(indexFichier).date = strContenu.descr;
+            elseif stcContenu.nom == tabBalises(5) then
+                stcDoc.fichiers.tab(indexFichier).date = stcContenu.descr;
             // Brief
-            elseif strContenu.nom == tabBalises(6) then
-                stcDoc.fichiers.tab(indexFichier).resume = strContenu.descr;
+            elseif stcContenu.nom == tabBalises(6) then
+                // Brief d'une fonction
+                if estFonction then
+                    // Sur plusieurs lignes
+                    if stcContenu.est2Lignes then
+                        // Concaténer avec la ligne précédente
+                        temp = stcDoc.fichiers.tab(...
+                                indexFichier).tabFonctions(nbrFonctions).resume;
+                        stcContenu.descr = descr_2_Lignes (temp, stcContenu);
+                    end
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).resume = stcContenu.descr;
+                // Brief du fichier
+                else
+                    // Sur plusieurs lignes
+                    if stcContenu.est2Lignes then
+                        // Concaténer avec la ligne précédente
+                        temp1 = stcDoc.fichiers.tab(indexFichier).resume;
+                        temp2 = stcContenu.descr;
+                        stcContenu.descr = strcat([temp1, temp2]);
+                    end
+                    stcDoc.fichiers.tab(indexFichier).resume = stcContenu.descr;
+                end
             // Fonction
-            elseif strContenu.nom == tabBalises(7) then
+            elseif stcContenu.nom == tabBalises(7) then
                 nbrFonctions = stcDoc.fichiers.tab(indexFichier).nbrFonctions +1;
                 stcDoc.fichiers.tab(indexFichier).nbrFonctions = nbrFonctions;
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                nbrFonctions).proto = strContenu.descr;
+                                nbrFonctions).proto = stcContenu.descr;
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).nbrparam = 0;
+                estFonction = %t;
             // Param
-             elseif strContenu.nom == tabBalises(8) then
+             elseif stcContenu.nom == tabBalises(8) then
                 nbrparam = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).nbrparam +1;
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).nbrparam = nbrparam;
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                nbrFonctions).param(nbrparam) = strContenu.descr;
+                                nbrFonctions).param(nbrparam) = stcContenu.descr;
             // Return
-            elseif strContenu.nom == tabBalises(9) then
-                stcDoc.fichiers.tab(indexFichier).retourne = strContenu.descr;
+            elseif stcContenu.nom == tabBalises(9) then
+                stcDoc.fichiers.tab(indexFichier).retourne = stcContenu.descr;
             // Version
-            elseif strContenu.nom == tabBalises(10) then
-                stcDoc.fichiers.tab(indexFichier).version = strContenu.descr;
+            elseif stcContenu.nom == tabBalises(10) then
+                stcDoc.fichiers.tab(indexFichier).version = stcContenu.descr;
             // Balise non reconnue
             else
                 printf("Erreur \t Fichier ''%s'', ligne %d: Balise non reconnue",...
                         nomFichier, indexLigne);
             end
+            // Sauvegarde de l'indexation courante
+            stcContenu_1 = stcContenu;
         end
     end
     
@@ -78,13 +116,13 @@ endfunction
 
 
 //****************************************************************************
-// \fn strContenu = extraire_Balise(contenuLigne)
+// \fn stcContenu = extraire_Balise(contenuLigne)
 /// \brief Localise et extrait le nom de la balise et sa description
 /// \param [in] contenuLigne    \c string   Ligne à analyser
-/// \return strContenu    \c structure    Nom et description de la balise
+/// \return stcContenu    \c structure    Nom et description de la balise
 //*****************************************************************************
-function strContenu = extraire_Balise(contenuLigne)
-    strContenu = struct("nom","");
+function stcContenu = extraire_Balise(contenuLigne)
+    stcContenu = struct("contientBalise",%f);
     finContenu = length(contenuLigne);
     
     // Localiser nom balise et description
@@ -94,8 +132,13 @@ function strContenu = extraire_Balise(contenuLigne)
         finPosNom = strcspn(part(contenuLigne,debutPosNom:finContenu),' ')+debutPosNom;
         
         // Extraire nom et description
-        strContenu.nom = part(contenuLigne,debutPosNom:finPosNom-1);
-        strContenu.descr = part(contenuLigne,finPosNom+1:finContenu);
+        stcContenu.contientBalise = %t;
+        stcContenu.nom = part(contenuLigne,debutPosNom:finPosNom-1);
+        stcContenu.descr = part(contenuLigne,finPosNom+1:finContenu);
+    else
+        stcContenu.nom = "";
+        debutPos = posi_Dern_Slash(contenuLigne, finContenu);
+        stcContenu.descr = part(contenuLigne, debutPos+1:finContenu);
     end
 endfunction
 
@@ -134,4 +177,32 @@ function tabBalises = liste_Nom_Balises()
     tabBalises(8) = "param";
     tabBalises(9) = "return";
     tabBalises(10) = "version";
+endfunction
+
+//****************************************************************************
+// \fn dernPosi = posiDernAntiSlash(contenuLigne, finContenu)
+/// \brief Detecte la position de "///"
+/// \return dernPosi    \c double    position du 3ème '/'
+//*****************************************************************************
+function dernPosi = posi_Dern_Slash(contenuLigne, finContenu)
+    for i = 1:finContenu-2
+        if part(contenuLigne,i:i+2) == "///" then
+            dernPosi = i+2;
+            return
+        end
+    end
+endfunction
+
+
+//****************************************************************************
+// \fn temp12 = descr_2_Lignes (temp1, stcContenu)
+/// \brief Concaténer temp1 avec stcContenu.descr
+/// \return temp12    \c string    Chaine concaténée
+//*****************************************************************************
+function temp12 = descr_2_Lignes (temp1, stcContenu)
+    temp1 = stcDoc.fichiers.tab(...
+            indexFichier).tabFonctions(nbrFonctions).resume;
+    temp2 = stcContenu.descr;
+    temp12 = strcat([temp1, temp2]);
+    return
 endfunction

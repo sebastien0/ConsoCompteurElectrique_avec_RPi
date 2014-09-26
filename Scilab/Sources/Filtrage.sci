@@ -6,7 +6,7 @@
 //******************************
 
 //****************************************************************************
-// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
+/// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
 /// \brief Filtrage par moyenne glissante
 /// \param [out] signal_f   \c TabDouble    Signal filtré
 /// \param [in] signal    \c TabDouble  Nombre d'abscisses

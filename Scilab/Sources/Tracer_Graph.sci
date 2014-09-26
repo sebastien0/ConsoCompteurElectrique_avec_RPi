@@ -41,7 +41,7 @@ endfunction
 
 
 //****************************************************************************
-// \fn mise_en_forme(graphique, fenetre)
+/// \fn mise_en_forme(graphique, fenetre)
 /// \brief Mise en forme du graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] fenetre    \b TBC Objet graphique
@@ -95,7 +95,7 @@ function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
 endfunction
 
 //****************************************************************************
-// \fn tracer_Graph(data2plot, NumCompteur, Titre)
+/// \fn tracer_Graph(data2plot, NumCompteur, Titre)
 /// \brief Tracer une courbe
 /// \param [in] data2plot    \c double  Tableau des données à tracer
 /// \param [in] NumCompteur    \c   string Numéro du compteur
@@ -150,7 +150,7 @@ endfunction
 
 
 //****************************************************************************
-// \fn tracer_2_Graph(Puissance, Index, NumCompteur)
+/// \fn tracer_2_Graph(Puissance, Index, NumCompteur)
 /// \brief Tracer 2 courbes. \n Puissance peut contenir 1 ou plusieurs tableaux
 /// \param [in] Puissance    \c Tab_double  Données Puissance à tracer
 /// \param [in] Index    \c Tab_string  Données Index à tracer
@@ -242,7 +242,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
 endfunction
 
 //****************************************************************************
-// \fn tracer_D_Graph(data2plot, jour, heure)
+/// \fn tracer_D_Graph(data2plot, jour, heure)
 /// \brief Tracer des courbes supperposées; limitées à 8 courbes car 8 couleurs.
 /// \param [in] data2plot    \c double  Tableau, données à tracer (ordonnées)
 /// \param [in] jour    \c string   Tableau, jours et dates de création
@@ -305,7 +305,7 @@ endfunction
 
 
 //****************************************************************************
-// \fn couleur = couleur_plot()
+/// \fn couleur = couleur_plot()
 /// \brief Crée un tableau comportant les lettre des couleurs pour plot(). Limitation à 8 couleurs
 /// \param [out] couleur    \c string  Tableau, abbréviation des couleurs
 //*****************************************************************************

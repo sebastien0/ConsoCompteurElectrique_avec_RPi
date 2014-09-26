@@ -19,6 +19,11 @@ exec(fnctPath+"\Calculs.sci");
 // Charger les fonctions pour documenter
 exec(fnctPath+"\Fonctions_Documenter.sci");
 
+//*** Début du programme *******************************************************
+printf("*************************************************************\n");
+printf("Generer la documentation du projet courant\nChemin: %s\n", fnctPath);
+printf("*************************************************************\n\n");
+
 // Lister les fichiers dans le répertoire courant
 listeNomFichiers = listfiles("*.sci","*.sce");
 // Permet d'avoir toutes les info d'un fichier (nom, date, ...)
@@ -36,12 +41,15 @@ stcDoc.todo.nbr = 0;
 stcDoc.bug.nbr = 0;
 
 //******* Inder les fichiers ************
+printf("Info \t %i fichiers a indexer\n", stcDoc.fichiers.nbrFichiers);
 //for stcDoc.fichiers.indexFichierCourant = 1 : stcDoc.fichiers.nbrFichiers
 for indexFichier = 1 : 1
     stcDoc.fichiers.indexFichierCourant = indexFichier;
     // Nom du fichier
     stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nom = ...
                 listeNomFichiers(stcDoc.fichiers.indexFichierCourant);
+    printf("Info \t Traitement du fichier n°%i \t %s\n", indexFichier, ...
+                stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nom);
     // Nombre de fonctions
     stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nbrFonctions = 0;
 
@@ -61,6 +69,8 @@ for indexFichier = 1 : 1
      Indexer_Ligne(contenu, stcDoc, tabBalises);
         
 end
+
+printf("Fin de la documentation\n");
 //******* Fichier de sortie ************
 //Exporter la structure dans un ficheir CSV?!
 

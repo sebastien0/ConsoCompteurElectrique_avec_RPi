@@ -6,6 +6,7 @@
 //******************************
 
 //****************************************************************************
+/// \fn erreur = charger_variables(dataPath2Save)
 /// \brief Charger les variables dans l'environnement depuis un fichier .sod
 /// \param [in] dataPath2Save string Chemin d'accès au répertoire où lire les fichiers .sod
 /// \return stcReleve      \c Structure     Structure du relevé
