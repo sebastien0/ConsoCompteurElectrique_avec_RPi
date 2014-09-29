@@ -31,7 +31,8 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
             end
             // si le nom de la balise est reconnue alors extract sinon erreur
             // Todo
-            if stcContenu.nom == tabBalises(1) then
+            /// TODO: Ne marche pas!
+            if convstr(stcContenu.nom,'u') == convstr(tabBalises(1),'u') then
                 if stcContenu.est2Lignes then
                     // Concaténer avec la ligne précédente
                     temp = stcDoc.todo.tab(stcDoc.todo.nbr);
@@ -41,18 +42,22 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
                     stcDoc.todo.tab(stcDoc.todo.nbr) = stcContenu.descr;
                 end
             // Bug
-            elseif stcContenu.nom == tabBalises(2) then
+            elseif convstr(stcContenu.nom,'u') == convstr(tabBalises(2),'u') then
                 stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
                 stcDoc.bug.tab(stcDoc.bug.nbr) = stcContenu.descr;
-            // File
+            
+            // Version
             elseif stcContenu.nom == tabBalises(3) then
-                // Nom du fichier déjà connu
+                stcDoc.fichiers.tab(indexFichier).version = stcContenu.descr;
+            
             // Author
             elseif stcContenu.nom == tabBalises(4) then
                 stcDoc.fichiers.tab(indexFichier).auteur = stcContenu.descr;
+           
             // Date
             elseif stcContenu.nom == tabBalises(5) then
                 stcDoc.fichiers.tab(indexFichier).date = stcContenu.descr;
+            
             // Brief
             elseif stcContenu.nom == tabBalises(6) then
                 // Brief d'une fonction
@@ -77,15 +82,31 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
                     end
                     stcDoc.fichiers.tab(indexFichier).resume = stcContenu.descr;
                 end
+            
             // Fonction
             elseif stcContenu.nom == tabBalises(7) then
+                // Nombre de fonctions
                 nbrFonctions = stcDoc.fichiers.tab(indexFichier).nbrFonctions +1;
                 stcDoc.fichiers.tab(indexFichier).nbrFonctions = nbrFonctions;
+                // Proto
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).proto = stcContenu.descr;
+                // Nom
+                nom = part(stcContenu.descr, 1:strcspn(stcContenu.descr,'('));
+                if grep(nom,'=') == 1 then
+                    nom = part(nom,strcspn(stcContenu.descr,'=')+2:length(nom));
+                end
+                
+                if part(nom,1) == ' ' then
+                     nom = part(nom,2:length(nom));
+                end
+                stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nom = nom;
+                // Init nombre de paramètres
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).nbrparam = 0;
                 estFonction = %t;
+            
             // Param
              elseif stcContenu.nom == tabBalises(8) then
                 nbrparam = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
@@ -94,12 +115,11 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
                                 nbrFonctions).nbrparam = nbrparam;
                 stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).param(nbrparam) = stcContenu.descr;
+            
             // Return
             elseif stcContenu.nom == tabBalises(9) then
                 stcDoc.fichiers.tab(indexFichier).retourne = stcContenu.descr;
-            // Version
-            elseif stcContenu.nom == tabBalises(10) then
-                stcDoc.fichiers.tab(indexFichier).version = stcContenu.descr;
+
             // Balise non reconnue
             else
                 printf("Erreur \t Fichier ''%s'', ligne %d: Balise non reconnue",...
@@ -169,14 +189,13 @@ endfunction
 function tabBalises = liste_Nom_Balises()
     tabBalises(1) = "todo";
     tabBalises(2) = "bug";
-    tabBalises(3) = "file";
+    tabBalises(3) = "version";
     tabBalises(4) = "author";
     tabBalises(5) = "date";
     tabBalises(6) = "brief";
     tabBalises(7) = "fn";
     tabBalises(8) = "param";
     tabBalises(9) = "return";
-    tabBalises(10) = "version";
 endfunction
 
 //****************************************************************************
