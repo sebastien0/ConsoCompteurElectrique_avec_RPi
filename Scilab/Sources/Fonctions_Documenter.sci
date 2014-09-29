@@ -20,27 +20,36 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
     stcContenu_1 = struct("nom","");
     estFonction = %f;
 
-    for indexLigne = 1:dimensions(contenu, "ligne")
+    indexLigne = 1;
+//    for indexLigne = 1:dimensions(contenu, "ligne")
+    while (indexLigne <= dimensions(contenu, "ligne"))
         if grep(contenu(indexLigne),"/// ") == 1 then
             stcContenu = extraire_Balise(contenu(indexLigne));
+            // Si pas de balise alors texte sur plusieurs lignes
             if ~stcContenu.contientBalise then
                 stcContenu.nom = stcContenu_1.nom;
-                stcContenu.est2Lignes = %t;
-            else
-                stcContenu.est2Lignes = %f;
             end
             // si le nom de la balise est reconnue alors extract sinon erreur
+            
             // Todo
-            /// TODO: Ne marche pas!
             if convstr(stcContenu.nom,'u') == convstr(tabBalises(1),'u') then
-                if stcContenu.est2Lignes then
+                if ~stcContenu.contientBalise then
                     // Concaténer avec la ligne précédente
-                    temp = stcDoc.todo.tab(stcDoc.todo.nbr);
-                    stcContenu.descr = descr_2_Lignes (temp, stcContenu);
+                    while grep(contenu(indexLigne),"/// ") == 1
+                        stcContenu = extraire_Balise(contenu(indexLigne));
+                        textePrecedent = stcDoc.todo.tab(stcDoc.todo.nbr).descr;
+                        stcDoc.todo.tab(stcDoc.todo.nbr).descr = descr_2_Lignes(...
+                                                textePrecedent, stcContenu, %f);
+                        indexLigne = indexLigne+1;
+                    end
+                    indexLigne = indexLigne-1;
                 else
                     stcDoc.todo.nbr = stcDoc.todo.nbr + 1;
-                    stcDoc.todo.tab(stcDoc.todo.nbr) = stcContenu.descr;
+                    stcDoc.todo.tab(stcDoc.todo.nbr).fichier = nomFichier;
+                    stcDoc.todo.tab(stcDoc.todo.nbr).ligne = indexLigne;
+                    stcDoc.todo.tab(stcDoc.todo.nbr).descr = stcContenu.descr;
                 end
+
             // Bug
             elseif convstr(stcContenu.nom,'u') == convstr(tabBalises(2),'u') then
                 stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
@@ -63,18 +72,18 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
                 // Brief d'une fonction
                 if estFonction then
                     // Sur plusieurs lignes
-                    if stcContenu.est2Lignes then
+                    if ~stcContenu.contientBalise then
                         // Concaténer avec la ligne précédente
-                        temp = stcDoc.fichiers.tab(...
+                        textePrecedent = stcDoc.fichiers.tab(...
                                 indexFichier).tabFonctions(nbrFonctions).resume;
-                        stcContenu.descr = descr_2_Lignes (temp, stcContenu);
+                        stcContenu.descr = descr_2_Lignes (textePrecedent, stcContenu);
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).resume = stcContenu.descr;
                 // Brief du fichier
                 else
                     // Sur plusieurs lignes
-                    if stcContenu.est2Lignes then
+                    if ~stcContenu.contientBalise then
                         // Concaténer avec la ligne précédente
                         temp1 = stcDoc.fichiers.tab(indexFichier).resume;
                         temp2 = stcContenu.descr;
@@ -128,6 +137,7 @@ function Indexer_Ligne(contenu, stcDoc, tabBalises)
             // Sauvegarde de l'indexation courante
             stcContenu_1 = stcContenu;
         end
+        indexLigne = indexLigne +1;
     end
     
     [stcDoc] = resume(stcDoc);
@@ -216,12 +226,24 @@ endfunction
 //****************************************************************************
 // \fn temp12 = descr_2_Lignes (temp1, stcContenu)
 /// \brief Concaténer temp1 avec stcContenu.descr
+/// \param [in] textePrecedent \c String    Texte avec lequel concaténer
+/// \param [in] stcContenu \c Structure     Structure de la documentation
+/// \param [in] opt_multiLignes \c boolen   Si présent, temp12 est sur plusieurs lignes
 /// \return temp12    \c string    Chaine concaténée
 //*****************************************************************************
-function temp12 = descr_2_Lignes (temp1, stcContenu)
-    temp1 = stcDoc.fichiers.tab(...
-            indexFichier).tabFonctions(nbrFonctions).resume;
+function temp12 = descr_2_Lignes (textePrecedent, stcContenu, opt_multiLignes)
     temp2 = stcContenu.descr;
-    temp12 = strcat([temp1, temp2]);
+    // Sur plusieurs lignes
+    if argn(2) == 3 then
+        if textePrecedent == "" then
+            temp12 = temp2;
+        else
+            temp12 = textePrecedent;
+            temp12(dimensions(textePrecedent,"ligne")+1,1) = temp2;
+        end
+    // Sur une seule ligne
+    else
+        temp12 = strcat([textePrecedent, temp2]);
+    end
     return
 endfunction
