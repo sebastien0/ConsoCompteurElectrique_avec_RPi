@@ -129,7 +129,7 @@ function tracer_Graph(data2plot, NumCompteur)
         mise_en_forme(graphique, fenetre);
             
         //*********************************************************************
-        /// todo: 
+        /// \TODO 
         /// - Obtenir la taille de la fenêtre pour ajuster au mieux
         /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
         /// UTILISER event handler functions 

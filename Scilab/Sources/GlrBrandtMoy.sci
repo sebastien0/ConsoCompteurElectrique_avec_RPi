@@ -1,3 +1,9 @@
+//*****************************
+/// \author Sébastien Lemoine
+/// \date Mai 2014
+/// \brief Utilisation de l'algorithme du GLR de Brandt
+//******************************
+
 //*****************************************************************************
 // * Mise en oeuvre
 exec("GlrBrandtMoy.sci");

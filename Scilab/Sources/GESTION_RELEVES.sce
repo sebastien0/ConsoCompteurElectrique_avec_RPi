@@ -1,5 +1,4 @@
 //*****************************
-/// \file GESTION_RELEVES.sce
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Gestion de l'IHM et de l'envrionnement pour un post 

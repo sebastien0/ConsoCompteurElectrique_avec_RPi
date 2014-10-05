@@ -257,10 +257,10 @@ function duree = conversion_temps(tempsSecondes, opt_affichage)
 endfunction
 
 //* ***************************************************************************
-/// \fn strNombre = nombre_2_Chiffres (nombre)
+/// \fn strNombre = nombre_2_Chiffres(nombre)
 /// \brief Retourne un nombre sur 2 chiffres au format string
 //* ***************************************************************************
-function strNombre = nombre_2_Chiffres (nombre)
+function strNombre = nombre_2_Chiffres(nombre)
     if nombre < 10 then
         strNombre = strcat(['0', string(nombre)]);
     else
