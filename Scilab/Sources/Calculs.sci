@@ -1,5 +1,4 @@
 //*****************************
-/// \file Calculs.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Outils de calculs
@@ -8,7 +7,6 @@
 //****************************************************************************
 /// \fn configuration(donnee)
 /// \brief Détecter la configuration du compteur
-
 /// \param [in] donnee    \c TabString  Fichier texte reconstitué
 /// \return titres  \c TabString    Entête des colonnes
 /// \return configBase_N    \c double   Configuration du compteur en BASE
@@ -49,7 +47,6 @@ endfunction
 /// \fn [duree, moyenne] = HeuresFonctionnement()
 /// \brief Calculer le nombre d'heure de fonctionnement. \n 
 ///     Temps compatibilisé dès que Papp >= moyenne(Papp)
-/// \details La structure \c stcReleve est utilisée
 /// \param [in optionnel] opt_moyInact   \c string  si = 1 alors calculer la moyenne sur un temps d'inactivié
 /// \param [out] duree    \c TabDouble  Temps écoulé, au format [h m s]
 /// \param [out] moyenne    \c double   Moyenne de \c Papp

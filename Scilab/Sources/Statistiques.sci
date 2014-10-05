@@ -1,3 +1,9 @@
+//*****************************
+/// \author Sébastien Lemoine
+/// \date Septembre 2014
+/// \brief Fonctions de statistique de code
+//******************************
+
 //* ***************************************************************************
 /// \fn Tracer_Duree_Chargement (stcStatistiques)
 /// \brief Trace les temps restant estimé et le temps total écoulé

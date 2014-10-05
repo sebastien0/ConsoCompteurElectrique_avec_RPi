@@ -1,5 +1,4 @@
 //*****************************
-/// \file Tracer_Graph.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Fonctions pour tracer les graphiques
@@ -52,7 +51,7 @@ function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
     set(graphique,"grid",[1 1]);    // Grid on
     
     //*********************************************************************
-    /// \todo 
+    /// \TODO 
     /// - Obtenir la taille de la fenêtre pour ajuster au mieux
     /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
     /// UTILISER event handler functions 

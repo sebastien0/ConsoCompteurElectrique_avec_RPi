@@ -1,5 +1,4 @@
 //*****************************
-/// \file Filtrage.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Fonctions de filtrage de signal

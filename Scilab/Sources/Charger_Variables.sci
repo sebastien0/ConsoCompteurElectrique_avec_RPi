@@ -1,5 +1,4 @@
 //*****************************
-/// \file Charger_Variables.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Fonctions pour importer un fichier binaire .sod

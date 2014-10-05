@@ -1,5 +1,4 @@
 //*****************************
-/// \file Puissance_HPHC.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Fonctions dans le cas d'une configuration HCHP

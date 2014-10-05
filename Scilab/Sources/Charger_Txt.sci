@@ -1,13 +1,13 @@
 //*****************************
-/// \file Charger_Txt.sci
 /// \author Sébastien Lemoine
 /// \date Avril 2014
 /// \brief Fonctions pour importer un fichier texte .txt
 //******************************
 
 //****************************************************************************
+/// \fn barre_Progression(stcStatistiques, ligne, progression)
 /// \brief Affiche la barre de progression \n Calcul la progression et estime 
-/// le temps restant \n Est appelée à chaque nouveau pourcent réalisé
+/// le temps restant. Est appelée à chaque nouveau pourcent réalisé
 /// \param [in] ligne   \c double   Ligne courante
 /// \param [in] stcStatistiques   \c structure   Structure de statistique d'avancement
 /// \param [in] progression \c double   Compteur d'avancement (nombre de fois 
@@ -50,11 +50,12 @@ endfunction
 
     
 //*****************************************************************************
+///\fn Sauve_Variables (filePath, stcReleve, stcStatistiques)
 /// \brief Enregistre les variables dans un fichier .sod
 /// \param [in] filePath    \c string   Chemin où enregistrer le fichier
-/// Les variables suivantes sont sauvegardées:
-/// \li \var stcReleve
-/// \li \var stcStatistiques
+// Les variables suivantes sont sauvegardées:
+// \li \var stcReleve
+// \li \var stcStatistiques
 //*****************************************************************************
 function Sauve_Variables (filePath, stcReleve, stcStatistiques)
     originPath = pwd();
@@ -75,6 +76,7 @@ endfunction
 
 
 //*****************************************************************************
+/// \fn posiCaract = LocaliserCaractere(trame,caractere)
 /// \brief A partir de l'en-tête du tableau, retourne la position 
 ///  des tabulations et la configuration
 /// \param [in] trame    \c string   Trame à analyser
@@ -94,6 +96,7 @@ function posiCaract = LocaliserCaractere(trame,caractere)
 endfunction
 
 //*****************************************************************************
+/// \fn Indexer_Trame_Base (trame, stcPosiTab)
 /// \brief Retourne les valeurs dans une trame BASE
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
@@ -108,6 +111,7 @@ function Indexer_Trame_Base (trame, stcPosiTab)
 endfunction
 
 //*****************************************************************************
+/// \fn Indexer_Trame_HCHP (trame, stcPosiTab)
 /// \brief Retourne les valeurs dans une trame HCHP
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
@@ -124,6 +128,7 @@ endfunction
 
 
 //****************************************************************************
+/// \fn cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
 /// \brief Importe les données depuis un fichier .txt
 /// \param [in] dataPath    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
 /// \param [in] DEBUG   \c double   Afficher des informations en console pour le debug

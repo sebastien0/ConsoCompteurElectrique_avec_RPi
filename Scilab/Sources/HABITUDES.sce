@@ -1,6 +1,9 @@
-//********************
-// Etude des habitudes
-//*******************
+//*****************************
+/// \author Sébastien Lemoine
+/// \date Mai 2014
+/// \brief Etude des habitudes
+//******************************
+
 clear;
 close;
 clc;
@@ -11,11 +14,11 @@ DEBUG = 0;
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
-/// Chemin du répertoire courant, repertoire parent du projet Scilab
+// Chemin du répertoire courant, repertoire parent du projet Scilab
 fnctPath = pwd();
-/// Chemin du répertoire parent du projet Compteur Electronique
+// Chemin du répertoire parent du projet Compteur Electronique
 projectPath = strncpy(fnctPath,length(fnctPath)-length("\Scilab\Sources"));
-/// Chemin du répertoire où lire les fichiers .sod
+// Chemin du répertoire où lire les fichiers .sod
 dataPath = projectPath + "\Code\Compteur_Linky\Releves\Variables";
 // Charger les fonctions de calculs
 exec(fnctPath+"\Calculs.sci");

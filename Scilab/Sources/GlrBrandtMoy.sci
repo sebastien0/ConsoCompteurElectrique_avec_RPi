@@ -16,11 +16,10 @@ reglerFctDeci(x, h, g, mc);
 
 
 //*****************************************************************************
-//                GLR DE BRANDT POUR SAUT DE MOYENNE
+/// \fn [g,mc,kd,krmv]=glrbrandtm(x,h,Nest,Ndmax)
+/// \brief                GLR DE BRANDT POUR SAUT DE MOYENNE
 //        (détecter un saut de moyenne de valeur inconnue)
-// P. Granjon - pierre.granjon@grenoble-inp.fr - Grenoble INP, Ense3, Gipsa-Lab
-//
-//   [g,mc,kd,krmv]=glrbrandtm(x,h,Nest,Ndmax);
+/// \author P. Granjon - pierre.granjon@grenoble-inp.fr - Grenoble INP, Ense3, Gipsa-Lab
 //
 //           Entrées :
 //             x    : vecteur signal gaussien
