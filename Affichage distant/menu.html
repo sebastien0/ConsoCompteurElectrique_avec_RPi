@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<!-- @author Nicolas Deville -->
+
+<HEAD>
+
+<title>RASPBERRY PI DATA</title>     										<!-- titre de l'onglet -->
+
+<link rel="stylesheet" href="style.css" />								<!-- lien avec le CSS (fichier style.css) -->
+
+<meta http-equiv="refresh" content="6000;URL=no.html">					
+
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<style type="text/css">
+${demo.css}
+		</style>
+</style>
+
+
+		<script type="text/javascript">
+ $.getJSON('data.json', function(data) {
+
+  
+    window.chart = new Highcharts.StockChart({
+        chart : {
+			
+            renderTo : 'container',
+			zoomType: 'xy'
+        },
+		
+		
+		
+		plotOptions: {
+                        spline: {
+                            turboThreshold: 2000,
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    enabled: true,
+                                    lineWidth: 10
+                                }
+                            },
+                            marker: {
+                                enabled: true,
+                                states: {
+                                    hover: {
+                                        enabled : true,
+                                        radius: 5,
+                                        lineWidth: 1
+                                    }
+                                }  
+                            }      
+                        }
+                    },
+		
+		
+		
+		
+		
+
+         rangeSelector: {
+                
+                buttons: [{
+                    type: 'day',
+                    count: 3,
+                    text: '3d'
+                }, {
+                    type: 'heure',
+                    count: 1,
+                    text: '1h'
+                }, {
+                    type: 'heure',
+                    count: 3,
+                    text: '3h'
+                }, {
+                    type: 'heure',
+                    count: 6,
+                    text: '6h'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                selected: 3
+            },
+		
+		yAxis: {
+                title: {
+                    text: 'Puissance ( W)'
+                }
+            },
+
+        series : [{
+            name : 'Puissance',
+            data : data,
+			pointStart: 1,
+                pointInterval: 3600 * 1000,
+                tooltip: {
+                    valueDecimals: 0,
+                    valueSuffix: ' W'
+				}
+        }]
+    });
+});
+</script>
+</HEAD>
+
+
+<BODY>
+
+
+<div class="rectangle1" >										<!-- création du rectangle 1 voir css -->
+    
+</div>
+
+<div class="rectangle2" >										<!-- création du rectangle 1 voir css -->
+    
+</div>
+
+<div class="rectangle3" >										<!-- création du rectangle 1 voir css -->
+    
+</div>
+
+<div class="rectangle4" >										<!-- création du rectangle 1 voir css -->
+    
+</div>
+
+
+<header> <DIV class = "titre" style="position: absolute; top:22%; left:6%; width:20%; height:10%;"> Valeurs min/max</DIV>  
+	     <DIV class = "titre" style="position: absolute; top:22%; left:42%; width:40%; height:10%;">Votre consommation electrique</DIV>  <header>
+
+
+<script src="highstock.js"></script>
+<script src="exporting.js"></script>
+
+
+<div id="container" class= "graph" style="position: absolute; height: 65%;width: 65%; top:30% ; left:30%; "></div>
+	</body>
+
+
+

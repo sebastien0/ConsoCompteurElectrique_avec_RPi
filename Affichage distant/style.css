@@ -1,0 +1,86 @@
+
+body{ 
+
+background-color: #0D8D7C;               /*BurlyWood  bisque   #eff3f8 */  
+
+}
+
+
+
+.rectangle1{
+	width:20%;
+	height:75%;
+	background: White;
+	opacity: 1; 
+	position: absolute; 
+	 
+	left: 4%; 
+	top: 20%;
+	
+		-webkit-border-radius:2% / 2%; 
+	-moz-border-radius:2% / 2%; 
+	-o-border-radius:2% / 2%;
+	border-radius:2% / 2%;
+}
+
+
+.rectangle2{
+	width:20%;
+	height:10%;
+	background: Green;
+	opacity: 0.5; 
+	position: absolute;
+  
+	left: 4%; 
+	top: 20%;
+
+	 
+-webkit-border-radius:1% / 1%; 
+	-moz-border-radius:1% / 1%; 
+	-o-border-radius:1% / 1%;
+	border-radius:1% / 1%;
+}
+
+
+.rectangle3{
+	width:65%;
+	height:75%;
+	background: white;
+	opacity: 1; 
+	position: absolute;
+ 
+	left: 30%; 
+	top: 20%;
+	z-index: -10;
+
+ 	
+	-webkit-border-radius:2% / 2%; 
+	-moz-border-radius:2% / 2%; 
+	-o-border-radius:2% / 2%;
+	border-radius:2% / 2%;   
+}
+
+.rectangle4{
+	width:65%;
+	height:10%;
+	background: red;
+	opacity: 0.5; 
+	position: absolute;
+  
+	left: 30%; 
+	top: 20%;
+
+	 
+-webkit-border-radius:1% / 1%; 
+	-moz-border-radius:1% / 1%; 
+	-o-border-radius:1% / 1%;
+	border-radius:1% / 1%;
+}
+
+
+header{
+ font-size: 30px;
+ font-face: "Alstom Medium";
+ color: White;
+font-weight: bold;
+}
