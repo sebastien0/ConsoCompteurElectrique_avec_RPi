@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- @author Nicolas Deville -->
 
 <HEAD>
 
@@ -11,6 +10,7 @@
 
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 		<style type="text/css">
+		<script src="gray.js"></script>
 ${demo.css}
 		</style>
 </style>
@@ -22,14 +22,20 @@ ${demo.css}
   
     window.chart = new Highcharts.StockChart({
         chart : {
-			
-            renderTo : 'container',
-			zoomType: 'xy'
+			backgroundColor: {
+            linearGradient: [0, 0, 500, 500],
+            stops: [
+                [0, 'rgba(152, 171, 168,0.1)'],
+                [1, 'rgba(152, 171, 168,0.1)']
+            ]
+        },
+            renderTo : 'container',					//type de graph
+			zoomType: 'xy'							//active le zoom sur les 2 axes (mettre x ou y ou xy)
         },
 		
 		
 		
-		plotOptions: {
+		plotOptions: {								//regle les anims sur le graph (passage de souris etc ..) 
                         spline: {
                             turboThreshold: 2000,
                             lineWidth: 1,
@@ -54,9 +60,42 @@ ${demo.css}
 		
 		
 		
+		navigation: {
+            menuStyle: {
+                background: '#000000'
+            }
+        },
 		
 		
-
+		// regler la scrollbar en bas
+		
+		scrollbar: {
+			enabled: false,                   //desactive pour plus de place 
+            barBackgroundColor: 'gray',
+            barBorderRadius: 7,
+            barBorderWidth: 0,
+            buttonBackgroundColor: 'gray',
+            buttonBorderWidth: 0,
+            buttonArrowColor: 'yellow',
+            buttonBorderRadius: 7,
+            rifleColor: 'yellow',
+            trackBackgroundColor: 'white',
+            trackBorderWidth: 1,
+            trackBorderColor: 'silver',
+            trackBorderRadius: 7
+        },
+		
+		
+		// regler la barre de navigation basse 
+		
+		navigator: {			
+			enabled: true,						//desactive pour plus de place 
+            maskFill: 'rgba(6, 227, 43, 0.2)'
+        },
+		
+		
+		// regler les boutons (1 day etc ...)
+		
          rangeSelector: {
                 
                 buttons: [{
@@ -81,19 +120,60 @@ ${demo.css}
                 }],
                 selected: 3
             },
+			
+			
+		
+		// axes X&Y
 		
 		yAxis: {
                 title: {
                     text: 'Puissance ( W)'
+                },
+				plotLines: [{
+                value: 16,			//remplacer par une variable (val la plus basse d'après excel)
+                width: 1,
+                color: 'green',
+                dashStyle: 'dash',
+                label: {
+                    text: 'Pmin',
+                    align: 'center',
+                    y: 12,
+                    x: 0
                 }
+            },{
+                value: 866,			//remplacer par une variable (val la plus haute d'après excel)
+                width: 1,
+                color: 'blue',
+                dashStyle: 'dash',
+                label: {
+                    text: 'Pmax',
+                    align: 'center',
+                    y: 12,
+                    x: 0
+					}
+            }]
             },
+		
+		xAxis: {
+				gridLineWidth: 1,
+				
+				categories: ['00:00:01','00:00:02'], // pour nommer tes points absisses ... en théorie ... a essayer de mettre autant de points absisses que de points data 
+				
+				title: {
+                    text: 'Temps (s)'
+						}
+				
+				},
 
+				
+							// config de la serie
         series : [{
             name : 'Puissance',
             data : data,
+			color: '#FE0000',
 			pointStart: 1,
-                pointInterval: 3600 * 1000,
-                tooltip: {
+            pointInterval: 3600 * 1000,
+            tooltip: {
                     valueDecimals: 0,
                     valueSuffix: ' W'
 				}
@@ -111,21 +191,21 @@ ${demo.css}
     
 </div>
 
-<div class="rectangle2" >										<!-- création du rectangle 1 voir css -->
+<div class="rectangle2" >										<!-- création du rectangle 2 voir css -->
     
 </div>
 
-<div class="rectangle3" >										<!-- création du rectangle 1 voir css -->
+<div class="rectangle3" >										<!-- création du rectangle 3 voir css -->
     
 </div>
 
-<div class="rectangle4" >										<!-- création du rectangle 1 voir css -->
+<div class="rectangle4" >										<!-- création du rectangle 4 voir css -->
     
 </div>
 
 
 <header> <DIV class = "titre" style="position: absolute; top:22%; left:6%; width:20%; height:10%;"> Valeurs min/max</DIV>  
-	     <DIV class = "titre" style="position: absolute; top:22%; left:42%; width:40%; height:10%;">Votre consommation electrique</DIV>  <header>
+	     <DIV class = "titre" style="position: absolute; top:22%; left:42%; width:40%; height:10%;"> Consomation electrique</DIV>  <header>
 
 
 <script src="highstock.js"></script>
