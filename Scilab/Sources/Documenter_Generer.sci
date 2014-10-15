@@ -59,7 +59,7 @@ function ecrireTab(fd, stcDocPartiel)
     for i=1:stcDocPartiel.nbr
         stcTxt = stcDocPartiel.tab(i);
         mfprintf(fd,"%i - %s\n", i, stcTxt.fichier);
-        mfprintf(fd,"%sLigne %i\n",indenter(1),stcTxt.ligne);
+        mfprintf(fd,"%sLigne: %i\n",indenter(1),stcTxt.ligne);
         // Si description sur plusieurs lignes
         for j = 1:dimensions(stcTxt.descr,"ligne") 
             mfprintf(fd,"%s%s\n",indenter(1),stcTxt.descr(j));
@@ -97,16 +97,19 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
             // Fichier
             mfprintf(fd,"%i - %s\n", i, stcFichier.nom);
             if stcFichier.auteur <> [] then
-                mfprintf(fd,"%s%s\n", indenter(1), stcFichier.auteur);
+                // Affichage sur plusieurs lignes
+                for k = 1 : dimensions(stcFichier.auteur,"ligne")
+                    mfprintf(fd,"%s%s\n", indenter(1), stcFichier.auteur(k));
+                end
             end
             if stcFichier.date <> [] then
                 mfprintf(fd,"%s%s\n", indenter(1), stcFichier.date);
             end
             if stcFichier.version <> [] then
-                mfprintf(fd,"%sVersion %s\n", indenter(1), stcFichier.version);
+                mfprintf(fd,"%sVersion: %s\n", indenter(1), stcFichier.version);
             end
             if stcFichier.resume <> [] then
-                mfprintf(fd,"%s%s\n", indenter(1), stcFichier.resume);
+                mfprintf(fd,"%sRésumé: %s\n", indenter(1), stcFichier.resume);
             end
             
             //Fonctions
@@ -123,19 +126,26 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
                             posi+1:length(stcTxtFonction.nom))]);
     
                 mfprintf(fd,"%s%i - %s\n",indenter(2),j,txt);
-                mfprintf(fd,"%sLigne %d\n",indenter(3),stcTxtFonction.ligne);
-                mfprintf(fd,"%s%s\n",indenter(3),stcTxtFonction.resume);
+                mfprintf(fd,"%sLigne: %d\n",indenter(3),stcTxtFonction.ligne);
+                // Affichage sur plusieurs lignes
+                mfprintf(fd,"%sRésumé: %s\n",indenter(3),stcTxtFonction.resume(1));
+                if dimensions(stcTxtFonction.resume,"ligne") > 1 then
+                    for k = 2 : dimensions(stcTxtFonction.resume,"ligne")
+                        mfprintf(fd,"%s%s\n",indenter(3),stcTxtFonction.resume(k));
+                    end
+                end
                 mfprintf(fd,"%s%s\n",indenter(3),stcTxtFonction.proto);
                 // Parametres
                 if stcTxtFonction.nbrparam > 0 then
                     for k = 1:stcTxtFonction.nbrparam
-                        mfprintf(fd,"%s%s\n",indenter(4),stcTxtFonction.param(k));
+                        mfprintf(fd,"%sParam: %s\n",indenter(4),...
+                            stcTxtFonction.param(k).descr);
                     end
                 end
                 // Retourne
                 if stcTxtFonction.retourne <> "" then
-                    mfprintf(fd,"%s%s\n",indenter(4),stcTxtFonction.retourne);
-                    /// \todo Si plusieurs 'retourne', décomenter le code
+                    mfprintf(fd,"%sRetourne: %s\n",indenter(4),stcTxtFonction.retourne);
+                    // Si plusieurs 'retourne', décomenter le code
         //            for k = 1:stcTxtFonction.nbrRetourne
         //                mfprintf(fd,"%s%s\n",indenter(3), ...
         //                          stcTxtFonction.tabRetourne(k));

@@ -67,7 +67,7 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
     indexLigne = 1;
     
     while (indexLigne <= dimensions(contenu, "ligne"))
-    //      for indexLigne = 1:9
+    //      for indexLigne = 1:7
         try
     //        printf("ligne %i\n",indexLigne);
             // 2ème condition pour éviter d'indexer la ligne elle-même
@@ -168,7 +168,7 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                                         nbrFonctions) = struct("nom","");
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions).param="";
+                                        nbrFonctions).param = struct("descr","");
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                         nbrFonctions).resume="";
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
@@ -201,18 +201,20 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     estFonction = %t;
                 
                 // Param
-                 elseif stcContenu.nom == tabBalises(8) then
+                elseif stcContenu.nom == tabBalises(8) then
                     nbrparam = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).nbrparam +1;
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).nbrparam = nbrparam;
-                    // Sur plusieurs lignes
+                                nbrFonctions).nbrparam;
+                 // Sur plusieurs lignes
                     if ~stcContenu.contientBalise then
                         indexLigne = description_sur_lignes(contenu, ...
                                     indexLigne, stcContenu_1.descr);
+                    else
+                        nbrparam = nbrparam +1;
+                        stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                        nbrFonctions).nbrparam = nbrparam;
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).param(nbrparam) = stcContenu.descr;
+                        nbrFonctions).param(nbrparam).descr = stcContenu.descr;
                 
                 // Return
                 elseif stcContenu.nom == tabBalises(9) then
@@ -386,10 +388,14 @@ endfunction
 function indexLigne = description_sur_lignes(contenu, indexLigneE, textePrecedent)
     indexLigne = indexLigneE;
     // Concaténer avec les lignes précédentes
+    continuer = %t;
     while (grep(contenu(indexLigne),"/// ") == 1 &...
-            grep(contenu(indexLigne),"grep(contenu") <> 1)
+            grep(contenu(indexLigne),"grep(contenu") <> 1 & continuer)
         stcContenu = extraire_Balise(contenu(indexLigne));
-        textePrecedent = descr_2_Lignes(textePrecedent, stcContenu, %f);
+        continuer = ~stcContenu.contientBalise;
+        if continuer then
+            textePrecedent = descr_2_Lignes(textePrecedent, stcContenu, %f);
+        end
         indexLigne = indexLigne+1;
     end
     stcContenu.descr = textePrecedent;
