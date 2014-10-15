@@ -1,7 +1,7 @@
 //*****************************
 /// \author Sébastien Lemoine
 /// \date Mai 2014
-/// \brief Etude des habitudes
+/// \brief Etude des habitudes, supperpose des courbes sur un même graphique
 //******************************
 
 clear;
@@ -19,7 +19,7 @@ fnctPath = pwd();
 // Chemin du répertoire parent du projet Compteur Electronique
 projectPath = strncpy(fnctPath,length(fnctPath)-length("\Scilab\Sources"));
 // Chemin du répertoire où lire les fichiers .sod
-dataPath = projectPath + "\Code\Compteur_Linky\Releves\Variables";
+dataPath = projectPath + "\Releves\Variables";
 // Charger les fonctions de calculs
 exec(fnctPath+"\Calculs.sci");
 // Charger les fonctions pour tracer les graphiques

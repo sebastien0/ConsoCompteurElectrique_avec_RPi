@@ -4,12 +4,12 @@
 /// \brief Fonctions de statistique de code
 //******************************
 
-//* ***************************************************************************
-/// \fn Tracer_Duree_Chargement (stcStatistiques)
-/// \brief Trace les temps restant estimé et le temps total écoulé
-/// \param [in] stcStatistiques    \c structure   Structure de statisque
+//****************************************************************************
+/// \fn Tracer_Duree_Chargement(stcStatistiques)
+/// \brief Trace le temps restant estimé et le temps total écoulé
+/// \param [in] stcStatistiques    \c structure   Structure de statisques
 //*****************************************************************************
-function Tracer_Duree_Chargement (stcStatistiques)
+function Tracer_Duree_Chargement(stcStatistiques)
     nbrLignes = dimensions(stcStatistiques.tabTempsRestant, "ligne");
     tabTempsTotal = matrice(stcStatistiques.tempsTotal, nbrLignes);
     

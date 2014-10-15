@@ -8,9 +8,9 @@
 /// \fn configuration(donnee)
 /// \brief Détecter la configuration du compteur
 /// \param [in] donnee    \c TabString  Fichier texte reconstitué
-/// \return titres  \c TabString    Entête des colonnes
-/// \return configBase_N    \c double   Configuration du compteur en BASE
-/// \return configHPHC_N    \c double   Configuration du compteur en HCHP
+/// \param [out] titres  \c TabString    Entête des colonnes
+/// \param [out] configBase_N    \c double   Configuration du compteur en BASE
+/// \param [out] configHPHC_N    \c double   Configuration du compteur en HCHP
 //*****************************************************************************
 function configuration(donnee)
     // Lecture des en-têtes de colonnes
@@ -44,23 +44,19 @@ endfunction
 
 
 //****************************************************************************
-/// \fn [duree, moyenne] = HeuresFonctionnement()
+/// \fn [duree, moyenne] = HeuresFonctionnement(stcReleve, opt_moyInact)
 /// \brief Calculer le nombre d'heure de fonctionnement. \n 
 ///     Temps compatibilisé dès que Papp >= moyenne(Papp)
+/// \param [in] stcReleve   \c Structure    Relevé
 /// \param [in optionnel] opt_moyInact   \c string  si = 1 alors calculer la moyenne sur un temps d'inactivié
 /// \param [out] duree    \c TabDouble  Temps écoulé, au format [h m s]
 /// \param [out] moyenne    \c double   Moyenne de \c Papp
 //*****************************************************************************
 function [duree, moyenne] = HeuresFonctionnement(stcReleve, opt_moyInact)
-    rhs = argn(2);  // nombre output arguments, nombre input arguments
     tempsTotal = 0;
     duree = zeros(1,3);
-    
-   //Nombre de ligne
-//    nbrLignes = min(dimensions(stcReleve.papp, "ligne"), ...
-//                    dimensions(stcReleve.heure, "ligne"))-1;
 
-    if rhs == 2 then // Moyenne sur une période inactive
+    if argn(2) == 2 then // Moyenne sur une période inactive
     // Formule inactivité = [moy(Papp(1:n)) / moy(Papp(1:2*n))] > 90%
         for (borne = 100:100:ceil(stcReleve.nbrLignes*0.1))
             maxMoy1 = 1 * borne;
@@ -92,9 +88,9 @@ endfunction
 //****************************************************************************
 /// \fn Dtemps = difTemps(heure1, heure2)
 /// \brief Calculer la différence de temps entre 2 instants
-/// \param [out]    Dtemps    \c Double  Différence de temps entre les 2 instants, en seconde
 /// \param [in]    heure1   \c String   Instant n°1 au format hh:mm:ss
 /// \param [in]    heure2   \c String   Instant n°2 au format hh:mm:ss, (heure2 > heure1)
+/// \return   Dtemps    \c Double  Différence de temps entre les 2 instants, en seconde
 //*****************************************************************************
 function Dtemps = difTemps(heure1, heure2)
     heure_1 = msscanf(heure1(1),"%d:%d:%d");
@@ -116,24 +112,24 @@ function Dtemps = difTemps(heure1, heure2)
     end
 endfunction
 
-//* ***************************************************************************
-/// \fn tab = matrice(tabEntree, nombre)
+//****************************************************************************
+/// \fn tab = matrice(nombre, nbrLignes)
 /// \brief Retourne une matrice constante (= nombre), de dimensions nbrLignes
-/// \param [in] nbrLignes    \c Double  Nombre de ligne de la matrice retournée
 /// \param [in] nombre    \c Double  Valeur de la constante
+/// \param [in] nbrLignes    \c Double  Nombre de ligne de la matrice retournée
 /// \param [out] tab    \c tabDouble(nbrLignes)  Matrice constante
-// TODO     retrouver l'appel de cette fonction pour modifier avec matrice(dimensions(tab, "ligne"), nombre);
+/// \TODO     retrouver l'appel de cette fonction pour modifier avec matrice(dimensions(tab, "ligne"), nombre);
 //*****************************************************************************
 function tab = matrice(nombre, nbrLignes)
     tab = ones(nbrLignes, 1)*nombre;
 endfunction
 
 
-//* ***************************************************************************
+//****************************************************************************
 /// \fn nom = nom_jour(dateReleve)
 /// \brief Retourne le nom du jour de dateReleve
 /// \param [in]     dateReleve  \c string   Date du jour, au format "aaaa/mm/jj"
-/// \param [out]    nom \c string   Nom du jour
+/// \return    nom \c string   Nom du jour
 //*****************************************************************************
 function nom = nom_jour(dateReleve)
     tempDate = msscanf(dateReleve,"%d/%d/%d");
@@ -141,14 +137,13 @@ function nom = nom_jour(dateReleve)
     [N, nom] = weekday(dateReleve,'long');
 endfunction
 
-//* ***************************************************************************
+//****************************************************************************
 /// \fn puissMoyStr = puiss_Moyenne(puissMoy)
 /// \brief Retourne la puissance moyenne avec l'unité appropriée
-/// \param [in ] puissMoy    \c double   Puissance moyenne
-/// \param [out] puissMoyStr    \c string   Valeur moyenne
+/// \param [in] puissMoy    \c double   Puissance moyenne
+/// \return puissMoyStr    \c string   Valeur moyenne avec l'unité
 //*****************************************************************************
 function puissMoyStr = puiss_Moyenne(puissMoy)
-   // Mise en forme de la puissance moyenne
     if puissMoy > 1000 then   // Affichage en kWh
         puissMoyStr = msprintf("%.1f kW", puissMoy/1000);
     else   // Affichage en W
@@ -156,14 +151,11 @@ function puissMoyStr = puiss_Moyenne(puissMoy)
     end
 endfunction
 
-
-//* ***************************************************************************
-/// \fn energieStr = energie(nbrLignes, config)
+//****************************************************************************
+/// \fn energieStr = energie(stcReleve)
 /// \brief Retourne les énergies de début et de fin au format string avec l'unité
-/// \param [in global] stcReleve.    \c Strcuture   Structure du relevé
-/// \param [in] nbrLignes   \c double   Longueur de stcReleve.index
-/// \param [in] config  \c double   Configuration du compteur
-/// \param [out] energieStr \c string   Tableau avec les index initiaux et finaux
+/// \param [in] stcReleve.    \c Strcuture   Relevé
+/// \return energieStr \c tabString   Tableau avec les index initiaux et finaux
 //*****************************************************************************
 function energieStr = energie(stcReleve)
     energieStr(1,1) = msprintf("%.1f kWh", stcReleve.index0(1)/1000);
@@ -178,12 +170,12 @@ function energieStr = energie(stcReleve)
 endfunction
 
 
-//* ***************************************************************************
+//****************************************************************************
 /// \fn nombre = dimensions(data,choix)
 /// \brief Retourne la longueur ou la largeur du tableau (nombre de lignes ou colonnes)
-/// \param [in] data    \c double   Tableau à tester
+/// \param [in] data    \c tableau   Tableau à mesurer
 /// \param [in] choix   \c string   Dimensions à extraire: "ligne" ou "colonne"
-/// \param [out] nbrLignes  \c double   Nombre de lignes/colonne de \c data. -1 = erreur
+/// \return nombre  \c double   Nombre de lignes/colonnes. Retourne -1 si erreur
 //*****************************************************************************
 function nombre = dimensions(data,choix)
     nombre = size(data);
@@ -197,11 +189,11 @@ function nombre = dimensions(data,choix)
 endfunction
 
 
-//* ***************************************************************************
+//****************************************************************************
 /// \fn nom = nom_compteur(numCompteur)
 /// \brief Retourne le nom du compteur à partir de son numéro
 /// \param [in] numCompteur \c string   Numéro du compteur
-/// \param [out] nom    \c  string  Nom du compteur
+/// \return nom    \c  string  Nom du compteur
 //*****************************************************************************
 function nom = nom_compteur(numCompteur)
     select numCompteur
@@ -219,16 +211,14 @@ function nom = nom_compteur(numCompteur)
 endfunction
 
 
-//* ***************************************************************************
-/// \fn duree = conversion_temps(tempsTotal)
+//****************************************************************************
+/// \fn duree = conversion_temps(tempsSecondes, opt_affichage)
 /// \brief Converti un temps en secondes en heures, minutes, secondes
-/// \param [in] tempsSecondes   \c double   Temps en secondes à convertir
-/// \param [in optionnel] opt_affichage   \c double   si = 1 alors affichage en console
-/// \param [out] duree    \c  tabDouble(3)  Temps décomposé en [h m s]
+/// \param [in] tempsSecondes   \c double   Temps à convertir (en s)
+/// \param [in optionnel] opt_affichage   \c Boléen   %t pour afficher la valeur en console
+/// \return duree    \c  tabDouble(3)  Temps décomposé en [h m s]
 //*****************************************************************************
 function duree = conversion_temps(tempsSecondes, opt_affichage)
-    [lhs,rhs] = argn(0);  // nombre output arguments, nombre input arguments
-    
     // Temps heures, minutes & secondes
     if tempsSecondes > 3600 then
         duree(1) = floor(tempsSecondes/3600);
@@ -251,15 +241,17 @@ function duree = conversion_temps(tempsSecondes, opt_affichage)
         texte = msprintf("%is", duree(3));
     end
     
-    if rhs == 2 then
+    if argn(2) == 2 then
         printf("Durée des consommations hors veilles = %s\n", texte);
     end
 endfunction
 
-//* ***************************************************************************
+//****************************************************************************
 /// \fn strNombre = nombre_2_Chiffres(nombre)
-/// \brief Retourne un nombre sur 2 chiffres au format string
-//* ***************************************************************************
+/// \brief Retourne un nombre sur 2 chiffres
+/// \param [in] nombre  \c Double   Nombre à convertir
+/// \return strNombre   \c String   Nombre sur au moins 2 chiffres
+//****************************************************************************
 function strNombre = nombre_2_Chiffres(nombre)
     if nombre < 10 then
         strNombre = strcat(['0', string(nombre)]);

@@ -1,10 +1,22 @@
+//*****************************
+/// \author Sébastien Lemoine
+/// \date Aout 2014
+/// \brief Fonction annexes pour le traitement de données
+//******************************
 
 // Chez Jef:
 // Réel 2014-08-16 18h26
 // R-pi 2014-08-08 21h33
 // Diff = +8jours - 3h07
 // Modifier_Horodatage(Gbl_Heure, [-3 -7 0])
-
+//****************************************************************************
+/// \fn function Modifier_Horodatage(Heure, offset)
+/// \brief Ajouter ou supprimer le décalage temporel d'un revelé
+/// \param [in] Heure  \c tabString    Heure du relevé
+/// \param [in] offset  \c tabDouble(3)    Décalage [hh,mm,ss]
+/// \param [out] Gbl_Heure \c tabString     Heure du relevé avec le décalage
+/// \todo Gbl_Heure obsolète, à MAJ avec la structure
+//*****************************************************************************
 function Modifier_Horodatage(Heure, offset)
     INDSECONDES = 3;
     INDMINUTES = 2;

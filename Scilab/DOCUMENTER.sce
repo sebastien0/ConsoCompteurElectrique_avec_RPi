@@ -1,13 +1,12 @@
 //*****************************
-/// \file DOCUMENTER.sce
 /// \author Sébastien Lemoine
 /// \date Septembre 2014
 /// \brief Indexer tous les fichiers pour générer une documentation type Doxygen
 /// \version 1.0
 //******************************
 
-// \BUG -Test- Aucun bug!
-/// \todo Documenter correctement tous les fichiers et les structures!
+/// \todo Documenter les structures!
+/// \todo Devellopper 2 fonctions: conversion txt vers csv et indéxer csv
 
 clear
 clc
@@ -28,7 +27,8 @@ cd(fnctPath);
 // Charger les fonctions de calculs
 exec("Calculs.sci");
 // Charger les fonctions pour documenter
-exec("Fonctions_Documenter.sci");
+exec("Documenter_Indexer.sci");
+exec("Documenter_Generer.sci");
 
 //*** Début du programme *******************************************************
 printf("*************************************************************\n");
@@ -37,7 +37,7 @@ printf("*************************************************************\n\n");
 
 // Suprimer les fichiers temporaire de la liste (conteneant '~')
 nomFichierParent_init = supr_Fichiers_Temp(nomFichierParent);
-nomFichierParent = strcat(["cp_", nomFichierParent_init]);
+nomFichierParent = nomFichierParent_init;
 // Dupliquer le fichier courant pour pouvoir l'indexer, il est supprimé à la fin
 [status, message] = copyfile(parentPath+"\"+nomFichierParent_init, ...
                              fnctPath+"\"+nomFichierParent);
@@ -47,11 +47,16 @@ if status <> 1 then
 end
 
 // Lister les fichiers dans le répertoire courant
-listeNomFichiers = listfiles(["*.sci","*.sce"]);
+listeNomFichiers = listfiles("*.sce");
+listeNomFichiers_bis = listfiles("*.sci");
 //Suprimer les fichiers temporaire (conteneant '~')
 listeNomFichiers = supr_Fichiers_Temp(listeNomFichiers);
+listeNomFichiers_bis = supr_Fichiers_Temp(listeNomFichiers_bis);
 //Trier les noms de fichiers par ordre croissant
 listeNomFichiers = gsort(listeNomFichiers,'lr','i');
+listeNomFichiers_bis = gsort(listeNomFichiers_bis,'lr','i');
+//Réunir les 2 listes
+listeNomFichiers = cat(1, listeNomFichiers, listeNomFichiers_bis);
 // Permet d'avoir toutes les info d'un fichier (nom, date, ...)
 //stcFichier = dir(listeNomFichiers(i));
 
@@ -69,7 +74,7 @@ for indexFichier = 1 : stcDoc.fichiers.nbr
                 listeNomFichiers(stcDoc.fichiers.indexFichierCourant);
     printf("Info \t Traitement du fichier n°%i : %s\n", indexFichier, ...
                 stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nom);
-    indexer_Fichier(liste_Nom_Balises(), stcDoc, debugActif);
+    indexer_Fichier(stcDoc, debugActif);
     nbrFonctions = stcDoc.fichiers.tab(...
                             stcDoc.fichiers.indexFichierCourant).nbr;
     if nbrFonctions == 0 then

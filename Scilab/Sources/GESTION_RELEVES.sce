@@ -1,7 +1,7 @@
 //*****************************
 /// \author Sébastien Lemoine
 /// \date Avril 2014
-/// \brief Gestion de l'IHM et de l'envrionnement pour un post 
+/// \brief Gestion de l'IHM et de l'environnement pour un post- 
 /// traitement des relevés
 //******************************
 
@@ -16,13 +16,13 @@ erreur = %t;
 
 //*** Chargement de l'environnement *******************************************
 // Répertoires par défaut
-/// Chemin du répertoire courant, repertoire parent du projet Scilab
+// Chemin du répertoire courant, repertoire parent du projet Scilab
 fnctPath = pwd();
-/// Chemin du répertoire parent du projet Compteur Electronique
+// Chemin du répertoire parent du projet Compteur Electronique
 projectPath = strncpy(pwd(),length(pwd())-length("\Scilab\Sources"));
-/// Chemin du répertoire où lire les fichiers .txt
-dataPath2Read = projectPath + "\Code\Compteur_Linky\Releves";
-/// Chemin du répertoire où écrire / lire les fichiers .sod
+// Chemin du répertoire où lire les fichiers .txt
+dataPath2Read = projectPath + "\Releves";
+// Chemin du répertoire où écrire/lire les fichiers .sod
 dataPath2Save = dataPath2Read + "\Variables";
 
 // Charger les fonctions dans l'environnement
@@ -51,7 +51,6 @@ printf("*************************************************************\n");
 printf("Programme de gestion des données acquises avec la Raspberry-Pi\n");
 printf("Saisissez votre choix puis valier par OK\n");
 printf("*************************************************************\n\n");
-
 
 choix = -1;
 while(choix <> 0 & choix <> []) do
@@ -83,12 +82,11 @@ while(choix <> 0 & choix <> []) do
             end
     
             //Sauvegarder les variables globales
-            Sauve_Variables(dataPath2Save, stcReleve, stcStatistiques);
+            Sauve_Variables(dataPath2Save, stcReleve);
 
         else
              printf("Aucun fichier sélectionné\n");
         end
-
 
     //*************************************************************************
     //* 2   Charger un fichier de données
@@ -137,12 +135,6 @@ while(choix <> 0 & choix <> []) do
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
-
-    //*************************************************************************
-    //* 5   Développment en cours
-    //*************************************************************************
-//    elseif choix == 5 then
-
 
     //*************************************************************************
     //* 0   Quitter

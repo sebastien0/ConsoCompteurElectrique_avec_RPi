@@ -5,12 +5,15 @@
 //******************************
 
 //****************************************************************************
-/// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
+/// \fn heures_Abscisses(nbrLignes, fenetre, graphique, temps)
 /// \brief Afficher les abscisses en temps, distribution par rapport 
 ///  à la taille de l'écran
 /// \param [in] nbrLignes    \c double  Nombre d'abscisses
 /// \param [in] fenetre    \b TBC Objet graphique
 /// \param [in] graphique    \b TBC Objet graphique
+/// \param [in] temps    \c tabString  Heure
+/// \todo Retirer 'fenetre' => inutilisé
+/// \todo utiliser 'dimensions' au lieu de passer nbrLignes en paramètre
 //*****************************************************************************
 function heures_Abscisses(nbrLignes, fenetre, graphique, temps)
     //Obtenir le pas du quadrillage vertical
@@ -38,31 +41,28 @@ function heures_Abscisses(nbrLignes, fenetre, graphique, temps)
     locations_labels, noms_labels);
 endfunction
 
+//*********************************************************************
+/// \TODO 
+/// - Raffraichir l'affichage si la taille change (plein écran/réduit)
+/// UTILISER event handler functions 
+/// (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
+/// pour avoir un zoom dynamique.
+//*************************************************************************
 
 //****************************************************************************
-/// \fn mise_en_forme(graphique, fenetre)
+/// \fn mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
 /// \brief Mise en forme du graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] fenetre    \b TBC Objet graphique
-/// \param [in opt] opt_BackgndCouleur  \c string   Couleur de fond, à renseigner depuishelp color_list
+/// \param [in opt] opt_BackgndCouleur  \c string   Couleur de fond, à renseigner depuis help color_list (si non utilisé alors couleur de fond = gris)
 //*****************************************************************************
 function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
-    [lhs,rhs] = argn(0);  // nombre output arguments, nombre input arguments
     set(graphique,"grid",[1 1]);    // Grid on
     
-    //*********************************************************************
-    /// \TODO 
-    /// - Obtenir la taille de la fenêtre pour ajuster au mieux
-    /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
-    /// UTILISER event handler functions 
-    /// (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-    /// pour avoir un zoom dynamique.
-    //*************************************************************************
-
     fenetre.figure_name = "Graphiques";
 
     //Arrière plan des courbes
-    if rhs == 3 then
+    if  argn(2) == 3 then
         graphique.background=color(opt_BackgndCouleur);
     else
         graphique.background=color('gray95');
@@ -94,10 +94,10 @@ function mise_en_forme(graphique, fenetre, opt_BackgndCouleur)
 endfunction
 
 //****************************************************************************
-/// \fn tracer_Graph(data2plot, NumCompteur, Titre)
-/// \brief Tracer une courbe
-/// \param [in] data2plot    \c double  Tableau des données à tracer
-/// \param [in] NumCompteur    \c   string Numéro du compteur
+/// \fn tracer_Graph(data2plot, NumCompteur)
+/// \brief Tracer une courbe avec son titre
+/// \param [in] data2plot    \c tabDouble  Données à tracer
+/// \param [in] NumCompteur    \c String    Numéro du compteur
 //*****************************************************************************
 function tracer_Graph(data2plot, NumCompteur)
     // **** Tracer la puissance en fonction du temps **********************
@@ -116,10 +116,6 @@ function tracer_Graph(data2plot, NumCompteur)
         
         puissMoyStr = puiss_Moyenne();
         //Ajouter le quadrillage, les titres, ...
-//        titre = ["Relevé du " + Gbl_CreationTxt(4) + " " + Gbl_CreationTxt(1) ...
-//         + " de " + Gbl_CreationTxt(2) + " à " + Gbl_CreationTxt(3) + ...
-//        " par le compteur n° " + NumCompteur;...
-//        "Puissance active, moyenne = " + puissMoyStr];
         titre = msprintf("Relevé du %s %s de %s à %s par le compteur n°%s ...
                 \nPuissance active, moyenne = %s", Gbl_CreationTxt(4), ...
                 Gbl_CreationTxt(1), Gbl_CreationTxt(2), Gbl_CreationTxt(3),...
@@ -127,15 +123,6 @@ function tracer_Graph(data2plot, NumCompteur)
         // Titre du graphique
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
-            
-        //*********************************************************************
-        /// \TODO 
-        /// - Obtenir la taille de la fenêtre pour ajuster au mieux
-        /// - Raffraichir l'affichage si la taille change (plein écran/réduit)
-        /// UTILISER event handler functions 
-        /// (http://help.scilab.org/docs/5.3.3/en_US/eventhandlerfunctions.html) 
-        /// pour avoir un zoom dynamique.
-        //*************************************************************************
     
         // Ajouter les heures sur les abscisses
         heures_Abscisses(nbrLignes, fenetre, graphique, stcReleve.heure);
@@ -149,14 +136,12 @@ endfunction
 
 
 //****************************************************************************
-/// \fn tracer_2_Graph(Puissance, Index, NumCompteur)
-/// \brief Tracer 2 courbes. \n Puissance peut contenir 1 ou plusieurs tableaux
-/// \param [in] Puissance    \c Tab_double  Données Puissance à tracer
-/// \param [in] Index    \c Tab_string  Données Index à tracer
-/// \param [in] NumCompteur    \c string    Numéro du compteur
+/// \fn tracer_2_Graph(stcReleve, optTracerPmoy)
+/// \brief Tracer plusieurs courbes (Puissance et Energie) de couleurs différentes
+/// \param [in] stcReleve    \c Structure  Relevé (Papp de dimensions max: [8,n])
+/// \param [in] optTracerPmoy    \c Boléen  Si présent, tracer Pmoy sur le graphique
 //*****************************************************************************
 function tracer_2_Graph(stcReleve, optTracerPmoy)
-    rhs=argn(2);
     tabMoy = matrice(stcReleve.nbrLignes, stcReleve.pappMoy);
     nbrTab = dimensions(stcReleve.papp, "colonne");
     nmbrMax = 8;
@@ -165,7 +150,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
         //*** Puissance ******************
         subplot(211);
         couleur = couleur_plot(); // liste de couleur pour la fonction plot
-        if rhs == 2 then
+        if argn(2) == 2 then
             plot(stcReleve.papp, couleur(1));
             plot(matrice(stcReleve.pappMoy, stcReleve.nbrLignes), couleur(2));
         else
@@ -242,13 +227,13 @@ endfunction
 
 //****************************************************************************
 /// \fn tracer_D_Graph(data2plot, jour, heure)
-/// \brief Tracer des courbes supperposées; limitées à 8 courbes car 8 couleurs.
-/// \param [in] data2plot    \c double  Tableau, données à tracer (ordonnées)
-/// \param [in] jour    \c string   Tableau, jours et dates de création
-/// \param [in] heure   \c string   Tableau, instant des échantillons (abscisses)
+/// \brief Tracer des courbes supperposées; limitées à 8 courbes
+/// \param [in] data2plot    \c tabDouble  Tableau, données à tracer (ordonnées)
+/// \param [in] jour    \c tabString   Jours et dates de création
+/// \param [in] heure   \c tabString   Instant des échantillons (abscisses)
 //*****************************************************************************
 function tracer_D_Graph(data2plot, jour, heure)
-    nmbrMax = 8;
+    nmbrMax = 8;    // 8 couleurs différentes disponibles
     // Longueur de l'enregistrement
     nbrLignes = dimensions(data2plot, "ligne");
     // Nombre d'enregistrements
@@ -306,7 +291,7 @@ endfunction
 //****************************************************************************
 /// \fn couleur = couleur_plot()
 /// \brief Crée un tableau comportant les lettre des couleurs pour plot(). Limitation à 8 couleurs
-/// \param [out] couleur    \c string  Tableau, abbréviation des couleurs
+/// \return couleur    \c tabString  Abbréviation des couleurs
 //*****************************************************************************
 function couleur = couleur_plot()
     couleur(1) = 'r';

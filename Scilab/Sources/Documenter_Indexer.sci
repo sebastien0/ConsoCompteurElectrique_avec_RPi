@@ -7,26 +7,30 @@
 //****************************************************************************
 /// \fn indexer_Fichier(tabBalises, stcDoc, debugActif)
 /// \brief Idexe les lignes d'un fichier
-/// \param [in] tabBalises
-/// \param [in] stcDoc
+/// \param [in] stcDoc  \c Structure    Documentation
 /// \param [in] debugActif  \c Booléen    Afficher plus d'info en console
-/// \param [out] stcDoc
+/// \param [out] stcDoc  \c Structure    Documentation
 //*****************************************************************************
-function indexer_Fichier(tabBalises, stcDoc, debugActif)
+function indexer_Fichier(stcDoc, debugActif)
     // Ouvrir le fichier
     // Chemin
     cheminFichierCourant = strcat([fnctPath,'\', ...
                 stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nom]);
     // Ouvrir
-    mopen(cheminFichierCourant,'r'); // Ouverture du fichier
-    // Copier
-    stcFichierCourant = struct("contenu", "");
-    contenu = mgetl(cheminFichierCourant);  // Lecture du fichier
-    // Fermer
-    mclose(cheminFichierCourant);  // Fermeture du fichier
-
-    /// \TODO Afficher une barre de progression
-    indexer_Ligne(contenu, stcDoc, tabBalises, debugActif);
+    [fd, err] = mopen(cheminFichierCourant,'r'); // Ouverture du fichier
+    if err == 0 then
+        // Copier
+        stcFichierCourant = struct("contenu", "");
+        contenu = mgetl(cheminFichierCourant);  // Lecture du fichier
+        // Fermer
+        mclose(cheminFichierCourant);  // Fermeture du fichier
+    
+        /// \TODO Afficher une barre de progression
+        indexer_Ligne(contenu, stcDoc, debugActif);
+    else
+        nom = stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nom;
+        printf("Erreur \t Erreur %i dans l''ouverture du fichier %s\n",err,nom);
+    end
     
     /// \todo Ici le code pour trier les fonctions par ordre alphabétique
     // Trier les noms des fonctions par ordre croissant
@@ -50,10 +54,11 @@ endfunction
 /// \param [out] stcContenu
 /// \param [in] debugActif  \c Booléen    Afficher plus d'info en console
 //*****************************************************************************
-function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
+function indexer_Ligne(contenu, stcDoc, debugActif)
     indexFichier = stcDoc.fichiers.indexFichierCourant;
     nomFichier = stcDoc.fichiers.tab(indexFichier).nom;
     stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).nbr = 0;
+    tabBalises = liste_Nom_Balises();
     
     // Initialisation
     stcContenu_1 = struct("nom","");
@@ -65,7 +70,7 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
     //      for indexLigne = 1:9
         try
     //        printf("ligne %i\n",indexLigne);
-            // 2ème condition pour éviter d'indexer la ligne
+            // 2ème condition pour éviter d'indexer la ligne elle-même
             if (grep(contenu(indexLigne),"/// ") == 1 &...
                 grep(contenu(indexLigne),"grep(contenu") <> 1) then
                 stcContenu = extraire_Balise(contenu(indexLigne));
@@ -78,27 +83,25 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                 // Todo
                 if convstr(stcContenu.nom,'u') == convstr(tabBalises(1),'u') then
                     if ~stcContenu.contientBalise then
-                        // Concaténer avec la ligne précédente
-                        while grep(contenu(indexLigne),"/// ") == 1
-                            stcContenu = extraire_Balise(contenu(indexLigne));
-                            textePrecedent = stcDoc.todo.tab(stcDoc.todo.nbr).descr;
-                            stcDoc.todo.tab(stcDoc.todo.nbr).descr = descr_2_Lignes(...
-                                                    textePrecedent, stcContenu, %f);
-                            indexLigne = indexLigne+1;
-                        end
-                        indexLigne = indexLigne-1;
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
                     else
                         stcDoc.todo.nbr = stcDoc.todo.nbr + 1;
                         stcDoc.todo.tab(stcDoc.todo.nbr).fichier = nomFichier;
                         stcDoc.todo.tab(stcDoc.todo.nbr).ligne = indexLigne;
-                        stcDoc.todo.tab(stcDoc.todo.nbr).descr = stcContenu.descr;
                     end
+                    stcDoc.todo.tab(stcDoc.todo.nbr).descr = stcContenu.descr;
     
                 // Bug
                 elseif convstr(stcContenu.nom,'u') == convstr(tabBalises(2),'u') then
-                    stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
-                    stcDoc.bug.tab(stcDoc.bug.nbr).fichier = nomFichier;
-                    stcDoc.bug.tab(stcDoc.bug.nbr).ligne = indexLigne;
+                    if ~stcContenu.contientBalise then
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
+                    else
+                        stcDoc.bug.nbr = stcDoc.bug.nbr + 1;
+                        stcDoc.bug.tab(stcDoc.bug.nbr).fichier = nomFichier;
+                        stcDoc.bug.tab(stcDoc.bug.nbr).ligne = indexLigne;
+                    end
                     stcDoc.bug.tab(stcDoc.bug.nbr).descr = stcContenu.descr;
                 
                 // Version
@@ -107,6 +110,10 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                 
                 // Author
                 elseif stcContenu.nom == tabBalises(4) then
+                    if ~stcContenu.contientBalise then
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
+                    end
                     stcDoc.fichiers.tab(indexFichier).auteur = stcContenu.descr;
                
                 // Date
@@ -117,15 +124,12 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                 elseif stcContenu.nom == tabBalises(6) then
                     // Brief d'une fonction
                     if estFonction then
-                        // Attrapper errerr si \fn manquant
+                        // Attrapper erreur si \fn manquant
                         try
                             // Sur plusieurs lignes
                             if ~stcContenu.contientBalise then
-                                // Concaténer avec la ligne précédente
-                                textePrecedent = stcDoc.fichiers.tab(...
-                                    indexFichier).tabFonctions(nbrFonctions).resume;
-                                stcContenu.descr = descr_2_Lignes(...
-                                    textePrecedent, stcContenu);
+                                indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
                             end
                             stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                     nbrFonctions).resume = stcContenu.descr;
@@ -137,11 +141,9 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                     // Brief du fichier
                     else
                         // Sur plusieurs lignes
-                        if ~stcContenu.contientBalise then
-                            // Concaténer avec la ligne précédente
-                            temp1 = stcDoc.fichiers.tab(indexFichier).resume;
-                            temp2 = stcContenu.descr;
-                            stcContenu.descr = strcat([temp1, temp2]);
+                       if ~stcContenu.contientBalise then
+                          indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
                         end
                         stcDoc.fichiers.tab(indexFichier).resume = stcContenu.descr;
                         if stcDoc.fichiers.tab(indexFichier) == [] then
@@ -204,6 +206,11 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                                     nbrFonctions).nbrparam +1;
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                     nbrFonctions).nbrparam = nbrparam;
+                    // Sur plusieurs lignes
+                    if ~stcContenu.contientBalise then
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
+                    end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                     nbrFonctions).param(nbrparam) = stcContenu.descr;
                 
@@ -211,11 +218,8 @@ function indexer_Ligne(contenu, stcDoc, tabBalises, debugActif)
                 elseif stcContenu.nom == tabBalises(9) then
                     // Sur plusieurs lignes
                     if ~stcContenu.contientBalise then
-                        // Concaténer avec la ligne précédente
-                        temp1 = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).retourne;
-                        temp2 = stcContenu.descr;
-                        stcContenu.descr = strcat([temp1, temp2]);
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                     nbrFonctions).retourne = stcContenu.descr;
@@ -254,18 +258,29 @@ function stcContenu = extraire_Balise(contenuLigne)
     
     // Localiser nom balise et description
     debutPosNom = strcspn(contenuLigne,"\")+2;
+                    
+    // Nouvelle balise
     // Si '\' trouvé
-    if debutPosNom < finContenu then
-        finPosNom = strcspn(part(contenuLigne,debutPosNom:finContenu),' ')+debutPosNom;
-        
-        // Extraire nom et description
-        stcContenu.contientBalise = %t;
-        stcContenu.nom = part(contenuLigne,debutPosNom:finPosNom-1);
-        stcContenu.descr = part(contenuLigne,finPosNom+1:finContenu);
+    if (debutPosNom < finContenu) then
+        finPosNom = strcspn(part(contenuLigne,debutPosNom:finContenu),' ') + ...
+                    debutPosNom - 1;
+        // Il s'agit d'une balise
+        if est_Mot_Contenu(convstr(liste_Nom_Balises(),'u'),...
+            convstr(part(contenuLigne, debutPosNom:finPosNom),'u')) then
+            // Extraire nom et description
+            stcContenu.contientBalise = %t;
+            stcContenu.nom = part(contenuLigne,debutPosNom:finPosNom);
+            stcContenu.descr = part(contenuLigne,finPosNom+2:finContenu);
+        // Signe de mise en forme
+        else
+            debutPos = posi_Dern_Slash(contenuLigne, finContenu)+1;
+            stcContenu.descr = part(contenuLigne,debutPos:finContenu);
+        end
+    // Suite d'un commentaire
     else
         stcContenu.nom = "";
-        debutPos = posi_Dern_Slash(contenuLigne, finContenu);
-        stcContenu.descr = part(contenuLigne, debutPos+1:finContenu);
+        debutPos = posi_Dern_Slash(contenuLigne, finContenu)+1;
+        stcContenu.descr = part(contenuLigne, debutPos:finContenu);
     end
 endfunction
 
@@ -359,4 +374,26 @@ function listeNomFichiers = supr_Fichiers_Temp(tempListeNomFichiers)
             j=j+1;
         end
     end
+endfunction
+
+
+//****************************************************************************
+/// \fn listeNomFichiers = supr_Fichiers_Temp(tempListeNomFichiers)
+/// \brief Retirer de la liste des fichiers ceux contenant '~'
+/// \param [in] tempListeNomFichiers \c tabString    Liste des noms de fichiers
+/// \return listeNomFichiers    \c tabString    Liste des noms de fichiers
+//*****************************************************************************
+function indexLigne = description_sur_lignes(contenu, indexLigneE, textePrecedent)
+    indexLigne = indexLigneE;
+    // Concaténer avec les lignes précédentes
+    while (grep(contenu(indexLigne),"/// ") == 1 &...
+            grep(contenu(indexLigne),"grep(contenu") <> 1)
+        stcContenu = extraire_Balise(contenu(indexLigne));
+        textePrecedent = descr_2_Lignes(textePrecedent, stcContenu, %f);
+        indexLigne = indexLigne+1;
+    end
+    stcContenu.descr = textePrecedent;
+    indexLigne = indexLigne-1;
+    
+    [stcContenu] = resume(stcContenu);
 endfunction

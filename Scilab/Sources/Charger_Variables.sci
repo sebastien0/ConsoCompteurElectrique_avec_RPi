@@ -7,9 +7,10 @@
 //****************************************************************************
 /// \fn erreur = charger_variables(dataPath2Save)
 /// \brief Charger les variables dans l'environnement depuis un fichier .sod
-/// \param [in] dataPath2Save string Chemin d'accès au répertoire où lire les fichiers .sod
-/// \return stcReleve      \c Structure     Structure du relevé
-/// \return stcStatistiques   \c Structure  Structure de statistiques
+/// \param [in] dataPath2Save \c string Chemin d'accès où lire les fichiers .sod
+/// \return erreur  \c Booléen  %t si aucun fichier sélectionné ou config non connue
+/// \param [out] stcReleve      \c Structure     Relevé
+/// \param [out] stcStatistiques   \c Structure  Statistiques
 //*****************************************************************************
 function erreur = charger_variables(dataPath2Save)
     cheminFichier = uigetfile(["*.sod"],dataPath2Save,...
@@ -23,6 +24,7 @@ function erreur = charger_variables(dataPath2Save)
         load(cheminFichier);
 
         // Configuration du compteur
+        /// \todo Supprimer cette détection!
         if (stcReleve.isConfigBase | stcReleve.isConfigHCHP) then
             erreur = %f;
 
@@ -42,11 +44,9 @@ endfunction
 
 
 //****************************************************************************
-/// \fn info_compteur(numCompteur, creationTxt)
+/// \fn info_compteur(stcReleve)
 /// \brief Afficher en console les informations du compteur (nom, numéro, config, jour,  date et heures du relevé
-/// \param [in] numCompteur     \c string  Numéro du compteur
-/// \param [in] CreationTxt     \c tabString(3)     Tableau de date et heures de création
-/// \param [in optionnel] texteConfig  \c string   Configuration du compteur
+/// \param [in] stcReleve     \c Structure  Relevé
 //*****************************************************************************
 function info_compteur(stcReleve)
     printf("Compteur ''%s'' n°%s, configuré en %s\n", ...

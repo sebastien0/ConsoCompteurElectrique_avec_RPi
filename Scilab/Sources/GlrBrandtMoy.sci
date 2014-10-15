@@ -22,24 +22,21 @@ reglerFctDeci(x, h, g, mc);
 
 
 //*****************************************************************************
-/// \fn [g,mc,kd,krmv]=glrbrandtm(x,h,Nest,Ndmax)
-/// \brief                GLR DE BRANDT POUR SAUT DE MOYENNE
-//        (détecter un saut de moyenne de valeur inconnue)
+/// \fn [g,mc,kd,krmv] = GlrBrandtMoy(x,h,Nest,Ndmax)
+/// \brief GLR DE BRANDT POUR SAUT DE MOYENNE
+///        (détecter un saut de moyenne de valeur inconnue)
 /// \author P. Granjon - pierre.granjon@grenoble-inp.fr - Grenoble INP, Ense3, Gipsa-Lab
-//
-//           Entrées :
-//             x    : vecteur signal gaussien
-//             h    : seuil pour le critère d'arrêt
-//             Nest : taille fixe de la fenêtre d'estimation de m1
-//             Ndmax: nombre max de détections (infini si nul)
-//
-//           Sorties :
-//             g    : vecteur fonction de décision
-//             mc   : vecteur moyenne constante par morceaux estimé
-//             kd   : vecteur instants de détection de la rupture
-//             krmv : vecteur estimateurs du MV des instants de rupture
+/// \param [in] x   \c tabDouble    Signal gaussien
+/// \param [in] h   \c double   Seuil pour le critère d'arrêt
+/// \param [in] Nest    \c double   Taille fixe de la fenêtre d'estimation de m1
+/// \param [in] Ndmax   \c double   Nombre max de détections (infini si nul)
+/// \todo Tenir compte de plusieurs return!
+// \return g    \c tabDouble    Vecteur fonction de décision
+// \return mc   \c tabDouble    Vecteur moyenne constante par morceaux estimé
+// \return kd   \c tabDouble    Vecteur instants de détection de la rupture
+// \return krmv    \c tabDouble Vecteur estimateurs du MV des instants de rupture
 //*****************************************************************************
-function [g,mc,kd,krmv]=GlrBrandtMoy(x,h,Nest,Ndmax)
+function [g,mc,kd,krmv] = GlrBrandtMoy(x,h,Nest,Ndmax)
     //Gestion nombre de détections infini
     if Ndmax == 0 then
         Ndmax = length(x)+1;
@@ -134,8 +131,12 @@ endfunction
 
 
 //*****************************************************************************
-// * Réglage de la fonction de décision
-// *
+/// \fn reglerFctDeci(x, h, g, mc)
+/// \brief Réglage de la fonction de décision en traçant les grandeurs utiles
+/// \param [in] x   \c tabDouble    Signal gaussien
+/// \param [in] h   \c double   Seuil pour le critère d'arrêt
+/// \param [in] g    \c tabDouble    Vecteur fonction de décision
+/// \param [in] mc   \c tabDouble    Vecteur moyenne constante par morceaux estimé
 //*****************************************************************************
 function reglerFctDeci(x, h, g, mc)
     // Signal & signal moyenné par morceaux

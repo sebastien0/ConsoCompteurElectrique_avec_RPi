@@ -5,24 +5,24 @@
 //******************************
 
 //****************************************************************************
-/// \fn Papp = Puissance_HCHP (Heure, Index)
+/// \fn Papp = Puissance_HCHP(Heure, Index)
 /// \brief Reconstituer la puissance apparente depuis les index HC et HP
-/// \param [out] Papp \c TabDouble   Puissance apparente recomposée
-/// \param [in] Heure   \c TabString    Horodate des échantillons
-/// \param [in] Index   \c TabDouble    Index d'énergie HC et HP
+/// Filtrage glissant sur 40 échantillons
+/// \param [in] Heure   \c tabString    Horodate des échantillons
+/// \param [in] Index   \c tabDouble(2)    Index d'énergie HC et HP
+/// \return Papp \c TabDouble   Puissance apparente recomposée
 //*****************************************************************************
-function Papp = Puissance_HCHP (Heure, Index)
+function Papp = Puissance_HCHP(Heure, Index)
     HEURECREUSE = 1;   // Colonne contenant l'index Heure Creuse
     HEUREPLEINE = 2;   // Colonne contenant l'index Heure Pleine
     
-    nbrLignes = size(Heure);
-    nbrLignes = nbrLignes(1)-1;
-    
+    nbrLignes = dimensions(Heure, "ligne");    
     Puiss = ones(nbrLignes-5);
     Energie_1 = 0;
     
     for Energie_1 = 2 : nbrLignes-1
         //Différence de temps entre les 2 échantillons
+        /// \todo Utiliser 'part' au lieu de 'msscanf'
         Energie_2 = Energie_1 + 1;
         temp_1 = msscanf(Heure(Energie_1-1,1),'%d:%d:%d');
         temp_1 = temp_1(2)*60+temp_1(3);

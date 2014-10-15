@@ -6,12 +6,14 @@
 
 //****************************************************************************
 /// \fn barre_Progression(stcStatistiques, ligne, progression)
-/// \brief Affiche la barre de progression \n Calcul la progression et estime 
-/// le temps restant. Est appelée à chaque nouveau pourcent réalisé
+/// \brief Rafraichit la barre de progression \n Calcul la progression et estime 
+/// le temps restant; est appelée à chaque nouveau pourcent réalisé
+/// \param [in] stcStatistiques   \c structure   Statistiques de progression
 /// \param [in] ligne   \c double   Ligne courante
-/// \param [in] stcStatistiques   \c structure   Structure de statistique d'avancement
 /// \param [in] progression \c double   Compteur d'avancement (nombre de fois 
 ///     où la fonction est apellée)
+/// \param [out] progression    \c double   Compteur d'avancement
+/// \param [out] stcStatistiques    \c structure   Statistiques de progression
 //*****************************************************************************
 function barre_Progression(stcStatistiques, ligne, progression)
     // Calcul du temps restant
@@ -38,26 +40,15 @@ function barre_Progression(stcStatistiques, ligne, progression)
     [progression, stcStatistiques] = resume(progression, stcStatistiques);
 endfunction
 
-
-    // Courant max de la journée
-    try
-        ligne = offset+ligne+2;
-        Imax = msscanf(donnee(ligne,1),'%s %s %s %s');
-        Imax = evstr(Imax(IMAX));
-        printf("Courant max sur la journée: %dA\n", Imax);
-    catch
-    end
-
-    
 //*****************************************************************************
-///\fn Sauve_Variables (filePath, stcReleve, stcStatistiques)
-/// \brief Enregistre les variables dans un fichier .sod
+/// \fn Sauve_Variables(filePath, stcReleve)
+/// \brief Enregistre les variables stcReleve et stcStatistiques dans un 
+///     fichier 'Releves_aaaa-mm-jj.sod' dans le répertoire filePath
 /// \param [in] filePath    \c string   Chemin où enregistrer le fichier
-// Les variables suivantes sont sauvegardées:
-// \li \var stcReleve
-// \li \var stcStatistiques
+/// \param [in] stcReleve   \c Structure    Relevé
+/// \param [in] stcStatistiques \c Structure    Statistiques
 //*****************************************************************************
-function Sauve_Variables (filePath, stcReleve, stcStatistiques)
+function Sauve_Variables(filePath, stcReleve)
     originPath = pwd();
     // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
     dateReleve = msscanf(stcReleve.date, '%c%c%c%c / %c%c / %c%c');
@@ -80,8 +71,7 @@ endfunction
 /// \brief A partir de l'en-tête du tableau, retourne la position 
 ///  des tabulations et la configuration
 /// \param [in] trame    \c string   Trame à analyser
-/// \return tmpConfig \c string  Configuration du compteur
-/// \return tmpPosiTab \c tableau double  Position des tabulations
+/// \return posiCaract \c tabDouble  Position des tabulations
 //*****************************************************************************
 function posiCaract = LocaliserCaractere(trame,caractere)
     j= 0;
@@ -92,7 +82,6 @@ function posiCaract = LocaliserCaractere(trame,caractere)
         end
     end
     posiCaract(j+1) = length(trame);
-    return posiCaract;
 endfunction
 
 //*****************************************************************************
@@ -100,8 +89,7 @@ endfunction
 /// \brief Retourne les valeurs dans une trame BASE
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
-/// \param [in] stcReleve   \c pointeur structure    Structure où enregistrer les valeurs
-/// \return tmpReleve \c tableau string  Valeurs
+/// \param [out] tmpReleve \c tabString(3)  Valeurs Heure, Papp, Index
 //*****************************************************************************
 function Indexer_Trame_Base (trame, stcPosiTab)
     heure = part(trame, 1:stcPosiTab.heureFin);
@@ -115,8 +103,8 @@ endfunction
 /// \brief Retourne les valeurs dans une trame HCHP
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
-/// \param [in] stcReleve   \c pointeur structure    Structure où enregistrer les valeurs
-/// \return tmpReleve \c tableau string  Valeurs
+/// \param [out] tmpReleve \c tabString(4)  Valeurs Heure, Papp, IndexHC, IndexHP
+/// \todo Mutualiser avec Indexer_Trame_Base pour avoir index de dimensions 1 ou 2
 //*****************************************************************************
 function Indexer_Trame_HCHP (trame, stcPosiTab)
     heure = part(trame, 1:stcPosiTab.heureFin);
@@ -126,16 +114,15 @@ function Indexer_Trame_HCHP (trame, stcPosiTab)
     [tmpReleve] = resume([heure papp indexHC indexHP]);
 endfunction
 
-
 //****************************************************************************
 /// \fn cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
 /// \brief Importe les données depuis un fichier .txt
-/// \param [in] dataPath    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
-/// \param [in] DEBUG   \c double   Afficher des informations en console pour le debug
+/// \param [in] dataPath2Read    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
+/// \param [in] isDEBUG   \c Booléen   Passer en mode DEBUG (+ d'info console)
 /// \return cheminFichier     \c string     Pointeur du fichier ouvert
-/// \return erreur     \c double     Erreur lors de l'execution
-/// \return stcReleve   \c structure   
-/// \return stcStatistiques    \c structure     
+/// \param [out] erreur     \c Booléen     %t si pas de fichier sélectionné
+/// \param [out] stcReleve   \c structure   Relevé, si fichier sélectionné
+/// \param [out] stcStatistiques    \c structure     Statistiques, si fichier sélectionné
 //****************************************************************************
 function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
     caractereAChercher = 9; //Tabulation, valeur en décimale, utiliser ascii()
@@ -221,7 +208,6 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         printf("Import en cours, soyez patient ...\n");
         
         // Structure pour les statistique d'importation
-        //TODO indiquer les variables
         stcStatistiques.numCompteur = stcReleve.numCompteur;
         stcStatistiques.config = stcReleve.config;
         stcStatistiques.nomPC = nomPC;

@@ -5,11 +5,11 @@
 //******************************
 
 //****************************************************************************
-/// \fn heures_Abscisses(nbrLignes, fenetre, graphique)
+/// \fn signal_f = moyenneGlissante(signal, fenetre)
 /// \brief Filtrage par moyenne glissante
-/// \param [out] signal_f   \c TabDouble    Signal filtré
-/// \param [in] signal    \c TabDouble  Nombre d'abscisses
+/// \param [in] signal    \c TabDouble  Signal à filtrer (dimensions n)
 /// \param [in] fenetre     \c double   Fenetre sur laquelle moyenner le signal
+/// \return signal_f   \c TabDouble(n)    Signal filtré
 //*****************************************************************************
 function signal_f = moyenneGlissante(signal, fenetre)
     nbrLignes = dimensions(signal,"ligne");
@@ -19,7 +19,6 @@ function signal_f = moyenneGlissante(signal, fenetre)
     
     // Effectuer le moyennage glissant
     for i = fenetre:nbrLignes
-//        signal_f(i) = mean(signal(fenetre+1:i));
         signal_f(i) = mean(signal(i-fenetre+1:i));
     end
 endfunction
