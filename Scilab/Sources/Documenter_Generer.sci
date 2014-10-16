@@ -94,7 +94,7 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
     for i=1:stcDocPartiel.nbr
         try
             stcFichier = stcDocPartiel.tab(i);
-            // Fichier
+            // *************** Fichier ***************
             mfprintf(fd,"%i - %s\n", i, stcFichier.nom);
             if stcFichier.auteur <> [] then
                 // Affichage sur plusieurs lignes
@@ -109,10 +109,16 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
                 mfprintf(fd,"%sVersion: %s\n", indenter(1), stcFichier.version);
             end
             if stcFichier.resume <> [] then
-                mfprintf(fd,"%sRésumé: %s\n", indenter(1), stcFichier.resume);
+                mfprintf(fd,"%sRésumé: %s\n", indenter(1), stcFichier.resume(1));
+                // Affichage sur plusieurs lignes
+                if dimensions(stcFichier.resume,"ligne") > 1 then
+                    for k = 2 : dimensions(stcFichier.resume,"ligne")
+                        mfprintf(fd,"%s%s\n", indenter(1), stcFichier.resume(k));
+                    end
+                end
             end
             
-            //Fonctions
+            // *************** Fonctions ***************
             for j = 1:stcFichier.nbr
                 stcTxtFonction = stcFichier.tabFonctions(j);
                 // Noms
@@ -124,9 +130,10 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
                 txt = convstr(part(stcTxtFonction.nom,posi),'u');
                 txt = strcat([txt, part(stcTxtFonction.nom, ...
                             posi+1:length(stcTxtFonction.nom))]);
-    
-                mfprintf(fd,"%s%i - %s\n",indenter(2),j,txt);
+                    mfprintf(fd,"%s%i - %s\n",indenter(2),j,txt);
+                // Ligne
                 mfprintf(fd,"%sLigne: %d\n",indenter(3),stcTxtFonction.ligne);
+                // Résumé
                 // Affichage sur plusieurs lignes
                 mfprintf(fd,"%sRésumé: %s\n",indenter(3),stcTxtFonction.resume(1));
                 if dimensions(stcTxtFonction.resume,"ligne") > 1 then
@@ -134,22 +141,21 @@ function ecrireTabFnct(fd, stcDocPartiel, debugActif)
                         mfprintf(fd,"%s%s\n",indenter(3),stcTxtFonction.resume(k));
                     end
                 end
+                // Proto
                 mfprintf(fd,"%s%s\n",indenter(3),stcTxtFonction.proto);
                 // Parametres
                 if stcTxtFonction.nbrparam > 0 then
                     for k = 1:stcTxtFonction.nbrparam
                         mfprintf(fd,"%sParam: %s\n",indenter(4),...
-                            stcTxtFonction.param(k).descr);
+                            stcTxtFonction.tabparam(k).descr);
                     end
                 end
                 // Retourne
-                if stcTxtFonction.retourne <> "" then
-                    mfprintf(fd,"%sRetourne: %s\n",indenter(4),stcTxtFonction.retourne);
-                    // Si plusieurs 'retourne', décomenter le code
-        //            for k = 1:stcTxtFonction.nbrRetourne
-        //                mfprintf(fd,"%s%s\n",indenter(3), ...
-        //                          stcTxtFonction.tabRetourne(k));
-        //            end
+                if stcTxtFonction.nbrreturn > 0 then
+                    for k = 1:stcTxtFonction.nbrreturn
+                        mfprintf(fd,"%sRetourne: %s\n",indenter(4),...
+                            stcTxtFonction.return(k).descr);
+                    end
                 end
             end
         catch

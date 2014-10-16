@@ -67,7 +67,7 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
     indexLigne = 1;
     
     while (indexLigne <= dimensions(contenu, "ligne"))
-    //      for indexLigne = 1:7
+    //      for indexLigne = 1:88
         try
     //        printf("ligne %i\n",indexLigne);
             // 2ème condition pour éviter d'indexer la ligne elle-même
@@ -80,7 +80,7 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                 end
                 // si le nom de la balise est reconnue alors extract sinon erreur
                 
-                // Todo
+                // *************** Todo***************
                 if convstr(stcContenu.nom,'u') == convstr(tabBalises(1),'u') then
                     if ~stcContenu.contientBalise then
                         indexLigne = description_sur_lignes(contenu, ...
@@ -92,7 +92,7 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     end
                     stcDoc.todo.tab(stcDoc.todo.nbr).descr = stcContenu.descr;
     
-                // Bug
+                // *************** Bug ***************
                 elseif convstr(stcContenu.nom,'u') == convstr(tabBalises(2),'u') then
                     if ~stcContenu.contientBalise then
                         indexLigne = description_sur_lignes(contenu, ...
@@ -104,11 +104,11 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     end
                     stcDoc.bug.tab(stcDoc.bug.nbr).descr = stcContenu.descr;
                 
-                // Version
+                // *************** Version ***************
                 elseif stcContenu.nom == tabBalises(3) then
                     stcDoc.fichiers.tab(indexFichier).version = stcContenu.descr;
                 
-                // Author
+                // *************** Author ***************
                 elseif stcContenu.nom == tabBalises(4) then
                     if ~stcContenu.contientBalise then
                         indexLigne = description_sur_lignes(contenu, ...
@@ -116,17 +116,18 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     end
                     stcDoc.fichiers.tab(indexFichier).auteur = stcContenu.descr;
                
-                // Date
+                // *************** Date ***************
                 elseif stcContenu.nom == tabBalises(5) then
                     stcDoc.fichiers.tab(indexFichier).date = stcContenu.descr;
 
-                // Brief
+                // *************** Brief ***************
                 elseif stcContenu.nom == tabBalises(6) then
                     // Brief d'une fonction
                     if estFonction then
                         // Attrapper erreur si \fn manquant
                         try
                             // Sur plusieurs lignes
+                            /// \todo l'absence de balise est géré
                             if ~stcContenu.contientBalise then
                                 indexLigne = description_sur_lignes(contenu, ...
                                     indexLigne, stcContenu_1.descr);
@@ -148,40 +149,22 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                         stcDoc.fichiers.tab(indexFichier).resume = stcContenu.descr;
                         if stcDoc.fichiers.tab(indexFichier) == [] then
                             stcDoc.fichiers.tab(indexFichier).date="";
-                        end
-                        if stcDoc.fichiers.tab(indexFichier) == [] then
                             stcDoc.fichiers.tab(indexFichier).version="";
                         end
                     end
                 
-                // Fonction
+                // *************** Fonction ***************
                 elseif stcContenu.nom == tabBalises(7) then
                     // Initialisation
+                    estFonction = %t;
                     nbrFonctions = stcDoc.fichiers.tab(indexFichier).nbr +1;
                     stcDoc.fichiers.tab(indexFichier).nbr = nbrFonctions;
-                    // Si première fonction du fichier
-                    try
-                        stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions).nom="";
-                    catch
-                        stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions) = struct("nom","");
-                    end
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions).param = struct("descr","");
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions).resume="";
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                        nbrFonctions).retourne="";
-                    
-                    // Proto
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).proto = stcContenu.descr;
-                    // Ligne
-                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).ligne = indexLigne;
-    
                     // Nom
+                    // Si première fonction du fichier
+                    if nbrFonctions == 1 then
+                        stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions) = struct("nom","");
+                    end
                     if grep(stcContenu.descr,'(') == 1 then
                         nom = part(stcContenu.descr, 1:strcspn(stcContenu.descr,'('));
                             if grep(nom,'=') == 1 then
@@ -195,12 +178,27 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                     nbrFonctions).nom = nom;
-                    // Init nombre de paramètres
+                    // Résumé
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).nbrparam = 0;
-                    estFonction = %t;
-                
-                // Param
+                                nbrFonctions).resume="";
+                    // Param
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nbrparam = 0;
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).tabparam = struct("descr","");
+                    // Retourne
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                    nbrFonctions).nbrreturn = 0;
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).return = struct("descr","");
+                    // Proto
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                    nbrFonctions).proto = stcContenu.descr;
+                    // Ligne
+                    stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                    nbrFonctions).ligne = indexLigne;
+
+                // *************** Param ***************
                 elseif stcContenu.nom == tabBalises(8) then
                     nbrparam = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
                                 nbrFonctions).nbrparam;
@@ -214,19 +212,25 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                                         nbrFonctions).nbrparam = nbrparam;
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                        nbrFonctions).param(nbrparam).descr = stcContenu.descr;
+                        nbrFonctions).tabparam(nbrparam).descr = stcContenu.descr;
                 
-                // Return
+                // *************** Return ***************
                 elseif stcContenu.nom == tabBalises(9) then
+                    nbrreturn = stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                                nbrFonctions).nbrreturn;
                     // Sur plusieurs lignes
                     if ~stcContenu.contientBalise then
                         indexLigne = description_sur_lignes(contenu, ...
                                     indexLigne, stcContenu_1.descr);
+                    else
+                        nbrreturn = nbrreturn +1;
+                        stcDoc.fichiers.tab(indexFichier).tabFonctions(...
+                            nbrFonctions).nbrreturn = nbrreturn;
                     end
                     stcDoc.fichiers.tab(indexFichier).tabFonctions(...
-                                    nbrFonctions).retourne = stcContenu.descr;
+                            nbrFonctions).return(nbrreturn).descr = stcContenu.descr;
     
-                // Balise non reconnue
+                // *************** Balise non reconnue ***************
                 else
                     printf("Erreur \t Ligne %d: Balise non reconnue\n",indexLigne);
                 end
