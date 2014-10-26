@@ -2,6 +2,7 @@
 /// \author Sébastien Lemoine
 /// \date Mai 2014
 /// \brief Etude des habitudes, supperpose des courbes sur un même graphique
+/// \version 1.0
 //******************************
 
 clear;

@@ -1,6 +1,7 @@
 //*****************************
 /// \author Sébastien Lemoine
 /// \date Avril 2014
+/// \version 1.0
 /// \brief Gestion de l'IHM et de l'environnement pour un post- 
 /// traitement des relevés
 //******************************
