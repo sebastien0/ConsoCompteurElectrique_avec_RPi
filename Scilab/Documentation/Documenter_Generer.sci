@@ -8,7 +8,9 @@
 /// \fn creer_Documentation(stcDoc, nomProjet, nomFichier, debugActif)
 /// \brief Exporte dans un fichier texte la documentation du projet
 /// \param [in] stcDoc  \c Structure    Documentation
-/// \param [in] debugActif  \c Booléen    Afficher plus d'info en console
+/// \param [in] nomProjet  \c String    Titre inscrit dans le document
+/// \param [in] nomFichier  \c String    Nom du fichier généré
+/// \param [in] debugActif  \c Booléen    Vrai pour afficher plus d'info en console
 //*****************************************************************************
 function creer_Documentation(stcDoc, nomProjet, nomFichier, debugActif)
     // Créer et ouvrir le fichier
@@ -19,25 +21,34 @@ function creer_Documentation(stcDoc, nomProjet, nomFichier, debugActif)
         mfprintf(fd,"Documentation du projet: %s\n",nomProjet);
         // Date et heure
         tempDate = getdate();
-        mfprintf(fd,"Générée le %i-%s-%s\n",tempDate(1), ...
-            nombre_2_Chiffres(tempDate(2)), nombre_2_Chiffres(tempDate(6)));
+        mfprintf(fd,"Générée le %i-%s-%s %s:%s:%s\n",tempDate(1), ...
+            nombre_2_Chiffres(tempDate(2)), nombre_2_Chiffres(tempDate(6)),...
+            nombre_2_Chiffres(tempDate(7)), nombre_2_Chiffres(tempDate(8)),...
+            nombre_2_Chiffres(tempDate(9)));
 
-        mfprintf(fd,"\n********* BUG **********\n");
+        mfprintf(fd,"\n********* BUG ********************\n");
         if stcDoc.bug.nbr == 0 then
             mfprintf(fd,"Aucun BUG remonté\n");
         else
             ecrireTab(fd, stcDoc.bug);
         end
 
-        mfprintf(fd,"\n********* TODO **********\n");
+        mfprintf(fd,"\n********* TODO ********************\n");
         if stcDoc.todo.nbr == 0 then
             mfprintf(fd,"Aucun TODO remonté\n");
         else
             ecrireTab(fd, stcDoc.todo);
         end
+        
+        mfprintf(fd,"\n********* STRUCTURES ********************\n");
+        if stcDoc.stc.nbr == 0 then
+            mfprintf(fd,"Aucune structure remontée\n");
+        else
+            ecrireTab(fd, stcDoc.stc,%t);
+        end
     
-        mfprintf(fd,"\n********* FONCTIONS **********\n");
-        ecrireTabFnct(fd, stcDoc.fichiers);
+        mfprintf(fd,"\n********* FICHIERS & FONCTIONS ********************\n");
+        ecrireTabFnct(fd, stcDoc.fichiers, debugActif);
 
         mfprintf(fd,"\n--- Fin de la documentation ----");
         // Fermer fichier
@@ -49,16 +60,23 @@ function creer_Documentation(stcDoc, nomProjet, nomFichier, debugActif)
 endfunction
 
 //****************************************************************************
-/// \fn ecrireTab(fd, stcDocPartiel)
-/// \brief Ecrire dans le fichier le contenu de stcDocPartiel
+/// \fn ecrireTab(fd, stcDocPartiel, opt_Stc)
+/// \brief Ecrire le contenu de stcDocPartiel dans le fichier
 /// \param [in] fd  \c FileDesciptor    Fichier de sortie
-/// \param [in] stcDoc  \c Structure    Documentation
+/// \param [in] stcDocPartiel  \c Structure    Documentation de type BUG, TODO, STC
+/// \param [in] opt_Stc  \c Booléen    Si présent, stcDocPartiel traité comme STC
 //*****************************************************************************
-function ecrireTab(fd, stcDocPartiel)
+function ecrireTab(fd, stcDocPartiel, opt_Stc)
     // Parcourir toutes les entrées
     for i=1:stcDocPartiel.nbr
         stcTxt = stcDocPartiel.tab(i);
-        mfprintf(fd,"%i - %s\n", i, stcTxt.fichier);
+        // Nom de la structure
+        if argn(2) == 3 then
+            mfprintf(fd,"%i - %s\n", i, stcTxt.nom);
+            mfprintf(fd,"%sFichier: %s\n",indenter(1), stcTxt.fichier);
+        else
+            mfprintf(fd,"%i - %s\n", i, stcTxt.fichier);
+        end
         mfprintf(fd,"%sLigne: %i\n",indenter(1),stcTxt.ligne);
         // Si description sur plusieurs lignes
         for j = 1:dimensions(stcTxt.descr,"ligne") 
@@ -85,12 +103,20 @@ endfunction
 /// \fn ecrireTabFnct(fd, stcDocPartiel, debugActif)
 /// \brief Ecrire dans le fichier le contenu de stcDocPartiel
 /// \param [in] fd  \c FileDesciptor    Fichier de sortie
-/// \param [in] stcDoc  \c Structure    Documentation
-/// \param [in] debugActif  \c Booléen    Afficher plus d'info en console
+/// \param [in] stcDoc  \c Structure    Documentation de type FICHIERS
+/// \param [in] debugActif  \c Booléen    Vrai pour afficher plus d'info en console
 //*****************************************************************************
 function ecrireTabFnct(fd, stcDocPartiel, debugActif)
     // Parcourir toutes les entrées
     /// \todo Trier les fonctions par nom et non par ordre d'apparition
+    ///        Une ébauche de code ci-dessous
+    // Trier les noms des fonctions par ordre croissant
+//    listeNomsFonctions = stcDoc.fichiers.tab(stcDoc.fichiers.indexFichierCourant).tabFonctions.nom;
+//    for i=1:dimensions(listeNomsFonctions,"ligne");
+//        strListeNomsFonctions(i) = string(listeNomsFonctions(i));
+//    end
+//    listeNomsFonctionsTrie = gsort(strListeNomsFonctions,'lr','i');
+
     for i=1:stcDocPartiel.nbr
         try
             stcFichier = stcDocPartiel.tab(i);
