@@ -31,3 +31,19 @@ function Tracer_Duree_Chargement(stcStatistiques)
     fenetre = gcf();
     fenetre.figure_name = "Statistiques";
 endfunction
+
+
+/// \stc stcStatistiques.   \c Structure    Statistiques sur l'importation
+///       dateImportation     \c String   Date
+///       heureImportation    \c String   Heure
+///       nomPC           \c String   Nom du PC
+///       tempsTotal      \c Double   Temps de traitement
+///       tabTempsRestant     \c tabDouble[]    Temps restant successif estimé
+///       nbBoucleCentDenum   \c Double   Nombre d'itérations pour optimiser le rafraichissement de la barre d'avancement
+///       tempsIntermediaire  \c Double   Temps de la boucle nbBoucleCentDenum
+///       numCompteur         \c String   Numéro du compteur
+///       config      \c String   Configuration du compteur
+///       date        \c String   Date
+///       heure       \c String   Heure de début
+///       nbrLignes   \c Double   Nombre d'échantillons
+

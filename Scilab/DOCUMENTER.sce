@@ -20,15 +20,15 @@ srcPath = strcat([parentPath,"\Documentation"]);
 
 //*** CONFIGURATION MANUELLE *******************************************
 // Chemin du répertoire à documenter
-//targetPath = strcat([parentPath,"\Sources"]);
-targetPath = strcat([parentPath,"\Documentation"]); // Documenter la documentation
+targetPath = strcat([parentPath,"\Sources"]);
+//targetPath = strcat([parentPath,"\Documentation"]); // Documenter la documentation
 nomFichier = "Documentation_Projet.txt";    // Nom du fichier de sortie
 titreProjet = "R-Pi. Suivit Temps-Réel des consommations électriques";
-debugActif = %t;    // Activer le debug
+debugActif = %f;    // Activer ou non le debug
 //*** Fin configuration manuelle *******************************************
 
 
-documentationRecursive = targetPath == srcPath
+documentationRecursive = targetPath == srcPath;
 
 // Charger les fonctions pour documenter
 exec(srcPath+"\Documenter_Indexer.sci");

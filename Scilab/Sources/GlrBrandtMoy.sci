@@ -30,7 +30,6 @@ reglerFctDeci(x, h, g, mc);
 /// \param [in] h   \c double   Seuil pour le critère d'arrêt
 /// \param [in] Nest    \c double   Taille fixe de la fenêtre d'estimation de m1
 /// \param [in] Ndmax   \c double   Nombre max de détections (infini si nul)
-/// \todo Tenir compte de plusieurs return!
 // \return g    \c tabDouble    Vecteur fonction de décision
 // \return mc   \c tabDouble    Vecteur moyenne constante par morceaux estimé
 // \return kd   \c tabDouble    Vecteur instants de détection de la rupture

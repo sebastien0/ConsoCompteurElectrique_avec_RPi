@@ -22,13 +22,10 @@ function Papp = Puissance_HCHP(Heure, Index)
     
     for Energie_1 = 2 : nbrLignes-1
         //Différence de temps entre les 2 échantillons
-        /// \todo Utiliser 'part' au lieu de 'msscanf'
         Energie_2 = Energie_1 + 1;
-        temp_1 = msscanf(Heure(Energie_1-1,1),'%d:%d:%d');
-        temp_1 = temp_1(2)*60+temp_1(3);
-        temp_2 = msscanf(Heure(Energie_2-1,1),'%d:%d:%d');
-        temp_2 = temp_2(2)*60+temp_2(3);
-        Dtemp = temp_2 - temp_1;
+        temp_1 = Heure(Energie_1-1,1);
+        temp_2 = Heure(Energie_2-1,1);
+        Dtemp = difTemps(temp_1,temp_2);
 
         //Puissance
         if Dtemp <> 0 then

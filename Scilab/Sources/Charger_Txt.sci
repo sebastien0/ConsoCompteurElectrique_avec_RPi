@@ -4,115 +4,6 @@
 /// \brief Fonctions pour importer un fichier texte .txt
 //******************************
 
-//****************************************************************************
-/// \fn barre_Progression(stcStatistiques, ligne, progression)
-/// \brief Rafraichit la barre de progression \n Calcul la progression et estime 
-/// le temps restant; est appelée à chaque nouveau pourcent réalisé
-/// \param [in] stcStatistiques   \c structure   Statistiques de progression
-/// \param [in] ligne   \c double   Ligne courante
-/// \param [in] progression \c double   Compteur d'avancement (nombre de fois 
-///     où la fonction est apellée)
-/// \param [out] progression    \c double   Compteur d'avancement
-/// \param [out] stcStatistiques    \c structure   Statistiques de progression
-//*****************************************************************************
-function barre_Progression(stcStatistiques, ligne, progression)
-    // Calcul du temps restant
-    stcStatistiques.tempsTotal = toc();
-    progression = progression + 1;
-    stcStatistiques.tabTempsRestant(progression) = stcStatistiques.tempsTotal ...
-                                            * (100-progression) / progression;
-    
-    // Affichage du pourcentage d'avancement et temps restant
-    if stcStatistiques.tabTempsRestant(progression) < 60 then
-        progressionbar(BarreProgression, 'Import en cours, ' + ...
-        string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
-        '% fait. Temps restant : ' + ...
-        string(round(stcStatistiques.tabTempsRestant(progression))) + 's');
-    else
-        tempTempsRestant = [floor(stcStatistiques.tabTempsRestant(progression)/60) ...
-        round(modulo(round(stcStatistiques.tabTempsRestant(progression)),60))];
-        progressionbar(BarreProgression, 'Import en cours, ' + ...
-        string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
-        '% fait. Temps restant : ' + string(tempTempsRestant(1)) + ...
-        'min '+ string(nombre_2_Chiffres(tempTempsRestant(2))) + 's');
-    end
-    
-    [progression, stcStatistiques] = resume(progression, stcStatistiques);
-endfunction
-
-//*****************************************************************************
-/// \fn Sauve_Variables(filePath, stcReleve)
-/// \brief Enregistre les variables stcReleve et stcStatistiques dans un 
-///     fichier 'Releves_aaaa-mm-jj.sod' dans le répertoire filePath
-/// \param [in] filePath    \c string   Chemin où enregistrer le fichier
-/// \param [in] stcReleve   \c Structure    Relevé
-/// \param [in] stcStatistiques \c Structure    Statistiques
-//*****************************************************************************
-function Sauve_Variables(filePath, stcReleve)
-    originPath = pwd();
-    // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
-    dateReleve = msscanf(stcReleve.date, '%c%c%c%c / %c%c / %c%c');
-    dateReleve = [strcat([dateReleve(1), dateReleve(2), dateReleve(3), ...
-                  dateReleve(4)]) strcat([dateReleve(5),dateReleve(6)]) ...
-                  strcat([dateReleve(7),dateReleve(8)])];
-
-    cd(filePath);
-    fileName = strcat([stcReleve.numCompteur,"_",dateReleve(1),"-",dateReleve(2)...
-    ,"-",dateReleve(3),".sod"]);
-    save(fileName, "stcReleve", "stcStatistiques");
-   
-    printf("Variables sauvegardées dans %s\\%s\n", filePath, fileName);
-    cd(originPath);
-endfunction
-
-
-//*****************************************************************************
-/// \fn posiCaract = LocaliserCaractere(trame,caractere)
-/// \brief A partir de l'en-tête du tableau, retourne la position 
-///  des tabulations et la configuration
-/// \param [in] trame    \c string   Trame à analyser
-/// \return posiCaract \c tabDouble  Position des tabulations
-//*****************************************************************************
-function posiCaract = LocaliserCaractere(trame,caractere)
-    j= 0;
-    for i = 1:length(trame)
-        if ascii(part(trame, i)) == caractere then
-            j = j+1;
-            posiCaract(j) = i;
-        end
-    end
-    posiCaract(j+1) = length(trame);
-endfunction
-
-//*****************************************************************************
-/// \fn Indexer_Trame_Base (trame, stcPosiTab)
-/// \brief Retourne les valeurs dans une trame BASE
-/// \param [in] trame    \c string   Trame à analyser
-/// \param [in] stcPosiTab  \c structure    Position des valeurs
-/// \param [out] tmpReleve \c tabString(3)  Valeurs Heure, Papp, Index
-//*****************************************************************************
-function Indexer_Trame_Base (trame, stcPosiTab)
-    heure = part(trame, 1:stcPosiTab.heureFin);
-    papp = part(trame, stcPosiTab.pappDebut:stcPosiTab.pappFin);
-    index = part(trame, stcPosiTab.indexDebut:stcPosiTab.indexFin);
-    [tmpReleve] = resume([heure papp index]);
-endfunction
-
-//*****************************************************************************
-/// \fn Indexer_Trame_HCHP (trame, stcPosiTab)
-/// \brief Retourne les valeurs dans une trame HCHP
-/// \param [in] trame    \c string   Trame à analyser
-/// \param [in] stcPosiTab  \c structure    Position des valeurs
-/// \param [out] tmpReleve \c tabString(4)  Valeurs Heure, Papp, IndexHC, IndexHP
-/// \todo Mutualiser avec Indexer_Trame_Base pour avoir index de dimensions 1 ou 2
-//*****************************************************************************
-function Indexer_Trame_HCHP (trame, stcPosiTab)
-    heure = part(trame, 1:stcPosiTab.heureFin);
-    papp = part(trame, stcPosiTab.pappDebut:stcPosiTab.pappFin);
-    indexHC = part(trame, stcPosiTab.HCDebut:stcPosiTab.HCFin);
-    indexHP = part(trame, stcPosiTab.HPDebut:stcPosiTab.indexFin);
-    [tmpReleve] = resume([heure papp indexHC indexHP]);
-endfunction
 
 //****************************************************************************
 /// \fn cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
@@ -374,3 +265,128 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         [erreur] = resume(%t);    //Pas de fichier sélectionné
     end
 endfunction
+
+
+//****************************************************************************
+/// \fn barre_Progression(stcStatistiques, ligne, progression)
+/// \brief Rafraichit la barre de progression \n Calcul la progression et estime 
+/// le temps restant; est appelée à chaque nouveau pourcent réalisé
+/// \param [in] stcStatistiques   \c structure   Statistiques de progression
+/// \param [in] ligne   \c double   Ligne courante
+/// \param [in] progression \c double   Compteur d'avancement (nombre de fois 
+///     où la fonction est apellée)
+/// \param [out] progression    \c double   Compteur d'avancement
+/// \param [out] stcStatistiques    \c structure   Statistiques de progression
+//*****************************************************************************
+function barre_Progression(stcStatistiques, ligne, progression)
+    // Calcul du temps restant
+    stcStatistiques.tempsTotal = toc();
+    progression = progression + 1;
+    stcStatistiques.tabTempsRestant(progression) = stcStatistiques.tempsTotal ...
+                                            * (100-progression) / progression;
+    
+    // Affichage du pourcentage d'avancement et temps restant
+    if stcStatistiques.tabTempsRestant(progression) < 60 then
+        progressionbar(BarreProgression, 'Import en cours, ' + ...
+        string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
+        '% fait. Temps restant : ' + ...
+        string(round(stcStatistiques.tabTempsRestant(progression))) + 's');
+    else
+        tempTempsRestant = [floor(stcStatistiques.tabTempsRestant(progression)/60) ...
+        round(modulo(round(stcStatistiques.tabTempsRestant(progression)),60))];
+        progressionbar(BarreProgression, 'Import en cours, ' + ...
+        string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
+        '% fait. Temps restant : ' + string(tempTempsRestant(1)) + ...
+        'min '+ string(nombre_2_Chiffres(tempTempsRestant(2))) + 's');
+    end
+    
+    [progression, stcStatistiques] = resume(progression, stcStatistiques);
+endfunction
+
+//*****************************************************************************
+/// \fn Sauve_Variables(filePath, stcReleve)
+/// \brief Enregistre les variables stcReleve et stcStatistiques dans un 
+///     fichier 'Releves_aaaa-mm-jj.sod' dans le répertoire filePath
+/// \param [in] filePath    \c string   Chemin où enregistrer le fichier
+/// \param [in] stcReleve   \c Structure    Relevé
+/// \param [in] stcStatistiques \c Structure    Statistiques
+//*****************************************************************************
+function Sauve_Variables(filePath, stcReleve)
+    originPath = pwd();
+    // Enregistrement des variables dans Releves_aaaa-mm-jj.sod
+    dateReleve = msscanf(stcReleve.date, '%c%c%c%c / %c%c / %c%c');
+    dateReleve = [strcat([dateReleve(1), dateReleve(2), dateReleve(3), ...
+                  dateReleve(4)]) strcat([dateReleve(5),dateReleve(6)]) ...
+                  strcat([dateReleve(7),dateReleve(8)])];
+
+    cd(filePath);
+    fileName = strcat([stcReleve.numCompteur,"_",dateReleve(1),"-",dateReleve(2)...
+    ,"-",dateReleve(3),".sod"]);
+    save(fileName, "stcReleve", "stcStatistiques");
+   
+    printf("Variables sauvegardées dans %s\\%s\n", filePath, fileName);
+    cd(originPath);
+endfunction
+
+
+//*****************************************************************************
+/// \fn posiCaract = LocaliserCaractere(trame,caractere)
+/// \brief A partir de l'en-tête du tableau, retourne la position 
+///  des tabulations et la configuration
+/// \param [in] trame    \c string   Trame à analyser
+/// \return posiCaract \c tabDouble  Position des tabulations
+//*****************************************************************************
+function posiCaract = LocaliserCaractere(trame,caractere)
+    j= 0;
+    for i = 1:length(trame)
+        if ascii(part(trame, i)) == caractere then
+            j = j+1;
+            posiCaract(j) = i;
+        end
+    end
+    posiCaract(j+1) = length(trame);
+endfunction
+
+//*****************************************************************************
+/// \fn Indexer_Trame_Base (trame, stcPosiTab)
+/// \brief Retourne les valeurs dans une trame BASE
+/// \param [in] trame    \c string   Trame à analyser
+/// \param [in] stcPosiTab  \c structure    Position des valeurs
+/// \param [out] tmpReleve \c tabString(3)  Valeurs Heure, Papp, Index
+//*****************************************************************************
+function Indexer_Trame_Base (trame, stcPosiTab)
+    heure = part(trame, 1:stcPosiTab.heureFin);
+    papp = part(trame, stcPosiTab.pappDebut:stcPosiTab.pappFin);
+    index = part(trame, stcPosiTab.indexDebut:stcPosiTab.indexFin);
+    [tmpReleve] = resume([heure papp index]);
+endfunction
+
+//*****************************************************************************
+/// \fn Indexer_Trame_HCHP (trame, stcPosiTab)
+/// \brief Retourne les valeurs dans une trame HCHP
+/// \param [in] trame    \c string   Trame à analyser
+/// \param [in] stcPosiTab  \c structure    Position des valeurs
+/// \param [out] tmpReleve \c tabString(4)  Valeurs Heure, Papp, IndexHC, IndexHP
+/// \todo Mutualiser avec Indexer_Trame_Base pour avoir index de dimensions 1 ou 2
+//*****************************************************************************
+function Indexer_Trame_HCHP (trame, stcPosiTab)
+    heure = part(trame, 1:stcPosiTab.heureFin);
+    papp = part(trame, stcPosiTab.pappDebut:stcPosiTab.pappFin);
+    indexHC = part(trame, stcPosiTab.HCDebut:stcPosiTab.HCFin);
+    indexHP = part(trame, stcPosiTab.HPDebut:stcPosiTab.indexFin);
+    [tmpReleve] = resume([heure papp indexHC indexHP]);
+endfunction
+
+
+
+/// \stc stcPosiTab.    \c Structure    Position des valeurs dans le fichier
+///       heureFin     \c double   Fin de l'heure
+///       pappDebut    \c double   Début de la Papp
+///       pappFin      \c double   Fin de la Papp
+///       indexDebut   \c double   Si Base, début index 
+///       indexFin     \c double   Si Base, fin index
+///       HCDebut    \c double   Si HCHP, début index HC
+///       HCFin      \c double   Si HCHP, Fin index HC
+///       HPDebut    \c double   Si HCHP, début index HP
+///       indexFin   \c double   Si HCHP, fin index HP
+

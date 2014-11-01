@@ -153,3 +153,25 @@ while(choix <> 0 & choix <> []) do
         \t Validez en cliquant sur OK\n");
     end
 end
+
+
+/// \stc stcReleve.     \c Structure    Relevé
+///       numCompteur \c String   Numéro du compteur
+///       residence   \c String   Nom du domicile
+///       config   \c String   Configuration du compteur
+///       pSouscr  \c String   Puissance souscrite
+///       jour     \c String   Nom du jour
+///       date     \c String   Date
+///       heureDebut  \c String   Heure de début
+///       heureFin    \c string   Heure de fin
+///       isConfigBase    \c Booléen  Vrai, configuré en Base
+///       isConfigHCHP    \c Booléen  Vrai, configuré en HCHP
+///       nbrLignes   \c Double   Nombre d'échantillons
+///       nbrIndex    \c Double   Nombre d'index d'énergie
+///       papp    \c tabDouble[nbrLignes]     Puissance
+///       heure   \c tabDouble[nbrLignes]     Heure
+///       index   \c tabDouble[nbrLignes][nbrIndex]     Energies
+///       index0  \c tabDouble[nbrIndex]   Energies au début du relevé
+///       pappMoy \c double  Puissance moyenne
+///       iMax    \c double  Courant max
+

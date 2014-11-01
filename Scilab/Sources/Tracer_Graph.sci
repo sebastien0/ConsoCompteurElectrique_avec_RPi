@@ -5,17 +5,15 @@
 //******************************
 
 //****************************************************************************
-/// \fn heures_Abscisses(nbrLignes, fenetre, graphique, temps)
+/// \fn heures_Abscisses(nbrLignes, graphique, temps)
 /// \brief Afficher les abscisses en temps, distribution par rapport 
 ///  à la taille de l'écran
 /// \param [in] nbrLignes    \c double  Nombre d'abscisses
-/// \param [in] fenetre    \b TBC Objet graphique
 /// \param [in] graphique    \b TBC Objet graphique
 /// \param [in] temps    \c tabString  Heure
-/// \todo Retirer 'fenetre' => inutilisé
-/// \todo utiliser 'dimensions' au lieu de passer nbrLignes en paramètre
 //*****************************************************************************
-function heures_Abscisses(nbrLignes, fenetre, graphique, temps)
+function heures_Abscisses(graphique, temps)
+    nbrLignes = dimensions(temps,"ligne");
     //Obtenir le pas du quadrillage vertical
     largeurEcran = get(0, "screensize_pt");  // Dimensions écran PC
     largeurEcran = largeurEcran(3);
@@ -125,7 +123,7 @@ function tracer_Graph(data2plot, NumCompteur)
         mise_en_forme(graphique, fenetre);
     
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique, stcReleve.heure);
+        heures_Abscisses(graphique, stcReleve.heure);
 
         printf("Puissance active moyenne = %s\n", puissMoyStr);
         printf("Puissance apparente tracée\n");
@@ -142,7 +140,7 @@ endfunction
 /// \param [in] optTracerPmoy    \c Boléen  Si présent, tracer Pmoy sur le graphique
 //*****************************************************************************
 function tracer_2_Graph(stcReleve, optTracerPmoy)
-    tabMoy = matrice(stcReleve.nbrLignes, stcReleve.pappMoy);
+    tabMoy = matrice(stcReleve.pappMoy, stcReleve.nbrLignes);
     nbrTab = dimensions(stcReleve.papp, "colonne");
     nmbrMax = 8;
 
@@ -152,7 +150,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
         couleur = couleur_plot(); // liste de couleur pour la fonction plot
         if argn(2) == 2 then
             plot(stcReleve.papp, couleur(1));
-            plot(matrice(stcReleve.pappMoy, stcReleve.nbrLignes), couleur(2));
+            plot(tabMoy, couleur(2));
         else
             for i=1:nbrTab
                 plot(stcReleve.papp(:,i),couleur(i));
@@ -173,7 +171,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
         xtitle(titre,"Heure","Puissance en VA");
         mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(stcReleve.nbrLignes, fenetre, graphique, stcReleve.heure);
+        heures_Abscisses(graphique, stcReleve.heure);
         
         //*** Index *********************
         subplot(212);
@@ -200,7 +198,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
         mise_en_forme(graphique, fenetre);
        
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(stcReleve.nbrLignes, fenetre, graphique, stcReleve.heure);
+        heures_Abscisses(graphique, stcReleve.heure);
         tailleIndex = dimensions(stcReleve.index, "colonne");
         if tailleIndex > 1 then
             legende = legend(["Index heures pleines"; "Index heures creuses"],2);
@@ -279,7 +277,7 @@ function tracer_D_Graph(data2plot, jour, heure)
         legende.font_size = 3;
     
         // Ajouter les heures sur les abscisses
-        heures_Abscisses(nbrLignes, fenetre, graphique, heure);
+        heures_Abscisses(graphique, heure);
         
         printf("Puissance apparente tracée\n");
     else

@@ -118,7 +118,6 @@ endfunction
 /// \param [in] nombre    \c Double  Valeur de la constante
 /// \param [in] nbrLignes    \c Double  Nombre de ligne de la matrice retournée
 /// \param [out] tab    \c tabDouble(nbrLignes)  Matrice constante
-/// \TODO     retrouver l'appel de cette fonction pour modifier avec matrice(dimensions(tab, "ligne"), nombre);
 //*****************************************************************************
 function tab = matrice(nombre, nbrLignes)
     tab = ones(nbrLignes, 1)*nombre;
