@@ -22,23 +22,27 @@ function erreur = charger_variables(dataPath2Save)
                      (length(dataPath2Save)+2):length(cheminFichier));
         printf("Chargement du fichier %s \n", nomFichier);
         load(cheminFichier);
-
-        // Configuration du compteur
-        /// \todo Supprimer cette détection!
-        if (stcReleve.isConfigBase | stcReleve.isConfigHCHP) then
-            erreur = %f;
-
-            // Affichage en console des info du compteur
-            info_compteur(stcReleve);
-            
-            [stcReleve, stcStatistiques] = resume (stcReleve, stcStatistiques);
+    
+        // Si relevé composé de structure (pas de retrocompatibilité)
+        if exists('stcReleve') == 1  then
+            // Configuration du compteur
+            if (stcReleve.isConfigBase | stcReleve.isConfigHCHP) then
+                erreur = %f;
+    
+                // Affichage en console des info du compteur
+                info_compteur(stcReleve);
+                
+                [stcReleve, stcStatistiques] = resume (stcReleve, stcStatistiques);
+            else
+                erreur = %t;
+                printf("Erreur! \t Configuration du compteur non reconnue\n");
+            end
         else
-            erreur = %t;
-            printf("Configuration du compteur non reconnue\n");
+            printf("Erreur! \t Ancien format de données, importer le fichier csv ou texte pour le convertir automatiquement\n");
         end
     else
         erreur = %t;
-        printf("Aucun fichier sélectionné\n");
+        printf("Erreur! \t Aucun fichier sélectionné\n");
     end
 endfunction
 

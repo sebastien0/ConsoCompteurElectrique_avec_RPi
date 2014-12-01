@@ -4,18 +4,12 @@
 /// \brief Fonction annexes pour le traitement de données
 //******************************
 
-// Chez Jef:
-// Réel 2014-08-16 18h26
-// R-pi 2014-08-08 21h33
-// Diff = +8jours - 3h07
-// Modifier_Horodatage(Gbl_Heure, [-3 -7 0])
 //****************************************************************************
 /// \fn function Modifier_Horodatage(Heure, offset)
-/// \brief Ajouter ou supprimer le décalage temporel d'un revelé
+/// \brief Ajouter ou supprimer un décalage temporel pour un relevé
 /// \param [in] Heure  \c tabString    Heure du relevé
 /// \param [in] offset  \c tabDouble(3)    Décalage [hh,mm,ss]
-/// \param [out] Gbl_Heure \c tabString     Heure du relevé avec le décalage
-/// \todo Gbl_Heure obsolète, à MAJ avec la structure
+/// \param [out] stcReleve.heure \c tabString     Heure du relevé avec le décalage
 //*****************************************************************************
 function Modifier_Horodatage(Heure, offset)
     INDSECONDES = 3;
@@ -26,7 +20,8 @@ function Modifier_Horodatage(Heure, offset)
     
     for ligne = 1:longueur
     //    printf("Ligne: %d \t Heure(ligne): %s\n", ligne, Heure(ligne));
-        tempHeure = msscanf(Heure(ligne),'%d:%d:%d');
+        tempHeure = [part(Heure(ligne),1:2),part(Heure(ligne),4:5),...
+                     part(Heure(ligne),7:8)];
         // Offset de temps
         tempHeure(INDSECONDES) = tempHeure(INDSECONDES) + offset(INDSECONDES);    // Secondes
         tempHeure(INDMINUTES) = tempHeure(INDMINUTES) + offset(INDMINUTES);    // Minutes
@@ -45,9 +40,10 @@ function Modifier_Horodatage(Heure, offset)
         if tempHeure(INDHEURES) < 0 then
            tempHeure(INDHEURES) = tempHeure(INDHEURES) + 24;
         end
-    //    printf("\t\t Heure: %.2d:%.2d:%.2d\n", tempHeure(1), tempHeure(INDMINUTES), tempHeure(INDSECONDES));
-        Heure(ligne) = msprintf('%.2d:%.2d:%.2d',tempHeure(1), tempHeure(INDMINUTES), tempHeure(INDSECONDES));
+    //    printf("\t\t Heure: %.2d:%.2d:%.2d\n", tempHeure(INDHEURES), tempHeure(INDMINUTES), tempHeure(INDSECONDES));
+        Heure(ligne) = msprintf('%.2d:%.2d:%.2d',tempHeure(INDHEURES), ...
+                                tempHeure(INDMINUTES), tempHeure(INDSECONDES));
     end
     
-    [Gbl_Heure] = resume(Heure);
+    [stcReleve.heure] = resume(Heure);
 endfunction

@@ -1,7 +1,7 @@
 //*****************************
 /// \author Sébastien Lemoine
 /// \date Avril 2014
-/// \brief Fonctions pour importer un fichier texte .txt
+/// \brief Fonctions pour importer un fichier .txt
 //******************************
 
 
@@ -10,21 +10,23 @@
 /// \brief Importe les données depuis un fichier .txt
 /// \param [in] dataPath2Read    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
 /// \param [in] isDEBUG   \c Booléen   Passer en mode DEBUG (+ d'info console)
-/// \return cheminFichier     \c string     Pointeur du fichier ouvert
-/// \param [out] erreur     \c Booléen     %t si pas de fichier sélectionné
 /// \param [out] stcReleve   \c structure   Relevé, si fichier sélectionné
 /// \param [out] stcStatistiques    \c structure     Statistiques, si fichier sélectionné
+/// \return erreur     \c Booléen     %t si pas de fichier sélectionné
 //****************************************************************************
-function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
+function erreur = Importer_Txt(dataPath2Read, isDEBUG)
+    erreur = %t;    //Pas de fichier sélectionné
     caractereAChercher = 9; //Tabulation, valeur en décimale, utiliser ascii()
     // Selection du fichier à traiter
     cheminFichier = uigetfile(["*.txt"],dataPath2Read, ...
     "Choisir le fichier à ouvrir", %f);
-    
+
     // Fichier sélectionné
     if (cheminFichier ~= "") then
         tic;
         // Initialisation des variables
+        erreur = %f;
+        cptLigneErreur = 0;
         fichierOuvert = 1;
         tempsExecution = 0;
         progression = 0;
@@ -32,7 +34,7 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         tempsRestant_1 = 0;
         lignesEnTete = 6;
         
-        nomPC = "Seb";  // Nom de PC servant à l'importation
+        stcStatistiques = struct('nomPC', "Seb");  // Nom de PC servant à l'importation
         
         // ****** Ouverture Fichier *****
         nomFichier = part(cheminFichier, ...
@@ -47,15 +49,19 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         // *** Extraction des données *****************************************
         printf("Extraction et mise en forme des données ...\n");
         stcReleve = struct("nbrLignes", dimensions(donnee,"ligne")-6);  //Jusqu'à la fin des données
-        dernLigne = stcReleve.nbrLignes + 5;
-        ligneImax = dernLigne+1;
+
+// Modif du 10/11 suite au relevé Lyon\Releve_2013-11-06.txt
+//        dernLigne = stcReleve.nbrLignes + 5;
+//        ligneImax = dernLigne+1;
+        dernLigne = stcReleve.nbrLignes + 4;
+        ligneImax = dernLigne+2;
         
         // ***** En-tête et pied de fichier *****
         //Date et Heure du relevé
         // Date et heure de l'importation
         tempDate = getdate();
-        stcStatistiques = struct("dateImportation", strcat([string(tempDate(1)), '/', ...
-           nombre_2_Chiffres(tempDate(2)), '/', nombre_2_Chiffres(tempDate(6))]));
+        stcStatistiques.dateImportation = strcat([string(tempDate(1)), '/', ...
+           nombre_2_Chiffres(tempDate(2)), '/', nombre_2_Chiffres(tempDate(6))]);
         stcStatistiques.heureImportation = strcat([nombre_2_Chiffres(tempDate(7)), ':', ...
            nombre_2_Chiffres(tempDate(8)), ':', nombre_2_Chiffres(tempDate(9))]);
         // Numéro du compteur
@@ -72,6 +78,7 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
                                 '/', part(temp(3),9:10)]);
         temp = msscanf(donnee(6),'%s %s %s %s');
         stcReleve.heureDebut = temp(1);
+
         temp = msscanf(donnee(dernLigne),'%s %s %s %s');
         stcReleve.heureFin = temp(1);
         clear temp;
@@ -101,7 +108,6 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         // Structure pour les statistique d'importation
         stcStatistiques.numCompteur = stcReleve.numCompteur;
         stcStatistiques.config = stcReleve.config;
-        stcStatistiques.nomPC = nomPC;
         stcStatistiques.date = stcReleve.date;
         stcStatistiques.heure = stcReleve.heureDebut;
         stcStatistiques.nbrLignes = stcReleve.nbrLignes;
@@ -150,67 +156,94 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
         
-        // ****************
-        // ***** Base *****
-        // ****************
-        if stcReleve.isConfigBase then
-            stcReleve.index = zeros(stcReleve.nbrLignes,1);
-            // ***** Index énergies à t0 *****
-            Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
-            stcReleve.index0 = evstr(tmpReleve(3));
-        
-            // ***** Extraction des points *****
-            // Rafraichissement de l'avancement tous les %
-            // Pour un nombre de lignes entier
-            for centieme = 1: (centiemeMax-1)
-                for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
-                            (centieme*denominateur+lignesEnTete-1)
+            // ****************
+            // ***** Base *****
+            // ****************
+            if stcReleve.isConfigBase then
+                stcReleve.index = zeros(stcReleve.nbrLignes,1);
+                // ***** Index énergies à t0 *****
+                Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
+                stcReleve.index0 = evstr(tmpReleve(3));
+            
+                // ***** Extraction des points *****
+                // Rafraichissement de l'avancement tous les %
+                // Pour un nombre de lignes entier
+                for centieme = 1: (centiemeMax-1)
+                    for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
+                                (centieme*denominateur+lignesEnTete-1)
+                        try
+                            Indexer_Trame_Base (donnee(ligne), stcPosiTab);
+                            stcReleve.heure(ligne-5) = tmpReleve(1);
+                            stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                            tmpEnergie = evstr(tmpReleve(3));
+                            if (tmpEnergie == [] | tmpEnergie == 1 ) then
+                                stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
+                            else
+                                stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
+                            end
+                            cptLigneErreur = 0; // RAZ du compteur d'erreur successives
+                        catch
+                            /// \todo le passer en fonction pour le mutualiser à toutes les boucles for
+                            printf("Attention! \t Ligne n°%i mal interpretee\n",...
+                                    ligne+lignesEnTete);
+                                // Recopier les valeurs précédentes
+                                // Incrémenter d'une seconde
+                                ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+                        end
+                    end
+                    barre_Progression(stcStatistiques, ligne, progression);
+                    sleep(5);  // Pause de 5ms
+                end
+                
+                // Nombre de lignes restantes
+                for ligne = ligne : dernLigne
                     Indexer_Trame_Base (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
                     stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
                     tmpEnergie = evstr(tmpReleve(3));
-                    if (tmpEnergie == [] | tmpEnergie == 1 ) then
+                    if (tmpEnergie == [] | tmpEnergie == 1) then
                         stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
                     else
-                        //***************************
                         stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression);
-                sleep(5);  // Pause de 5ms
-            end
+    
+            // ****************
+            // ***** HCHP *****
+            // ****************
+            elseif stcReleve.isConfigHCHP then
+                stcReleve.index = zeros(stcReleve.nbrLignes,2);
+                // ***** Index énergies à t0 *****
+                Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
+                stcReleve.index0(1) = evstr(tmpReleve(3));
+                stcReleve.index0(1,2) = evstr(tmpReleve(4));
             
-            // Nombre de lignes restantes
-            for ligne = ligne : dernLigne
-                Indexer_Trame_Base (donnee(ligne), stcPosiTab);
-                stcReleve.heure(ligne-5) = tmpReleve(1);
-                stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                tmpEnergie = evstr(tmpReleve(3));
-                if (tmpEnergie == [] | tmpEnergie == 1) then
-                    stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
-                else
-                    stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
+                // ***** Extraction des points *****
+                // Rafraichissement de l'avancement tous les %
+                
+                // Pour un multiple entier de lignes
+                for centieme = 1:centiemeMax
+                    for ligne = (centieme-1)*denominateur+lignesEnTete : ...
+                                centieme*denominateur+lignesEnTete-1
+                        Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
+                        stcReleve.heure(ligne-5) = tmpReleve(1);
+                        stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                        tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
+                        if tmpEnergie == [] then
+                            stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
+                            stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
+                        else
+                            stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
+                            stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
+                        end
+                    end
+                    barre_Progression(stcStatistiques, ligne, progression);
+                    sleep(5);  // Pause de 5ms
                 end
-            end
-            barre_Progression(stcStatistiques, ligne, progression);
-
-        // ****************
-        // ***** HCHP *****
-        // ****************
-        elseif stcReleve.isConfigHCHP then
-            stcReleve.index = zeros(stcReleve.nbrLignes,2);
-            // ***** Index énergies à t0 *****
-            Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
-            stcReleve.index0(1) = evstr(tmpReleve(3));
-            stcReleve.index0(1,2) = evstr(tmpReleve(4));
-        
-            // ***** Extraction des points *****
-            // Rafraichissement de l'avancement tous les %
-            
-            // Pour un multiple entier de lignes
-            for centieme = 1:centiemeMax
-                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
-                            centieme*denominateur+lignesEnTete-1
+                
+                // Nombre de lignes restantes
+                for ligne = ligne : dernLigne
                     Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
                     stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
@@ -224,25 +257,7 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression);
-                sleep(5);  // Pause de 5ms
             end
-            
-            // Nombre de lignes restantes
-            for ligne = ligne : dernLigne
-                Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
-                stcReleve.heure(ligne-5) = tmpReleve(1);
-                stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
-                if tmpEnergie == [] then
-                    stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
-                    stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
-                else
-                    stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
-                    stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
-                end
-            end
-            barre_Progression(stcStatistiques, ligne, progression);
-        end
         
         // Puissance moyenne et IMAX
         stcReleve.pappMoy = mean(stcReleve.papp);
@@ -259,10 +274,7 @@ function cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
         close(BarreProgression);
 
         // ***** Retourne *****
-        [stcReleve, stcStatistiques, erreur] = ...
-                                      resume(stcReleve, stcStatistiques, %f);
-    else
-        [erreur] = resume(%t);    //Pas de fichier sélectionné
+        [stcReleve, stcStatistiques] = resume(stcReleve, stcStatistiques);
     end
 endfunction
 
@@ -304,12 +316,12 @@ function barre_Progression(stcStatistiques, ligne, progression)
 endfunction
 
 //*****************************************************************************
-/// \fn Sauve_Variables(filePath, stcReleve)
+/// \fn Sauve_Variables(filePath, stcReleve, stcStatistiques)
 /// \brief Enregistre les variables stcReleve et stcStatistiques dans un 
 ///     fichier 'Releves_aaaa-mm-jj.sod' dans le répertoire filePath
 /// \param [in] filePath    \c string   Chemin où enregistrer le fichier
 /// \param [in] stcReleve   \c Structure    Relevé
-/// \param [in] stcStatistiques \c Structure    Statistiques
+/// \param gobal stcStatistiques \c Structure    Statistiques
 //*****************************************************************************
 function Sauve_Variables(filePath, stcReleve)
     originPath = pwd();
@@ -367,7 +379,6 @@ endfunction
 /// \param [in] trame    \c string   Trame à analyser
 /// \param [in] stcPosiTab  \c structure    Position des valeurs
 /// \param [out] tmpReleve \c tabString(4)  Valeurs Heure, Papp, IndexHC, IndexHP
-/// \todo Mutualiser avec Indexer_Trame_Base pour avoir index de dimensions 1 ou 2
 //*****************************************************************************
 function Indexer_Trame_HCHP (trame, stcPosiTab)
     heure = part(trame, 1:stcPosiTab.heureFin);
@@ -377,6 +388,79 @@ function Indexer_Trame_HCHP (trame, stcPosiTab)
     [tmpReleve] = resume([heure papp indexHC indexHP]);
 endfunction
 
+
+//*****************************************************************************
+/// \fn ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+/// \brief 
+/// \param [in] 
+/// \param [in] 
+/// \param [out] 
+//*****************************************************************************
+function ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne)
+    MAXERREURLIGNE = 10;    // Tolérence aux lignes incorrectes
+    cptLigneErreur = cptLigneErreur +1;
+    
+    if cptLigneErreur >= MAXERREURLIGNE then
+        printf("Erreur! \t Trop de lignes successives en erreur\nFin du programme");
+        ligne = dernLigne;  // Sortir des boucles
+        erreur = %t;
+    else
+        // Incrémenter d'une seconde et gestion du débordement
+        strHeure = stcReleve.heure(ligne-5);
+        tempValeur = {" "," "," "," "," "," "," "," "};
+        tempValeur(8) = string(evstr(part(strHeure,8))+1);
+        indiceDebHeure = 8;
+        indiceFinHeure = 7;
+        if evstr(tempValeur) > 9 then
+            tempValeur(8) = "0";
+            tempValeur(7) = string(evstr(part(strHeure,7))+1);
+            indiceDebHeure = 7;
+            indiceFinHeure = 6;
+            if evstr(tempValeur(7)) > 5 then
+                tempValeur(7) = "0";
+                tempValeur(6) = ":";
+                tempValeur(5) = string(evstr(part(strHeure,5))+1);
+                indiceDebHeure = 5;
+                indiceFinHeure = 4;
+                if evstr(tempValeur(5)) > 9 then
+                    tempValeur(5) = "0";
+                    tempValeur(4) = string(evstr(part(strHeure,4))+1);
+                    indiceDebHeure = 4;
+                    indiceFinHeure = 3;
+                    if evstr(tempValeur(4)) > 5 then
+                        tempValeur(4) = "0";
+                        tempValeur(2) = string(evstr(part(strHeure,2))+1);
+                        indiceDebHeure = 2;
+                        indiceFinHeure = 1;
+                        if evstr(tempValeur(2)) > 9 then
+                            tempValeur(2) = "0";
+                            tempValeur(1) = string(evstr(part(strHeure,1))+1);
+                            indiceDebHeure = 1;
+                            indiceFinHeure = 0;
+                            if (evstr(tempValeur(1)) > 2 & evstr(tempValeur(1)) > 3) then
+                                tempValeur(1) = "0";
+                            end
+                            strHeure = tempValeur;
+                        end
+                    end
+                end
+            end
+        end
+        if indiceFinHeure <> 0 then
+            strTempValeur = strcat([tempValeur(1),tempValeur(2),tempValeur(3),...
+                tempValeur(4),tempValeur(5),tempValeur(6),...
+                tempValeur(7),tempValeur(8)]);
+            strHeure = strcat([part(strHeure,1:indiceFinHeure),...
+                part(strTempValeur,indiceDebHeure:8)]);
+        end
+
+        stcReleve.heure(ligne-5) = strHeure;
+        stcReleve.papp(ligne-5) = stcReleve.papp(ligne-6);
+        stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
+    end
+        
+    [stcReleve, erreur, cptLigneErreur] = resume(stcReleve, erreur, cptLigneErreur);
+endfunction
 
 
 /// \stc stcPosiTab.    \c Structure    Position des valeurs dans le fichier
