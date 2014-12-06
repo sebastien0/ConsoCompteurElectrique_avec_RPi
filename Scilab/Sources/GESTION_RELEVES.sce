@@ -11,7 +11,7 @@ close;
 clc;
 
 // DEBUG = %t : Activer les traces pour le débug
-isDEBUG = %f;
+isDEBUG = %t;
 //pause   // Continuer en saisissant "resume" en console
 erreur = %t;
 

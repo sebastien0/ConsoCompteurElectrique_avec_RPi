@@ -156,94 +156,76 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
         
-            // ****************
-            // ***** Base *****
-            // ****************
-            if stcReleve.isConfigBase then
-                stcReleve.index = zeros(stcReleve.nbrLignes,1);
-                // ***** Index énergies à t0 *****
-                Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
-                stcReleve.index0 = evstr(tmpReleve(3));
-            
-                // ***** Extraction des points *****
-                // Rafraichissement de l'avancement tous les %
-                // Pour un nombre de lignes entier
-                for centieme = 1: (centiemeMax-1)
-                    for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
-                                (centieme*denominateur+lignesEnTete-1)
-                        try
-                            Indexer_Trame_Base (donnee(ligne), stcPosiTab);
-                            stcReleve.heure(ligne-5) = tmpReleve(1);
-                            stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                            tmpEnergie = evstr(tmpReleve(3));
-                            if (tmpEnergie == [] | tmpEnergie == 1 ) then
-                                stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
-                            else
-                                stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
-                            end
-                            cptLigneErreur = 0; // RAZ du compteur d'erreur successives
-                        catch
-                            /// \todo le passer en fonction pour le mutualiser à toutes les boucles for
-                            printf("Attention! \t Ligne n°%i mal interpretee\n",...
-                                    ligne+lignesEnTete);
-                                // Recopier les valeurs précédentes
-                                // Incrémenter d'une seconde
-                                ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+        // ****************
+        // ***** Base *****
+        // ****************
+        if stcReleve.isConfigBase then
+            stcReleve.index = zeros(stcReleve.nbrLignes,1);
+            // ***** Index énergies à t0 *****
+            Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
+            stcReleve.index0 = evstr(tmpReleve(3));
+        
+            // ***** Extraction des points *****
+            // Rafraichissement de l'avancement tous les %
+            // Pour un nombre de lignes entier
+            for centieme = 1: (centiemeMax-1)
+                for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
+                            (centieme*denominateur+lignesEnTete-1)
+                    try
+                        Indexer_Trame_Base (donnee(ligne), stcPosiTab);
+                        stcReleve.heure(ligne-5) = tmpReleve(1);
+                        stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                        tmpEnergie = evstr(tmpReleve(3));
+                        if (tmpEnergie == [] | tmpEnergie == 1 ) then
+                            stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
+                        else
+                            stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
                         end
-                    end
-                    barre_Progression(stcStatistiques, ligne, progression);
-                    sleep(5);  // Pause de 5ms
-                end
-                
-                // Nombre de lignes restantes
-                for ligne = ligne : dernLigne
-                    Indexer_Trame_Base (donnee(ligne), stcPosiTab);
-                    stcReleve.heure(ligne-5) = tmpReleve(1);
-                    stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                    tmpEnergie = evstr(tmpReleve(3));
-                    if (tmpEnergie == [] | tmpEnergie == 1) then
-                        stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
-                    else
-                        stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
+                        cptLigneErreur = 0; // RAZ du compteur d'erreur successives
+                    catch
+                        /// \todo le passer en fonction pour le mutualiser à toutes les boucles for
+                        printf("Attention! \t Ligne n°%i mal interpretee\n",...
+                                ligne+lignesEnTete);
+                            // Recopier les valeurs précédentes
+                            // Incrémenter d'une seconde
+                            ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression);
-    
-            // ****************
-            // ***** HCHP *****
-            // ****************
-            elseif stcReleve.isConfigHCHP then
-                stcReleve.index = zeros(stcReleve.nbrLignes,2);
-                // ***** Index énergies à t0 *****
-                Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
-                stcReleve.index0(1) = evstr(tmpReleve(3));
-                stcReleve.index0(1,2) = evstr(tmpReleve(4));
+                sleep(5);  // Pause de 5ms
+            end
             
-                // ***** Extraction des points *****
-                // Rafraichissement de l'avancement tous les %
-                
-                // Pour un multiple entier de lignes
-                for centieme = 1:centiemeMax
-                    for ligne = (centieme-1)*denominateur+lignesEnTete : ...
-                                centieme*denominateur+lignesEnTete-1
-                        Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
-                        stcReleve.heure(ligne-5) = tmpReleve(1);
-                        stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                        tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
-                        if tmpEnergie == [] then
-                            stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
-                            stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
-                        else
-                            stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
-                            stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
-                        end
-                    end
-                    barre_Progression(stcStatistiques, ligne, progression);
-                    sleep(5);  // Pause de 5ms
+            // Nombre de lignes restantes
+            for ligne = ligne : dernLigne
+                Indexer_Trame_Base (donnee(ligne), stcPosiTab);
+                stcReleve.heure(ligne-5) = tmpReleve(1);
+                stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                tmpEnergie = evstr(tmpReleve(3));
+                if (tmpEnergie == [] | tmpEnergie == 1) then
+                    stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
+                else
+                    stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
                 end
-                
-                // Nombre de lignes restantes
-                for ligne = ligne : dernLigne
+            end
+            barre_Progression(stcStatistiques, ligne, progression);
+
+        // ****************
+        // ***** HCHP *****
+        // ****************
+        elseif stcReleve.isConfigHCHP then
+            stcReleve.index = zeros(stcReleve.nbrLignes,2);
+            // ***** Index énergies à t0 *****
+            Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
+            stcReleve.index0(1) = evstr(tmpReleve(3));
+            stcReleve.index0(1,2) = evstr(tmpReleve(4));
+        
+            // ***** Extraction des points *****
+            // Rafraichissement de l'avancement tous les %
+            
+            // Pour un multiple entier de lignes
+            for centieme = 1:centiemeMax
+                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
+                            centieme*denominateur+lignesEnTete-1
                     Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
                     stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
@@ -257,7 +239,25 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
                     end
                 end
                 barre_Progression(stcStatistiques, ligne, progression);
+                sleep(5);  // Pause de 5ms
             end
+            
+            // Nombre de lignes restantes
+            for ligne = ligne : dernLigne
+                Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
+                stcReleve.heure(ligne-5) = tmpReleve(1);
+                stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
+                tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
+                if tmpEnergie == [] then
+                    stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
+                    stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
+                else
+                    stcReleve.index(ligne-5,1) = tmpEnergie(1) - stcReleve.index0(1);
+                    stcReleve.index(ligne-5,2) = tmpEnergie(2) - stcReleve.index0(2);
+                end
+            end
+            barre_Progression(stcStatistiques, ligne, progression);
+        end
         
         // Puissance moyenne et IMAX
         stcReleve.pappMoy = mean(stcReleve.papp);
@@ -346,14 +346,26 @@ endfunction
 /// \brief A partir de l'en-tête du tableau, retourne la position 
 ///  des tabulations et la configuration
 /// \param [in] trame    \c string   Trame à analyser
+/// \param [in optionnel] opt_sens \c booléen   Si présent, parcourt de la fin au début
 /// \return posiCaract \c tabDouble  Position des tabulations
 //*****************************************************************************
-function posiCaract = LocaliserCaractere(trame,caractere)
+function posiCaract = LocaliserCaractere(trame, caractere, opt_sens)
     j= 0;
-    for i = 1:length(trame)
-        if ascii(part(trame, i)) == caractere then
-            j = j+1;
-            posiCaract(j) = i;
+    if argn(2) == 2 then
+        for i = 1:length(trame)
+            if ascii(part(trame, i)) == caractere then
+                j = j+1;
+                posiCaract(j) = i;
+            end
+        end
+    else
+        i = length(trame);
+        while i > 0
+            if ascii(part(trame, i)) == caractere then
+                j = j+1;
+                posiCaract(j) = i;
+            end
+            i = i -1;
         end
     end
     posiCaract(j+1) = length(trame);
