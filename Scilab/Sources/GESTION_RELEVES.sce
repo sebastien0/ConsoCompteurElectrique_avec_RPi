@@ -55,8 +55,8 @@ printf("Programme de gestion des données acquises avec la Raspberry-Pi\n");
 printf("Saisissez votre choix puis valier par OK\n");
 printf("*************************************************************\n\n");
 
-choix = -1;
-while(choix <> 0 & choix <> []) do
+choix = 1;
+while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
     temp_txt = ["Que voulez-vous faire?";"";...
                 "1   Charger un fichier csv";...
                 "2   Modifier l''horodatage";...

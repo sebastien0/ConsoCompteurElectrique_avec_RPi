@@ -12,27 +12,26 @@
 /// \param [in] Index   \c tabDouble(2)    Index d'énergie HC et HP
 /// \return Papp \c TabDouble   Puissance apparente recomposée
 //*****************************************************************************
-function Papp = Puissance_HCHP(Heure, Index)
+function Puissance_HCHP(stcReleve)
     HEURECREUSE = 1;   // Colonne contenant l'index Heure Creuse
     HEUREPLEINE = 2;   // Colonne contenant l'index Heure Pleine
     
-    nbrLignes = dimensions(Heure, "ligne");    
-    Puiss = ones(nbrLignes-5);
-    Energie_1 = 0;
+//    Puiss = ones(nbrLignes-5);
+//    Energie_1 = 0;
     
-    for Energie_1 = 2 : nbrLignes-1
+    for Energie_1 = 2 : stcReleve.nbrLignes-1
         //Différence de temps entre les 2 échantillons
         Energie_2 = Energie_1 + 1;
-        temp_1 = Heure(Energie_1-1,1);
-        temp_2 = Heure(Energie_2-1,1);
+        temp_1 = stcReleve.heure(Energie_1-1);
+        temp_2 = stcReleve.heure(Energie_2-1);
         Dtemp = difTemps(temp_1,temp_2);
 
         //Puissance
-        if Dtemp <> 0 then
-            tempHP = (Index(Energie_2,HEUREPLEINE) - ...
-                      Index(Energie_1, HEUREPLEINE)) / Dtemp;
-            tempHC = (Index(Energie_2,HEURECREUSE) - ...
-                      Index(Energie_1, HEURECREUSE)) / Dtemp;
+        if Dtemp > 0 then
+            tempHP = (stcReleve.index(Energie_2, HEUREPLEINE) - ...
+                      stcReleve.index(Energie_1, HEUREPLEINE)) / Dtemp;
+            tempHC = (stcReleve.index(Energie_2, HEURECREUSE) - ...
+                      stcReleve.index(Energie_1, HEURECREUSE)) / Dtemp;
             if tempHP < 0 then
                 tempHP = 0;
             end
@@ -47,8 +46,10 @@ function Papp = Puissance_HCHP(Heure, Index)
         end
     end
     
-    Papp = (PuissHC+PuissHP)*3600;
+    stcReleve.papp = (PuissHC+PuissHP)*3600;
 
     // Filtrer le signal sur 40 échantillons ~ 1min
-    Papp = moyenneGlissante(Papp, 40);
+    stcReleve.papp = moyenneGlissante(stcReleve.papp, 40);
+    
+    [stcReleve] = resume(stcReleve);
 endfunction
