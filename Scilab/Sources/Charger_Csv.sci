@@ -12,7 +12,7 @@
 /// \param [out] stcReleve   \c structure   Relevé, si fichier sélectionné
 /// \param [out] stcStatistiques    \c structure     Statistiques, si fichier sélectionné
 /// \return erreur     \c Booléen     %t si pas de fichier sélectionné
-/// \todo A finir de développer. UTILISER csvTextScan
+/// \todo A finir de développer. UTILISER csvTextScan et/ou charger_Txt version du 14/12
 //****************************************************************************
 function erreur = Importer_Csv(dataPath2Read, isDEBUG)
     erreur = %t;    //Pas de fichier sélectionné
@@ -171,6 +171,7 @@ function erreur = Importer_Csv(dataPath2Read, isDEBUG)
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
             // Pour un nombre de lignes entier
+
             for centieme = 1: (centiemeMax-1)
                 for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
                             (centieme*denominateur+lignesEnTete-1)
