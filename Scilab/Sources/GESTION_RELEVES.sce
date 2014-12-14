@@ -141,8 +141,9 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
             if stcReleve.numCompteur == "271067018318" then
                 [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
                 HeuresFonctionnement(stcReleve);
-            else
-                 stcReleve.pappMoy = mean(stcReleve.papp);
+// 2014-12-14 Obsolète
+//            else
+//                 stcReleve.pappMoy = mean(stcReleve.papp);
             end
             tracer_2_Graph(stcReleve, %t);
         else

@@ -26,13 +26,14 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         tic;
         // Initialisation des variables
         erreur = %f;
-        cptLigneErreur = 0;
+        MAXERREURLIGNE = 10;    // Tolérence aux lignes incorrectes
         fichierOuvert = 1;
         tempsExecution = 0;
         progression = 0;
         tempsRestant = 0;
         tempsRestant_1 = 0;
         lignesEnTete = 6;
+        stcPosiTab = struct("lignesEnTete", lignesEnTete);
         
         stcStatistiques = struct('nomPC', "Seb");  // Nom de PC servant à l'importation
         
@@ -53,8 +54,8 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
 // Modif du 10/11 suite au relevé Lyon\Releve_2013-11-06.txt
 //        dernLigne = stcReleve.nbrLignes + 5;
 //        ligneImax = dernLigne+1;
-        dernLigne = stcReleve.nbrLignes + 4;
-        ligneImax = dernLigne+2;
+        stcPosiTab.dernLigne = stcReleve.nbrLignes + 4;
+        ligneImax = stcPosiTab.dernLigne+2;
         
         // ***** En-tête et pied de fichier *****
         //Date et Heure du relevé
@@ -70,16 +71,16 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         stcReleve.residence = nom_compteur(stcReleve.numCompteur);
         // Date et heures du relevé
         temp = msscanf(donnee(1),'%s %s %s %s');
-        tempDate = datenum(evstr(part(temp(3),1:4)), ...
-                           evstr(part(temp(3),6:7)), ...
-                           evstr(part(temp(3),9:10)));
+        tempDate = datenum(strtod(part(temp(3),1:4)), ...
+                           strtod(part(temp(3),6:7)), ...
+                           strtod(part(temp(3),9:10)));
         [N, stcReleve.jour] = weekday(tempDate,'long');
         stcReleve.date = strcat([part(temp(3),1:4), '/', part(temp(3),6:7), ...
                                 '/', part(temp(3),9:10)]);
         temp = msscanf(donnee(6),'%s %s %s %s');
         stcReleve.heureDebut = temp(1);
 
-        temp = msscanf(donnee(dernLigne),'%s %s %s %s');
+        temp = msscanf(donnee(stcPosiTab.dernLigne),'%s %s %s %s');
         stcReleve.heureFin = temp(1);
         clear temp;
         clear tempDate;
@@ -115,9 +116,9 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         stcStatistiques.tabTempsRestant(1) = 0;
 
         // ***** Indentation du tableau *****
-        tmpPosiTab = LocaliserCaractere(donnee(lignesEnTete),caractereAChercher);
+        tmpPosiTab = LocaliserCaractere(donnee(stcPosiTab.lignesEnTete),caractereAChercher);
         // Positions des valeurs
-        stcPosiTab = struct("heureFin",tmpPosiTab(1)-2);
+        stcPosiTab.heureFin = tmpPosiTab(1)-2;
         stcPosiTab.pappDebut = tmpPosiTab(1)+2;
         stcPosiTab.pappFin = tmpPosiTab(2)-2;
         if stcReleve.isConfigBase then  // Base
@@ -130,8 +131,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             stcPosiTab.indexFin = tmpPosiTab(4);
         end
 
-        reste = modulo(stcReleve.nbrLignes,99);
-        nbrIteration = floor(stcReleve.nbrLignes/99);
+        stcPosiTab.nbrIteration = floor(stcReleve.nbrLignes/99);
 
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
@@ -146,67 +146,54 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             stcReleve.index = zeros(stcReleve.nbrLignes,1);
             // ***** Index énergies à t0 *****
             Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
-            stcReleve.index0 = evstr(tmpReleve(3));
+            stcReleve.index0 = strtod(tmpReleve(3));
         
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
             // Pour un nombre de lignes entier
-            for indexLigne = 1: 99
-                for ligne = ((indexLigne-1)*nbrIteration+lignesEnTete) : ...
-                            (indexLigne*nbrIteration+lignesEnTete-1)
-                    try
-                        Indexer_Trame_Base (donnee(ligne), stcPosiTab);
-                        stcReleve.heure(ligne-5) = tmpReleve(1);
-                        stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                        tmpEnergie = evstr(tmpReleve(3));
-                        if (size(tmpEnergie,2) == 1 & tmpEnergie > 1) then
-                            stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
-                        else
-                            stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
-                        end
-                        cptLigneErreur = 0; // RAZ du compteur d'erreur successives
-                    catch
-                        /// \todo le passer en fonction pour le mutualiser à toutes les boucles for
-                        printf("Attention! \t Ligne n°%i mal interpretee\n",...
-                                ligne+lignesEnTete);
-                        // Recopier les valeurs précédentes
-                        // Incrémenter d'une seconde
-                        ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
-                        // Sortir de la boucle
-                        if erreur then
-                            ligne = dernLigne;
-                        end
+            for indexLigne = 1 : 99
+                stcPosiTab.indexLigne = indexLigne;
+                erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
+                // Sortir de la boucle
+                if erreur then
+                    if isDEBUG then
+                        printf("Erreur \t Lignes entre %i et %i mal interpretee(s).", ...
+                        stcPosiTab.nbrIteration*indexLigne-1, stcPosiTab.nbrIteration*indexLigne);
                     end
+                    indexLigne = stcPosiTab.dernLigne;
                 end
-                barre_Progression(stcStatistiques, ligne, progression);
+                barre_Progression(stcStatistiques, ...
+                            stcPosiTab.nbrIteration*indexLigne, progression);
                 sleep(5);  // Pause de 5ms
             end
-            
+
             // Nombre de lignes restantes
-            for ligne = ligne : dernLigne
-                try
-                    Indexer_Trame_Base (donnee(ligne), stcPosiTab);
-                    stcReleve.heure(ligne-5) = tmpReleve(1);
-                    stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                    tmpEnergie = evstr(tmpReleve(3));
-                    if (size(tmpEnergie,2) == 1 & tmpEnergie > 1) then
-                            stcReleve.index(ligne-5) = tmpEnergie - stcReleve.index0;
-                        else
-                            stcReleve.index(ligne-5) = stcReleve.index(ligne-6);
-                    end
-                catch
-                    printf("Attention! \t Ligne n°%i mal interpretee\n",...
-                            ligne+lignesEnTete);
-                    // Recopier les valeurs précédentes
-                    // Incrémenter d'une seconde
-                    ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
-                    // Sortir de la boucle
-                    if erreur then
-                        ligne = dernLigne;
+            erreur = indexerPartie(donnee, stcPosiTab, stcReleve, ...
+                    stcPosiTab.nbrIteration*indexLigne, stcPosiTab.dernLigne-3)
+            barre_Progression(stcStatistiques, stcPosiTab.dernLigne, progression);
+
+            // Mise en forme de l'index
+            cptLigneErreur = 0;
+            for ligne = 1 : size(stcReleve.index,1)
+                // Si Not A Number alors valeur précédente
+                if isnan(stcReleve.index(ligne)) then
+                    stcReleve.index(ligne) = stcReleve.index(ligne-1);
+                else
+                    // Normalisation sur la journée
+                    stcReleve.index(ligne) = stcReleve.index(ligne) - stcReleve.index0;
+                    if stcReleve.index(ligne) < 0 then
+                        stcReleve.index(ligne) = stcReleve.index(ligne-1);
+                        // Comptabiliser le nombre d'erreur consécutives
+                        cptLigneErreur = cptLigneErreur +1;
+                    elseif cptLigneErreur < MAXERREURLIGNE then
+                        cptLigneErreur = 0;
                     end
                 end
             end
-            barre_Progression(stcStatistiques, ligne, progression);
+            //Signaler trop d'erreur consécutives
+            if cptLigneErreur > MAXERREURLIGNE then
+                printf("ATTENTION \t Trop d''erreurs consecutives sur l''energie (%i)",cptLigneErreur);
+            end
 
         // ****************
         // ***** HCHP *****
@@ -215,21 +202,21 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             stcReleve.index = zeros(stcReleve.nbrLignes,2);
             // ***** Index énergies à t0 *****
             Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
-            stcReleve.index0(1) = evstr(tmpReleve(3));
-            stcReleve.index0(1,2) = evstr(tmpReleve(4));
+            stcReleve.index0(1) = strtod(tmpReleve(3));
+            stcReleve.index0(1,2) = strtod(tmpReleve(4));
             tempIndex0 = stcReleve.index0;
         
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
             // Pour un multiple entier de lignes
             for indexLigne = 1: 99
-                for ligne = ((indexLigne-1)*nbrIteration+lignesEnTete) : ...
-                            (indexLigne*nbrIteration+lignesEnTete-1)
+                for ligne = ((indexLigne-1)*nbrIteration+stcPosiTab.lignesEnTete) : ...
+                            (indexLigne*nbrIteration+stcPosiTab.lignesEnTete-1)
                     try
                         Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
                         stcReleve.heure(ligne-5) = tmpReleve(1);
-                        stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                        tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
+                        stcReleve.papp(ligne-5) = strtod(tmpReleve(2));
+                        tmpEnergie = [strtod(tmpReleve(3)) strtod(tmpReleve(4))];
                         if (size(tmpEnergie,2) == 2 & tmpEnergie > 1) then
                             stcReleve.index(ligne-5,1) = tmpEnergie(1) - ...
                                                         tempIndex0(1);
@@ -252,10 +239,10 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
 
                     catch
                         printf("Attention! \t Ligne n°%i mal interpretee\n",...
-                                ligne+lignesEnTete);
+                                ligne+stcPosiTab.lignesEnTete);
                             // Recopier les valeurs précédentes
                             // Incrémenter d'une seconde
-                            ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+                            ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne);
                             // Sortir de la boucle
                             if erreur then
                                 ligne = dernLigne;
@@ -267,12 +254,12 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             end
             
             // Nombre de lignes restantes
-            for ligne = ligne : dernLigne
+            for ligne = ligne : stcPosiTab.dernLigne
                 try
                     Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
                     stcReleve.heure(ligne-5) = tmpReleve(1);
-                    stcReleve.papp(ligne-5) = evstr(tmpReleve(2));
-                    tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
+                    stcReleve.papp(ligne-5) = strtod(tmpReleve(2));
+                    tmpEnergie = [strtod(tmpReleve(3)) strtod(tmpReleve(4))];
                     if (size(tmpEnergie,2) == 2 & tmpEnergie > 1) then
                         stcReleve.index(ligne-5,1) = tmpEnergie(1) - ...
                                                     tempIndex0(1);
@@ -285,10 +272,10 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
 
                 catch
                     printf("Attention! \t Ligne n°%i mal interpretee\n",...
-                            ligne+lignesEnTete);
+                            ligne+stcPosiTab.lignesEnTete);
                         // Recopier les valeurs précédentes
                         // Incrémenter d'une seconde
-                        ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+                        ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne);
                         // Sortir de la boucle
                         if erreur then
                             ligne = dernLigne;
@@ -299,11 +286,11 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         end
         
         // Calcul puissance moyenne et recomposition de la puissance
-        if mean(stcReleve.papp) == 0 then
+        stcReleve.pappMoy = mean(stcReleve.papp);
+        if stcReleve.pappMoy == 0 then
             printf("Puissance absente, recalcule a partir de l''energie en cours...\n");
             Puissance_HCHP(stcReleve);
         end
-        stcReleve.pappMoy = mean(stcReleve.papp);
 
         // Extraction IMAX
         try
@@ -315,7 +302,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             printf("Pied de fichier manquant, IMAX non trouvé\n");
         end
         
-        stcStatistiques.tempsTotal = toc() + stcStatistiques.tempsIntermediaire;
+        stcStatistiques.tempsTotal = toc();
         close(BarreProgression);
 
         // ***** Retourne *****
@@ -323,6 +310,37 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
     end
 endfunction
 
+
+//****************************************************************************
+/// \fn erreur = indexerPartie(donnee, stcPosiTab, stcReleve, opt_ligneDeb, opt_ligneFin)
+//*****************************************************************************
+function erreur = indexerPartie(donnee, stcPosiTab, stcReleve, opt_ligneDeb, opt_ligneFin)
+    if argn(2) == 3 then
+        ligneDeb = (stcPosiTab.indexLigne-1)*stcPosiTab.nbrIteration + ...
+                stcPosiTab.lignesEnTete -5;
+        ligneFin = stcPosiTab.indexLigne*stcPosiTab.nbrIteration + ...
+                stcPosiTab.lignesEnTete - 6;
+    else
+        ligneDeb = opt_ligneDeb;
+        ligneFin = opt_ligneFin;
+    end
+    
+    try
+        Indexer_Trame_Base (donnee(ligneDeb+5:ligneFin+5), stcPosiTab);
+        stcReleve.heure(ligneDeb:ligneFin) = tmpReleve(:,1);
+        stcReleve.papp(ligneDeb:ligneFin) = strtod(tmpReleve(:,2));
+        stcReleve.index(ligneDeb:ligneFin) = strtod(tmpReleve(:,3));
+
+    catch
+        /// \todo le passer en fonction pour le mutualiser à toutes les boucles for
+        printf("Attention! \t Ligne mal interpretee\n");
+        // Recopier les valeurs précédentes
+        // Incrémenter d'une seconde
+//        ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne);
+    end
+
+    [stcPosiTab, stcReleve] =  resume(stcPosiTab, stcReleve);
+endfunction
 
 //****************************************************************************
 /// \fn barre_Progression(stcStatistiques, ligne, progression)
@@ -424,6 +442,11 @@ endfunction
 /// \param [out] tmpReleve \c tabString(3)  Valeurs Heure, Papp, Index
 //*****************************************************************************
 function Indexer_Trame_Base (trame, stcPosiTab)
+    tabFin = size(trame,1);
+    heure(tabFin) = "";
+    papp(tabFin) = "";
+    index(tabFin) = "";
+    
     heure = part(trame, 1:stcPosiTab.heureFin);
     papp = part(trame, stcPosiTab.pappDebut:stcPosiTab.pappFin);
     index = part(trame, stcPosiTab.indexDebut:stcPosiTab.indexFin);
@@ -447,55 +470,55 @@ endfunction
 
 
 //*****************************************************************************
-/// \fn ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne);
+/// \fn ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne);
 /// \brief 
 /// \param [in] 
 /// \param [in] 
 /// \param [out] 
 //*****************************************************************************
-function ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne, dernLigne)
+function ligne = Gerer_Trame_Invalide(stcReleve, cptLigneErreur, ligne)
     MAXERREURLIGNE = 10;    // Tolérence aux lignes incorrectes
     cptLigneErreur = cptLigneErreur +1;
     
     if cptLigneErreur >= MAXERREURLIGNE then
         printf("Erreur! \t Trop de lignes successives en erreur\nFin du programme");
-        ligne = dernLigne;  // Sortir des boucles
+        ligne = stcPosiTab.dernLigne;  // Sortir des boucles
         erreur = %t;
     else
         // Incrémenter d'une seconde et gestion du débordement
         strHeure = stcReleve.heure(ligne-5);
         tempValeur = {" "," "," "," "," "," "," "," "};
-        tempValeur(8) = string(evstr(part(strHeure,8))+1);
+        tempValeur(8) = string(strtod(part(strHeure,8))+1);
         /// \todo Reprendre/mutualiser la gestion du débordement d'heure
         indiceDebHeure = 8;
         indiceFinHeure = 7;
-        if evstr(tempValeur) > 9 then
+        if strtod(tempValeur) > 9 then
             tempValeur(8) = "0";
-            tempValeur(7) = string(evstr(part(strHeure,7))+1);
+            tempValeur(7) = string(strtod(part(strHeure,7))+1);
             indiceDebHeure = 7;
             indiceFinHeure = 6;
-            if evstr(tempValeur(7)) > 5 then
+            if strtod(tempValeur(7)) > 5 then
                 tempValeur(7) = "0";
                 tempValeur(6) = ":";
-                tempValeur(5) = string(evstr(part(strHeure,5))+1);
+                tempValeur(5) = string(strtod(part(strHeure,5))+1);
                 indiceDebHeure = 5;
                 indiceFinHeure = 4;
-                if evstr(tempValeur(5)) > 9 then
+                if strtod(tempValeur(5)) > 9 then
                     tempValeur(5) = "0";
-                    tempValeur(4) = string(evstr(part(strHeure,4))+1);
+                    tempValeur(4) = string(strtod(part(strHeure,4))+1);
                     indiceDebHeure = 4;
                     indiceFinHeure = 3;
-                    if evstr(tempValeur(4)) > 5 then
+                    if strtod(tempValeur(4)) > 5 then
                         tempValeur(4) = "0";
-                        tempValeur(2) = string(evstr(part(strHeure,2))+1);
+                        tempValeur(2) = string(strtod(part(strHeure,2))+1);
                         indiceDebHeure = 2;
                         indiceFinHeure = 1;
-                        if evstr(tempValeur(2)) > 9 then
+                        if strtod(tempValeur(2)) > 9 then
                             tempValeur(2) = "0";
-                            tempValeur(1) = string(evstr(part(strHeure,1))+1);
+                            tempValeur(1) = string(strtod(part(strHeure,1))+1);
                             indiceDebHeure = 1;
                             indiceFinHeure = 0;
-                            if (evstr(tempValeur(1)) > 2 & evstr(tempValeur(1)) > 3) then
+                            if (strtod(tempValeur(1)) > 2 & strtod(tempValeur(1)) > 3) then
                                 tempValeur(1) = "0";
                             end
                             strHeure = tempValeur;

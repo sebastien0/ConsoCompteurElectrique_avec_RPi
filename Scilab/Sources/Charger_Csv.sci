@@ -12,7 +12,7 @@
 /// \param [out] stcReleve   \c structure   Relevé, si fichier sélectionné
 /// \param [out] stcStatistiques    \c structure     Statistiques, si fichier sélectionné
 /// \return erreur     \c Booléen     %t si pas de fichier sélectionné
-/// \todo A finir de développer
+/// \todo A finir de développer. UTILISER csvTextScan
 //****************************************************************************
 function erreur = Importer_Csv(dataPath2Read, isDEBUG)
     erreur = %t;    //Pas de fichier sélectionné
