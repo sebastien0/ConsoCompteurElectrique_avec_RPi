@@ -100,7 +100,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             stcReleve.isConfigBase = %f;
             stcReleve.isConfigHCHP = %f;
         end
-        
+
         // Affichage en console des info du compteur
         info_compteur(stcReleve);
         printf("Import en cours, soyez patient ...\n");
@@ -113,7 +113,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         stcStatistiques.nbrLignes = stcReleve.nbrLignes;
         stcStatistiques.tempsTotal = 0;
         stcStatistiques.tabTempsRestant(1) = 0;
-        
+
         // ***** Indentation du tableau *****
         tmpPosiTab = LocaliserCaractere(donnee(lignesEnTete),caractereAChercher);
         // Positions des valeurs
@@ -129,31 +129,10 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             stcPosiTab.HPDebut = tmpPosiTab(3)-1;
             stcPosiTab.indexFin = tmpPosiTab(4);
         end
-        
-        // Recherche d'une combinaison optimale de "progression" et "centiemeMax"
-        // pour avoir un nombre d'itération >=90 et < 99
-        // Cela permet de mettre à jour la barre d'avancement à chaque pourcent
-        /// \todo faire un modulo 99 à la place !
-        stcStatistiques.nbBoucleCentDenum = 0;
-        denominateur = 100;
-        centiemeMax = floor(stcReleve.nbrLignes/denominateur);
-        while (centiemeMax <= 94 | centiemeMax > 99) do
-            if (centiemeMax < 99) then
-                denominateur = ceil(denominateur /2);
-                centiemeMax = floor(stcReleve.nbrLignes/denominateur);
-                if (centiemeMax > 99) then
-                    denominateur = ceil(denominateur *1.5);
-                    centiemeMax = floor(stcReleve.nbrLignes/denominateur);
-                end
-            else
-                denominateur = ceil(denominateur *10);
-                centiemeMax = floor(stcReleve.nbrLignes/denominateur);
-            end
-            stcStatistiques.nbBoucleCentDenum = stcStatistiques.nbBoucleCentDenum +1;
-        end
-        
-        stcStatistiques.tempsIntermediaire = toc();
-        tic();
+
+        reste = modulo(stcReleve.nbrLignes,99);
+        nbrIteration = floor(stcReleve.nbrLignes/99);
+
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
 
@@ -172,9 +151,9 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
             // Pour un nombre de lignes entier
-            for centieme = 1: (centiemeMax-1)
-                for ligne = ((centieme-1)*denominateur+lignesEnTete) : ...
-                            (centieme*denominateur+lignesEnTete-1)
+            for indexLigne = 1: 99
+                for ligne = ((indexLigne-1)*nbrIteration+lignesEnTete) : ...
+                            (indexLigne*nbrIteration+lignesEnTete-1)
                     try
                         Indexer_Trame_Base (donnee(ligne), stcPosiTab);
                         stcReleve.heure(ligne-5) = tmpReleve(1);
@@ -242,11 +221,10 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
-            
             // Pour un multiple entier de lignes
-            for centieme = 1:centiemeMax
-                for ligne = (centieme-1)*denominateur+lignesEnTete : ...
-                            centieme*denominateur+lignesEnTete-1
+            for indexLigne = 1: 99
+                for ligne = ((indexLigne-1)*nbrIteration+lignesEnTete) : ...
+                            (indexLigne*nbrIteration+lignesEnTete-1)
                     try
                         Indexer_Trame_HCHP (donnee(ligne), stcPosiTab);
                         stcReleve.heure(ligne-5) = tmpReleve(1);
