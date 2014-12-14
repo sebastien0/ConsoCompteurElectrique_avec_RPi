@@ -5,8 +5,8 @@
 //******************************
 
 //****************************************************************************
-/// \fn cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
-/// \brief Importe les données depuis un fichier .txt
+/// \fn erreur = Importer_Csv(dataPath2Read, isDEBUG)
+/// \brief Importe les données depuis un fichier .csv
 /// \param [in] dataPath2Read    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
 /// \param [in] isDEBUG   \c Booléen   Passer en mode DEBUG (+ d'info console)
 /// \param [out] stcReleve   \c structure   Relevé, si fichier sélectionné

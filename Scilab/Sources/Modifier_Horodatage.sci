@@ -5,23 +5,24 @@
 //******************************
 
 //****************************************************************************
-/// \fn function Modifier_Horodatage(Heure, offset)
+/// \fn Heure = Modifier_Horodatage(Heure, offset)
 /// \brief Ajouter ou supprimer un décalage temporel pour un relevé
 /// \param [in] Heure  \c tabString    Heure du relevé
 /// \param [in] offset  \c tabDouble(3)    Décalage [hh,mm,ss]
-/// \param [out] stcReleve.heure \c tabString     Heure du relevé avec le décalage
+/// \return Heure \c tabString     Heure du relevé avec le décalage
 //*****************************************************************************
-function Modifier_Horodatage(Heure, offset)
+function Heure = Modifier_Horodatage(Heure, offset)
     INDSECONDES = 3;
     INDMINUTES = 2;
     INDHEURES = 1;
     
     longueur = dimensions(Heure, "ligne");   // dimension
+    Heure(longueur) = "";
     
     for ligne = 1:longueur
     //    printf("Ligne: %d \t Heure(ligne): %s\n", ligne, Heure(ligne));
-        tempHeure = [part(Heure(ligne),1:2),part(Heure(ligne),4:5),...
-                     part(Heure(ligne),7:8)];
+        tempHeure = evstr([part(Heure(ligne),1:2),part(Heure(ligne),4:5),...
+                     part(Heure(ligne),7:8)]);
         // Offset de temps
         tempHeure(INDSECONDES) = tempHeure(INDSECONDES) + offset(INDSECONDES);    // Secondes
         tempHeure(INDMINUTES) = tempHeure(INDMINUTES) + offset(INDMINUTES);    // Minutes
@@ -44,6 +45,4 @@ function Modifier_Horodatage(Heure, offset)
         Heure(ligne) = msprintf('%.2d:%.2d:%.2d',tempHeure(INDHEURES), ...
                                 tempHeure(INDMINUTES), tempHeure(INDSECONDES));
     end
-    
-    [stcReleve.heure] = resume(Heure);
 endfunction

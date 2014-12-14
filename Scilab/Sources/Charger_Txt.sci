@@ -6,7 +6,7 @@
 
 
 //****************************************************************************
-/// \fn cheminFichier = Importer_Txt(dataPath2Read, isDEBUG)
+/// \fn erreur = Importer_Txt(dataPath2Read, isDEBUG)
 /// \brief Importe les données depuis un fichier .txt
 /// \param [in] dataPath2Read    \c string  Chemin d'accès au répertoire où lire les fichiers .txt
 /// \param [in] isDEBUG   \c Booléen   Passer en mode DEBUG (+ d'info console)
@@ -156,7 +156,10 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         tic();
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
-        
+
+        /// \todo Essayer avec une matrice.
+        ///  Ex: stcReleve.heure=part(donnee(lignesEnTete:dernLigne,1:8))
+
         // ****************
         // ***** Base *****
         // ****************
@@ -235,6 +238,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
             Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
             stcReleve.index0(1) = evstr(tmpReleve(3));
             stcReleve.index0(1,2) = evstr(tmpReleve(4));
+            tempIndex0 = stcReleve.index0;
         
             // ***** Extraction des points *****
             // Rafraichissement de l'avancement tous les %
@@ -250,9 +254,19 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
                         tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
                         if (size(tmpEnergie,2) == 2 & tmpEnergie > 1) then
                             stcReleve.index(ligne-5,1) = tmpEnergie(1) - ...
-                                                        stcReleve.index0(1);
+                                                        tempIndex0(1);
                             stcReleve.index(ligne-5,2) = tmpEnergie(2) - ...
-                                                        stcReleve.index0(2);
+                                                        tempIndex0(2);
+                            // Ajout du 07/12/14. Si relevé incorrecte, 
+                            //ne pas avoir de valeur négative
+                            if stcReleve.index(ligne-5,1) < 0 then
+                                stcReleve.index(ligne-5,1) = ...
+                                                    stcReleve.index(ligne-6,1);
+                            end
+                            if stcReleve.index(ligne-5,2) < 0 then
+                                stcReleve.index(ligne-5,2) = ...
+                                                    stcReleve.index(ligne-6,2);
+                            end
                         else
                             stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
                             stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
@@ -283,9 +297,9 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
                     tmpEnergie = [evstr(tmpReleve(3)) evstr(tmpReleve(4))];
                     if (size(tmpEnergie,2) == 2 & tmpEnergie > 1) then
                         stcReleve.index(ligne-5,1) = tmpEnergie(1) - ...
-                                                    stcReleve.index0(1);
+                                                    tempIndex0(1);
                         stcReleve.index(ligne-5,2) = tmpEnergie(2) - ...
-                                                    stcReleve.index0(2);
+                                                    tempIndex0(2);
                     else
                         stcReleve.index(ligne-5,1) = stcReleve.index(ligne-6,1);
                         stcReleve.index(ligne-5,2) = stcReleve.index(ligne-6,2);
@@ -307,11 +321,11 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         end
         
         // Calcul puissance moyenne et recomposition de la puissance
-        stcReleve.pappMoy = mean(stcReleve.papp);
-        if stcReleve.pappMoy = 0 then
-            printf("Puissance absente, recalcule a partir de l''energie...\n");
+        if mean(stcReleve.papp) == 0 then
+            printf("Puissance absente, recalcule a partir de l''energie en cours...\n");
             Puissance_HCHP(stcReleve);
         end
+        stcReleve.pappMoy = mean(stcReleve.papp);
 
         // Extraction IMAX
         try

@@ -5,20 +5,16 @@
 //******************************
 
 //****************************************************************************
-/// \fn Papp = Puissance_HCHP(Heure, Index)
+/// \fn Puissance_HCHP(stcReleve)
 /// \brief Reconstituer la puissance apparente depuis les index HC et HP
 /// Filtrage glissant sur 40 échantillons
-/// \param [in] Heure   \c tabString    Horodate des échantillons
-/// \param [in] Index   \c tabDouble(2)    Index d'énergie HC et HP
-/// \return Papp \c TabDouble   Puissance apparente recomposée
+/// \param [in] stcReleve   \c structure   Relevé
+/// \param [out] stcReleve   \c structure   Relevé avec la papp différent de 0
 //*****************************************************************************
 function Puissance_HCHP(stcReleve)
     HEURECREUSE = 1;   // Colonne contenant l'index Heure Creuse
     HEUREPLEINE = 2;   // Colonne contenant l'index Heure Pleine
-    
-//    Puiss = ones(nbrLignes-5);
-//    Energie_1 = 0;
-    
+
     for Energie_1 = 2 : stcReleve.nbrLignes-1
         //Différence de temps entre les 2 échantillons
         Energie_2 = Energie_1 + 1;

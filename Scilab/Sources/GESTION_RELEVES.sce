@@ -91,8 +91,9 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
         else
           // Modifier l'horodatage
             offset = evstr(x_mdialog('Indiquer l''offset à appliquer:',...
-                                    '[hh mm ss]',['0' '0' '0']));
-            Modifier_Horodatage(stcReleve.heure, offset);
+                                    ['hh';'mm';'ss'],['0';'0';'0']));
+            printf("Correction de l''heure en cours ...\n");
+            stcReleve.heure = Modifier_Horodatage(stcReleve.heure, offset);
     
             //Sauvegarder les variables
             Sauve_Variables(dataPath2Save, stcReleve);
