@@ -33,9 +33,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         progression = 0;
         tempsRestant = 0;
         tempsRestant_1 = 0;
-        lignesEnTete = 6;
-        stcPosiTab = struct("lignesEnTete", lignesEnTete);
-        
+        stcPosiTab = struct("lignesEnTete", 6);
         stcStatistiques = struct('nomPC', "Seb");  // Nom de PC servant à l'importation
         
         // ****** Ouverture Fichier *****
@@ -52,11 +50,8 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         printf("Extraction et mise en forme des données ...\n");
         stcReleve = struct("nbrLignes", dimensions(donnee,"ligne")-6);  //Jusqu'à la fin des données
 
-// Modif du 10/11 suite au relevé Lyon\Releve_2013-11-06.txt
-//        dernLigne = stcReleve.nbrLignes + 5;
-//        ligneImax = dernLigne+1;
-        stcPosiTab.dernLigne = stcReleve.nbrLignes + 4;
-        ligneImax = stcPosiTab.dernLigne+2;
+        stcPosiTab.dernLigne = stcReleve.nbrLignes + stcPosiTab.lignesEnTete - 1;
+        stcPosiTab.ligneImax = stcPosiTab.dernLigne + 1;
         
         // ***** En-tête et pied de fichier *****
         //Date et Heure du relevé
@@ -78,7 +73,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         [N, stcReleve.jour] = weekday(tempDate,'long');
         stcReleve.date = strcat([part(temp(3),1:4), '/', part(temp(3),6:7), ...
                                 '/', part(temp(3),9:10)]);
-        temp = msscanf(donnee(6),'%s %s %s %s');
+        temp = msscanf(donnee(stcPosiTab.lignesEnTete),'%s %s %s %s');
         stcReleve.heureDebut = temp(1);
 
         temp = msscanf(donnee(stcPosiTab.dernLigne),'%s %s %s %s');
@@ -88,16 +83,20 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         
 
         // ***** Détection de la configuration *****
-        posiCaract = LocaliserCaractere(donnee(5),caractereAChercher);
-        tmpConfig = part(donnee(5),posiCaract(3)+2:posiCaract(3)+5);
+        posiCaract = LocaliserCaractere(donnee(stcPosiTab.lignesEnTete-1),...
+                                        caractereAChercher);
+        tmpConfig = part(donnee(stcPosiTab.lignesEnTete-1),...
+                        posiCaract(3)+2:posiCaract(3)+5);
         if tmpConfig == "Base" then
             stcReleve.config = "Base";
             stcReleve.isConfigBase = %t;
             stcReleve.isConfigHCHP = %f;
+            etapeTotale = "2";
         elseif tmpConfig == "H cr" then
             stcReleve.config = "HCHP";
             stcReleve.isConfigBase = %f;
             stcReleve.isConfigHCHP = %t;
+            etapeTotale = "4";
         else
             stcReleve.isConfigBase = %f;
             stcReleve.isConfigHCHP = %f;
@@ -117,7 +116,8 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
         stcStatistiques.tabTempsRestant(1) = 0;
 
         // ***** Indentation du tableau *****
-        tmpPosiTab = LocaliserCaractere(donnee(stcPosiTab.lignesEnTete),caractereAChercher);
+        tmpPosiTab = LocaliserCaractere(donnee(stcPosiTab.lignesEnTete),...
+                                        caractereAChercher);
         // Positions des valeurs
         stcPosiTab.heureFin = tmpPosiTab(1)-2;
         stcPosiTab.pappDebut = tmpPosiTab(1)+2;
@@ -144,101 +144,63 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
 
 
         // ********************************
-        // *********** Base ***************
+        // ****** Indexer le fichier ******
         // ********************************
         if stcReleve.isConfigBase then
             stcReleve.index = zeros(stcReleve.nbrLignes,1);
             // ***** Index énergies à t0 *****
-            Indexer_Trame_Base (donnee(lignesEnTete), stcPosiTab);
+            Indexer_Trame_Base (donnee(stcPosiTab.lignesEnTete), stcPosiTab);
             stcReleve.index0 = strtod(tmpReleve(3));
-        
-            // ***** Extraction des points *****
-            // Rafraichissement de l'avancement tous les %
-            for indexLigne = 1 : 99
-                stcPosiTab.indexLigne = indexLigne;
-                erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
-                // Terminer la fonction
-                if erreur then
-                    printf("ERREUR \t Fin de l''indexation\n");
-                    return;
-                end
-                barre_Progression(stcStatistiques, ...
-                            stcPosiTab.nbrIteration*indexLigne, progression);
-                sleep(5);  // Pause de 5ms
-            end
-            // Nombre de lignes restantes
-            erreur = indexerPartie(donnee, stcPosiTab, stcReleve, ...
-                    stcPosiTab.nbrIteration*indexLigne, stcPosiTab.dernLigne-5);
-            // Terminer la fonction
-            if erreur then
-                printf("ERREUR \t Fin de l''indexation\n");
-                return;
-            end
-            barre_Progression(stcStatistiques, stcPosiTab.dernLigne, progression);
 
-
-            // Mise en forme de l'index
-            cptLigneErreur = normaliser_index(stcReleve.index, ...
-                            stcReleve.index0, MAXERREURLIGNE);
-            stcReleve.index(:,1) = index;
-            //Signaler trop d'erreur consécutives
-            if cptLigneErreur > MAXERREURLIGNE then
-                printf("ATTENTION \t Trop d''erreurs consecutives sur l''energie (%i)\n",cptLigneErreur);
-            end
-
-        // ********************************
-        // *********** HCHP ***************
-        // ********************************
         elseif stcReleve.isConfigHCHP then
             stcReleve.index = zeros(stcReleve.nbrLignes,2);
             // ***** Index énergies à t0 *****
-            Indexer_Trame_HCHP (donnee(lignesEnTete), stcPosiTab);
-            stcReleve.index0(1) = evstr(tmpReleve(3));
-            stcReleve.index0(1,2) = evstr(tmpReleve(4));
-            tempIndex0 = stcReleve.index0;
+            Indexer_Trame_HCHP (donnee(stcPosiTab.lignesEnTete), stcPosiTab);
+            stcReleve.index0 = strtod(tmpReleve(3:4));
+        end
 
-            // ***** Extraction des points *****
-            // Rafraichissement de l'avancement tous les %
-            for indexLigne = 1 : 99
-                stcPosiTab.indexLigne = indexLigne;
-                erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
-                // Terminer la fonction
-                if erreur then
-                    printf("ERREUR \t Fin de l''indexation\n");
-                    return;
-                end
-                barre_Progression(stcStatistiques, ...
-                            stcPosiTab.nbrIteration*indexLigne, progression);
-                sleep(5);  // Pause de 5ms
-            end
-            // Nombre de lignes restantes
-            erreur = indexerPartie(donnee, stcPosiTab, stcReleve, ...
-                    stcPosiTab.nbrIteration*indexLigne, stcPosiTab.dernLigne-3);
+        // ***** Extraction des points *****
+        // Rafraichissement de l'avancement tous les %
+        for indexLigne = 1 : 99
+            stcPosiTab.indexLigne = indexLigne;
+            erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
             // Terminer la fonction
             if erreur then
                 printf("ERREUR \t Fin de l''indexation\n");
                 return;
             end
-            barre_Progression(stcStatistiques, stcPosiTab.dernLigne, progression);
+            barre_Progression(stcStatistiques, ...
+                        stcPosiTab.nbrIteration*indexLigne, progression, ["1","2"]);
+            sleep(5);  // Pause de 5ms
+        end
+        
+        // Nombre de lignes restantes
+        erreur = indexerPartie(donnee, stcPosiTab, stcReleve, ...
+                stcPosiTab.nbrIteration*indexLigne, stcPosiTab.dernLigne);
+        /// \todo Terminer la fonction (pointer sur "Si pappMoy toujours pas bon")
+        if erreur then
+            printf("ERREUR \t Fin de l''indexation\n");
+            return;
+        end
+        barre_Progression(stcStatistiques, stcPosiTab.dernLigne, progression, ["1",etapeTotale]);
 
-
-            // Mise en forme des index
-            cptLigneErreur(1) = normaliser_index(stcReleve.index(:,1), ...
-                                stcReleve.index0(1), MAXERREURLIGNE);
-            stcReleve.index(:,1) = index;
+        // Mise en forme de l'index
+        cptLigneErreur = normaliser_index(stcReleve.index(:,1), ...
+                                stcReleve.index0(1), MAXERREURLIGNE, ["2",etapeTotale]);
+        stcReleve.index(:,1) = index;
+        if stcReleve.isConfigHCHP then
             cptLigneErreur(2) = normaliser_index(stcReleve.index(:,2), ...
-                                stcReleve.index0(2), MAXERREURLIGNE);
+                                stcReleve.index0(2), MAXERREURLIGNE, ["3",etapeTotale]);
             stcReleve.index(:,2) = index;
-            // Signaler trop d'erreur consécutives
-            if cptLigneErreur > MAXERREURLIGNE then
-                printf("ATTENTION \t Trop d''erreurs consecutives sur l''energie (%i)\n",cptLigneErreur);
-            end
+        end
+        
+        //Signaler trop d'erreur consécutives
+        if cptLigneErreur > MAXERREURLIGNE then
+            printf("ATTENTION \t Trop d''erreurs consecutives sur l''energie (%i)\n",...
+                    cptLigneErreur);
         end
 
-        // ********************************
-        // *********** COMMUN *************
-        // ********************************
-        // Calcul puissance moyenne et recomposition puissance
+        //***** Calcul puissance moyenne et recomposition puissance ***********
         stcReleve.pappMoy = mean(stcReleve.papp);
         if isnan(stcReleve.pappMoy) then
             if stcReleve.isConfigHCHP then
@@ -246,20 +208,49 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG)
                 Puissance_HCHP(stcReleve);
             else
                 printf("Erreur dans la puissance, tentative de réparation en cours...\n");
-                for index = 2 : stcReleve.nbrLignes
-                    if isnan(stcReleve.papp(index)) then
-                        stcReleve.papp(index) = stcReleve.papp(index-1);
+                /// \todo Faire le traitement dans une fonction
+                progression = 0;
+                multipleLigne = floor(stcReleve.nbrLignes/99);
+
+                for increment = 0:98
+                   for ligne = 1 : multipleLigne
+                       ligneCourante = multipleLigne*increment + ligne;
+                        if isnan(stcReleve.papp(ligneCourante)) then
+                            stcReleve.papp(ligneCourante) = stcReleve.papp(ligneCourante-1);
+                        end
+                    end
+                    barre_Progression(stcStatistiques, ligneCourante, progression, ["3","3"]);
+                end
+                
+                for ligneCourante = ligneCourante : stcReleve.nbrLignes
+                    ligneCourante = multipleLigne*increment + ligne;
+                    if isnan(stcReleve.papp(ligneCourante)) then
+                        stcReleve.papp(ligneCourante) = stcReleve.papp(ligneCourante-1);
                     end
                 end
+                barre_Progression(stcStatistiques, ligneCourante, progression, ["3","3"]);
+
+                printf("Réparation terminée\n");
             end
+
             stcReleve.pappMoy = mean(stcReleve.papp);
+            if (~isnan(stcReleve.pappMoy) & stcReleve.pappMoy > 0) then
+                printf("Puissance apparente recalculée\n");
+
+            // Si pappMoy toujours pas bon
+            else
+                printf("ATTENTION \t Erreur(s) empéchant la reconsitution de la puissance\n Utiliser l''algorithme du 14/12/2014 16h02 dans le dépot GIT\n");
+                erreur = %t;
+                /// \todo Pointer vers l'algorithme du 14/12/2014 16h02 dans le dépot GIT
+            end
         end
 
         // Extraction IMAX
         try
-            posiCaract = LocaliserCaractere(donnee(ligneImax),caractereAChercher);
-            stcReleve.iMax = evstr(part(donnee(ligneImax), ...
-                                        posiCaract(3):length(donnee(ligneImax))));
+            posiCaract = LocaliserCaractere(donnee(stcPosiTab.ligneImax),...
+                                            caractereAChercher);
+            stcReleve.iMax = strtod(part(donnee(stcPosiTab.ligneImax), ...
+                        posiCaract(3)+2:length(donnee(stcPosiTab.ligneImax))));
         catch
             stcReleve.iMax = 0;
             printf("Pied de fichier manquant, IMAX non trouvé\n");
@@ -284,18 +275,41 @@ endfunction
 /// \param [out] index  \c tabDouble   Tableau d'énergie normalisé
 /// \return cptLigneErreur  \c double   Nombre d'erreurs successives rencontré
 //*****************************************************************************
-function cptLigneErreur = normaliser_index(index, index0, MAXERREURLIGNE)
+function cptLigneErreur = normaliser_index(index, index0, MAXERREURLIGNE, etape)
     cptLigneErreur = 0;
+    progression = 0;
+    multipleLigne = floor(size(index,1)/99);
 
-    for ligne = 1 : size(index,1)
+    for increment = 0:98
+       for ligne = 1 : multipleLigne
+            ligneCourante = multipleLigne*increment + ligne;
+            // Si Not A Number alors valeur précédente
+            if isnan(index(ligneCourante)) then
+                index(ligneCourante) = index(ligneCourante-1);
+            else
+                // Normalisation sur la journée
+                index(ligneCourante) = index(ligneCourante) - index0;
+                if index(ligneCourante) < 0 then
+                    index(ligneCourante) = index(ligneCourante-1);
+                    // Comptabiliser le nombre d'erreur consécutives
+                    cptLigneErreur = cptLigneErreur +1;
+                elseif cptLigneErreur < MAXERREURLIGNE then
+                    cptLigneErreur = 0;
+                end
+            end
+        end
+        barre_Progression(stcStatistiques, ligneCourante, progression, etape);
+    end
+
+    for ligneCourante = ligneCourante : size(index,1)
         // Si Not A Number alors valeur précédente
-        if isnan(index(ligne)) then
-            index(ligne) = index(ligne-1);
+        if isnan(index(ligneCourante)) then
+            index(ligneCourante) = index(ligneCourante-1);
         else
             // Normalisation sur la journée
-            index(ligne) = index(ligne) - index0;
-            if index(ligne) < 0 then
-                index(ligne) = index(ligne-1);
+            index(ligneCourante) = index(ligneCourante) - index0;
+            if index(ligneCourante) < 0 then
+                index(ligneCourante) = index(ligneCourante-1);
                 // Comptabiliser le nombre d'erreur consécutives
                 cptLigneErreur = cptLigneErreur +1;
             elseif cptLigneErreur < MAXERREURLIGNE then
@@ -303,6 +317,7 @@ function cptLigneErreur = normaliser_index(index, index0, MAXERREURLIGNE)
             end
         end
     end
+    barre_Progression(stcStatistiques, ligneCourante, progression, ["2","2"]);
 
     [index] = resume(index);
 endfunction
@@ -321,23 +336,23 @@ endfunction
 /// \return erreur  \c Booléen %t si erreur dans l'interprétation des lignes
 //*****************************************************************************
 function erreur = indexerPartie(donnee, stcPosiTab, stcReleve, opt_ligneDeb, opt_ligneFin)
+    offset = stcPosiTab.lignesEnTete - 1;
+
     if argn(2) == 3 then
-        ligneDeb = (stcPosiTab.indexLigne-1)*stcPosiTab.nbrIteration + ...
-                stcPosiTab.lignesEnTete -5;
-        ligneFin = stcPosiTab.indexLigne*stcPosiTab.nbrIteration + ...
-                stcPosiTab.lignesEnTete - 6;
+        ligneDeb = (stcPosiTab.indexLigne-1)*stcPosiTab.nbrIteration + 1;
+        ligneFin = stcPosiTab.indexLigne*stcPosiTab.nbrIteration;
     else
-        ligneDeb = opt_ligneDeb;
-        ligneFin = opt_ligneFin;
+        ligneDeb = opt_ligneDeb-offset;
+        ligneFin = opt_ligneFin-offset;
     end
-    
+
     try
         if stcReleve.isConfigBase then
-            Indexer_Trame_Base (donnee(ligneDeb+5:ligneFin+5), stcPosiTab);
-            stcReleve.index(ligneDeb:ligneFin) = strtod(tmpReleve(:,3));
+        Indexer_Trame_Base (donnee(ligneDeb+offset:ligneFin+offset), stcPosiTab);
+        stcReleve.index(ligneDeb:ligneFin) = strtod(tmpReleve(:,3));
 
         elseif stcReleve.isConfigHCHP then
-            Indexer_Trame_HCHP (donnee(ligneDeb+5:ligneFin+5), stcPosiTab);
+            Indexer_Trame_HCHP (donnee(ligneDeb+offset:ligneFin+offset), stcPosiTab);
             stcReleve.index(ligneDeb:ligneFin,1) = strtod(tmpReleve(:,3));
             stcReleve.index(ligneDeb:ligneFin,2) = strtod(tmpReleve(:,4));
         end
@@ -355,17 +370,18 @@ endfunction
 
 
 //****************************************************************************
-/// \fn barre_Progression(stcStatistiques, ligne, progression)
+/// \fn barre_Progression(stcStatistiques, ligne, progression, etape)
 /// \brief Rafraichit la barre de progression \n Calcul la progression et estime 
 /// le temps restant; est appelée à chaque nouveau pourcent réalisé
 /// \param [in] stcStatistiques   \c structure   Statistiques de progression
 /// \param [in] ligne   \c double   Ligne courante
 /// \param [in] progression \c double   Compteur d'avancement (nombre de fois 
 ///     où la fonction est apellée)
+/// \param [in] etape   \c tabString   Etape courante et nombre total
 /// \param [out] progression    \c double   Compteur d'avancement
 /// \param [out] stcStatistiques    \c structure   Statistiques de progression
 //*****************************************************************************
-function barre_Progression(stcStatistiques, ligne, progression)
+function barre_Progression(stcStatistiques, ligne, progression, etape)
     // Calcul du temps restant
     stcStatistiques.tempsTotal = toc();
     progression = progression + 1;
@@ -377,14 +393,16 @@ function barre_Progression(stcStatistiques, ligne, progression)
         progressionbar(BarreProgression, 'Import en cours, ' + ...
         string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
         '% fait. Temps restant : ' + ...
-        string(round(stcStatistiques.tabTempsRestant(progression))) + 's');
+        string(round(stcStatistiques.tabTempsRestant(progression))) + 's' + ...
+        strcat([' (',etape(1),'/',etape(2),')']));
     else
         tempTempsRestant = [floor(stcStatistiques.tabTempsRestant(progression)/60) ...
         round(modulo(round(stcStatistiques.tabTempsRestant(progression)),60))];
         progressionbar(BarreProgression, 'Import en cours, ' + ...
         string(floor(ligne*100/stcStatistiques.nbrLignes)) + ...
         '% fait. Temps restant : ' + string(tempTempsRestant(1)) + ...
-        'min '+ string(nombre_2_Chiffres(tempTempsRestant(2))) + 's');
+        'min '+ string(nombre_2_Chiffres(tempTempsRestant(2))) + 's' + ...
+        strcat([' (',etape(1),'/',etape(2),')']));
     end
     
     [progression, stcStatistiques] = resume(progression, stcStatistiques);
@@ -501,4 +519,5 @@ endfunction
 ///       nbrIteration  \c double   Nombre de lignes par itération
 ///       indexLigne    \c double   Numéro courant de paquet par pas de 
 /// "nbrIteration" lignes
+///       ligneImax     \c double   Numéro de ligne de Imax
 
