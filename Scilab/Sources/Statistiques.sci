@@ -39,7 +39,6 @@ endfunction
 ///       nomPC           \c String   Nom du PC
 ///       tempsTotal      \c Double   Temps de traitement
 ///       tabTempsRestant     \c tabDouble[]    Temps restant successif estimé
-///       nbBoucleCentDenum   \c Double   Nombre d'itérations pour optimiser le rafraichissement de la barre d'avancement
 ///       numCompteur         \c String   Numéro du compteur
 ///       config      \c String   Configuration du compteur
 ///       date        \c String   Date

@@ -1,9 +1,13 @@
 //*****************************
 /// \author Sébastien Lemoine
-/// \date Avril 2014
-/// \version 1.1
+/// \date Janvier 2015
+/// \version 1.2
 /// \brief Gestion de l'IHM et de l'environnement pour un post- 
 /// traitement des relevés
+//----- Change Log -------------
+// v1.0     Création
+// v1.1     Indexation matricielle
+// v1.2     Indexation des .csv
 //******************************
 
 clear;
@@ -27,26 +31,23 @@ dataPath2Read = projectPath + "\Releves";
 dataPath2Save = dataPath2Read + "\Variables";
 
 // Charger les fonctions dans l'environnement
-// Charger les fonctions pour importer un fichier .csv
-exec(fnctPath+"\Charger_Csv.sci"); 
-// Charger les fonctions pour importer un fichier .txt
-exec(fnctPath+"\Charger_Txt.sci"); 
-// Charger les fonctions pour tracer les graphiques
+// Importer les fichiers
+exec(fnctPath+"\Charger_Fichiers.sci"); 
+// Tracer les graphiques
 exec(fnctPath+"\Tracer_Graph.sci");
-// Charger les fonctions pour reconstituer les puissances depuis 
-// les index d'énergie
+// Reconstituer les puissances depuis les index d'énergie
 exec(fnctPath+"\Puissance_HPHC.sci");
-// Charger les fonctions pour importer un fichier binaire .sod
+// Importer un fichier binaire .sod
 exec(fnctPath+"\Charger_Variables.sci");
-// Charger les fonctions de calculs
+// Fonctions de calculs
 exec(fnctPath+"\Calculs.sci");
-// Charger les fonctions de filtrage
+// Fonctions de filtrage
 exec(fnctPath+"\Filtrage.sci");
-// Charger les fonctions de traitement de signal
+// Fonctions de traitement de signal
 //exec(fnctPath+"\GlrBrandtMoy.sci");
-// Charger les fonctions de filtrage
+// Modifier l'horodatage
 exec(fnctPath+"\Modifier_Horodatage.sci");
-// Charger les fonctions de statistiques
+// Fonctions de statistiques
 exec(fnctPath+"\Statistiques.sci");
 
 //*** Début du programme *******************************************************
@@ -74,7 +75,7 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
         close;
         printf("\nChargement d''un fichier CSV\n");
         // *** Importer le fichier csv ***************
-        erreur = Importer_Csv(dataPath2Read, isDEBUG);
+        erreur = Importer_Txt(dataPath2Read, isDEBUG, ascii(";"));
         // Retourne: stcReleve, stcStatistiques
         
         //Sauvegarder les variables
@@ -118,11 +119,14 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
             printf("Erreur! \t Importer d''abord des données, choix 1 ou 9.\n");
         elseif (stcReleve.isConfigBase | stcReleve.isConfigHCHP) then
             // Comptabiliser les heures de fonctionnement
-            if stcReleve.numCompteur == ""049701078744"" then
+            if stcReleve.numCompteur == "049701078744" then
                 [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
                 HeuresFonctionnement(stcReleve);
              end
-            tracer_Graph([Gbl_Papp tabMoy], Gbl_NumCompteur);
+            tracer_Graph([stcReleve.papp matrice(stcReleve.pappMoy, stcReleve.nbrLignes)], stcReleve);
+            // Tracer avec Psousc
+            //tabPsousc = matrice(stcReleve.Psousc, stcReleve.nbrLignes);
+            //tracer_Graph([stcReleve.papp matrice(stcReleve.pappMoy, stcReleve.nbrLignes) tabPmax], stcReleve);
         else
             printf("Erreur! \t Aucune donnée valide à tracer\n");
         end
@@ -141,9 +145,6 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
             if stcReleve.numCompteur == "271067018318" then
                 [stcReleve.dureeFonctionnement, stcReleve.pappMoy] = ...
                 HeuresFonctionnement(stcReleve);
-// 2014-12-14 Obsolète
-//            else
-//                 stcReleve.pappMoy = mean(stcReleve.papp);
             end
             tracer_2_Graph(stcReleve, %t);
         else
@@ -158,7 +159,7 @@ while((choix > 0 & choix <= 5 | choix == 9) & choix <> []) do
         printf("\nChargement d''un fichier texte\n");
         
         // *** Importer le fichier txt ***************
-        erreur = Importer_Txt(dataPath2Read, isDEBUG);
+        erreur = Importer_Txt(dataPath2Read, isDEBUG, 9);
         // Retourne: stcReleve, stcStatistiques
 
         //Sauvegarder les variables
@@ -185,16 +186,16 @@ end
 /// \stc stcReleve.     \c Structure    Relevé
 ///       numCompteur \c String   Numéro du compteur
 ///       residence   \c String   Nom du domicile
-///       config   \c String   Configuration du compteur
-///       pSouscr  \c String   Puissance souscrite
+///       ISouscr  \c double   Intensité souscrite
+///       PSouscr  \c String   Puissance souscrite
 ///       jour     \c String   Nom du jour
 ///       date     \c String   Date
 ///       heureDebut  \c String   Heure de début
 ///       heureFin    \c string   Heure de fin
+///       config   \c String   Configuration du compteur
 ///       isConfigBase    \c Booléen  Vrai, configuré en Base
 ///       isConfigHCHP    \c Booléen  Vrai, configuré en HCHP
 ///       nbrLignes   \c Double   Nombre d'échantillons
-///       nbrIndex    \c Double   Nombre d'index d'énergie
 ///       papp    \c tabDouble[nbrLignes]     Puissance
 ///       heure   \c tabDouble[nbrLignes]     Heure
 ///       index   \c tabDouble[nbrLignes][nbrIndex]     Energies
