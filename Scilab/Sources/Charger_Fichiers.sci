@@ -72,8 +72,12 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
         printf("Extraction et mise en forme des données ...\n");
         stcReleve = struct("nbrLignes", ...
                 dimensions(donnee,"ligne")-stcPosiTab.lignesEnTete);
-        stcPosiTab.dernLigne = stcReleve.nbrLignes + stcPosiTab.lignesEnTete - 1;
-        stcPosiTab.ligneImax = stcPosiTab.dernLigne + 1;
+        stcPosiTab.ligneImax = stcReleve.nbrLignes + stcPosiTab.lignesEnTete;
+        if caractereAChercher == caractTab then
+            stcPosiTab.dernLigne = stcPosiTab.ligneImax - 2;
+        else
+            stcPosiTab.dernLigne = stcPosiTab.ligneImax - 1;
+        end
         stcReleve.Isousc = 0;
         stcReleve.Psousc = 0;
         
