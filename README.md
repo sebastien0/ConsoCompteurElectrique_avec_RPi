@@ -5,18 +5,20 @@
 ******************************************************************************************************
 
 ********************************************
-RPi.SuivitTRElec
+ConsoCompteurElectrique_avec_RPi
 Initié en septembre 2013
 
 Auteur:
 	Sébastien Lemoine	seb.lemoine@sfr.fr
+
 Co-auteurs:
 	Manu
+
 Remerciements:
 	Coco
 	Julie
 	Nico
-	Marc BRUNELLO	
+	Marc Brunello
 	Sam
 ********************************************
 
@@ -24,35 +26,44 @@ Remerciements:
 ********************************************
 	DESCRIPTION
 ********************************************
-A ce jour (Juin 2014):
-- Acquisition matérielle depuis le compteur en tête d'installation, installé par EDF
+A ce jour (Janvier 2015):
+- Acquisition matérielle depuis le compteur en tête d'installation, installé par EDF/ERDF
 - Acquisition (RS232) et enregistrement dans fichiers .txt sur Raspberry-Pi (R-Pi)
 - Traitements avancés avec Scilab (hors ligne, i.e. déporté sur une machine plus performante)
 
 A terme (évolutions):
-- Enregistrement dans une BASE DE DONNEES et AFFICHAGE WEB sur R-Pi
+- Enregistrement dans une BASE DE DONNEES
+- AFFICHAGE WEB depuis la R-Pi
 - Enrichissement des traitements avancés avec Scilab
 
 
 ********************************************
 	ARBORESCENCE
    (à ré-agencer)
-********************************************
 	Répertoire			Description
 -----------------------------------------------------------------------------------------
++ Affichage distant		Sources pour l'IHM html
 + Code					Sources du code C tournant sur la R-Pi
  + Compteur_Linky		Projet Codeblock (.cbp), Projet doxygen (.dxgn)
-  - Sources			Sources
   + Doxygen			Documentation
-   - html				Documentation HTML générée
+   - html			Documentation HTML générée
    - Images			Objets nécessaires à la documentation du code
-  + Releves			Relevés bruts et tracés obtenus, depuis différents compteurs
+  + Sources			Sources et makefile
+   - bin			Executable
+   - build			Objets de compilation
+   - inc			Includes (sources .h)
+   - src			Source (sources .c)
++ Documents			Documentation divers (Description projet, outils, pilotes, BOM, Datasheets, ...)
+ - Datasheets
+ - Drivers-Bibliothèques
++ Releves			Relevés bruts et tracés obtenus, depuis différents compteurs
 						  (3 Base, 1 Heures Creuses Heures Pleines (HCHP))
-   - Fichiers txt		Données brutes
+   - Fichiers csv		Données brutes au format .csv
+   - Fichiers txt		Données brutes au format .txt 
    - Variables			Données exportées et tracées avec Scilab
-- Documents			Documentation divers (projet, outils, pilotes, BOM, Datasheets, ...)
-- FTP					Script FTP pour automatiser le téléchargement des relevés depuis la R-Pi
-+ Scilab				Scripts Scilab (tracer une ou plusieurs courbes, traitement du signal)
-						  Projet Doxygen (.dxgn) -> NE MARCHE PAS
- - Sources				Scripts Scilab
++ Scilab				Scripts Scilab + documentation générée
+ - Documentation		Scripts de documentation
+ - Sources				Scripts pour importer, tracer les courbes ou réaliser du traitement du signal
 
+
+ --- Fin de fichier ---
