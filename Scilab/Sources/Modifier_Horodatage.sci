@@ -31,15 +31,23 @@ function Heure = Modifier_Horodatage(Heure, offset)
         if tempHeure(INDSECONDES) < 0 then
             tempHeure(INDMINUTES) = tempHeure(INDMINUTES) - 1;
             tempHeure(INDSECONDES) = tempHeure(INDSECONDES) + 60;
+        elseif tempHeure(INDSECONDES) > 59 then
+            tempHeure(INDMINUTES) = tempHeure(INDMINUTES) + 1;
+            tempHeure(INDSECONDES) = tempHeure(INDSECONDES) - 60;
         end
         
         if tempHeure(INDMINUTES) < 0 then
             tempHeure(INDHEURES) = tempHeure(INDHEURES) - 1;
             tempHeure(INDMINUTES) = tempHeure(INDMINUTES) + 60;
+        elseif tempHeure(INDMINUTES) > 59 then
+            tempHeure(INDHEURES) = tempHeure(INDHEURES) + 1;
+            tempHeure(INDMINUTES) = tempHeure(INDMINUTES) - 60;
         end
         
         if tempHeure(INDHEURES) < 0 then
            tempHeure(INDHEURES) = tempHeure(INDHEURES) + 24;
+        elseif tempHeure(INDHEURES) > 23 then
+           tempHeure(INDHEURES) = tempHeure(INDHEURES) - 24;
         end
     //    printf("\t\t Heure: %.2d:%.2d:%.2d\n", tempHeure(INDHEURES), tempHeure(INDMINUTES), tempHeure(INDSECONDES));
         Heure(ligne) = msprintf('%.2d:%.2d:%.2d',tempHeure(INDHEURES), ...
