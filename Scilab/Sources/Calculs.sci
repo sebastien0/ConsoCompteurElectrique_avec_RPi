@@ -201,9 +201,11 @@ function nom = nom_compteur(numCompteur)
     case "049701078744" then
         nom = "Mont-Saxonnex";
     case "271067095836" then
-        nom = "Lyon - Seb & Julie";
+        nom = "Lyon 9ème - Seb & Julie";
     case "059922013742" then
         nom = "Claix";
+	case "041028116737" then
+        nom = "Lyon 8ème - Seb & Julie";
     else
         nom = "Inconnu";
     end
