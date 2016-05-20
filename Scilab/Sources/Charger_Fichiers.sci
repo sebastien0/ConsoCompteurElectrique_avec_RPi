@@ -68,10 +68,13 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
         mclose(cheminFichier);  // Fermeture du fichier
 
 
-        // *** Extraction des données *****************************************
-        printf("Extraction et mise en forme des données ...\n");
+        // *** Longueur fichier ***/
         stcReleve = struct("nbrLignes", ...
                 dimensions(donnee,"ligne")-stcPosiTab.lignesEnTete);
+
+        // *** Extraction des données *****************************************
+        printf("Extraction et mise en forme des données ...\n");
+
         stcPosiTab.ligneImax = stcReleve.nbrLignes + stcPosiTab.lignesEnTete;
         if caractereAChercher == caractTab then
             stcPosiTab.dernLigne = stcPosiTab.ligneImax - 2;
@@ -136,7 +139,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
         end
         clear temp;
         clear tempDate;
-
+    
         // ***** Détection de la configuration *****
         posiCaract = LocaliserCaractere(donnee(stcPosiTab.lignesEnTete-1),...
                                         caractereAChercher);
@@ -221,8 +224,8 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
 
         stcReleve.papp = zeros(stcReleve.nbrLignes,1);
         stcReleve.heure(stcReleve.nbrLignes) = "";
-
-
+    
+    
         // ********************************
         // ****** Indexer le fichier ******
         // ********************************
@@ -237,20 +240,25 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
             Indexer_Trame(donnee(stcPosiTab.lignesEnTete), stcPosiTab, %f);
             stcReleve.index0 = strtod(tmpReleve(3:4));
         end
-
-        // ***** Extraction des points *****
-        // Rafraichissement de l'avancement tous les %
-        for indexLigne = 1 : 99
-            stcPosiTab.indexLigne = indexLigne;
-            erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
-            // Terminer la fonction
-            if erreur then
-                printf("ERREUR \t Fin de l''indexation\n");
-                return;
+    
+            // ***** Extraction des points *****
+        if stcReleve.nbrLignes > 100 then
+            // Rafraichissement de l'avancement tous les %
+            for indexLigne = 1 : 99
+                stcPosiTab.indexLigne = indexLigne;
+                erreur = indexerPartie(donnee, stcPosiTab, stcReleve);
+                // Terminer la fonction
+                if erreur then
+                    printf("ERREUR \t Fin de l''indexation\n");
+                    return;
+                end
+                barre_Progression(stcStatistiques, ...
+                            stcPosiTab.nbrIteration*indexLigne, progression, ["1","2"]);
+                sleep(5);  // Pause de 5ms
             end
-            barre_Progression(stcStatistiques, ...
-                        stcPosiTab.nbrIteration*indexLigne, progression, ["1","2"]);
-            sleep(5);  // Pause de 5ms
+        else
+            stcPosiTab.nbrIteration = stcPosiTab.lignesEnTete;
+            indexLigne = 1;
         end
         
         // Nombre de lignes restantes
@@ -310,7 +318,7 @@ function erreur = Importer_Txt(dataPath2Read, isDEBUG, caractereAChercher)
             stcReleve.iMax = 0;
             printf("Pied de fichier manquant, IMAX non trouvé\n");
         end
-        
+
         stcStatistiques.tempsTotal = toc();
         close(BarreProgression);
 
@@ -335,43 +343,33 @@ function cptLigneErreur = normaliser_index(index, index0, MAXERREURLIGNE, etape)
     progression = 0;
     multipleLigne = floor(size(index,1)/99);
 
-    for increment = 0:98
-       for ligne = 1 : multipleLigne
-            ligneCourante = multipleLigne*increment + ligne;
-            // Si Not A Number alors valeur précédente
-            if isnan(index(ligneCourante)) then
-                index(ligneCourante) = index(ligneCourante-1);
-            else
-                // Normalisation sur la journée
-                index(ligneCourante) = index(ligneCourante) - index0;
-                if index(ligneCourante) < 0 then
+    if multipleLigne>0 then
+        for increment = 0:98
+           for ligne = 1 : multipleLigne
+                ligneCourante = multipleLigne*increment + ligne;
+                // Si Not A Number alors valeur précédente
+                if isnan(index(ligneCourante)) then
                     index(ligneCourante) = index(ligneCourante-1);
-                    // Comptabiliser le nombre d'erreur consécutives
-                    cptLigneErreur = cptLigneErreur +1;
-                elseif cptLigneErreur < MAXERREURLIGNE then
-                    cptLigneErreur = 0;
+                else
+                    // Normalisation sur la journée
+                    index(ligneCourante) = index(ligneCourante) - index0;
+                    if index(ligneCourante) < 0 then
+                        index(ligneCourante) = index(ligneCourante-1);
+                        // Comptabiliser le nombre d'erreur consécutives
+                        cptLigneErreur = cptLigneErreur +1;
+                    elseif cptLigneErreur < MAXERREURLIGNE then
+                        cptLigneErreur = 0;
+                    end
                 end
             end
+            barre_Progression(stcStatistiques, ligneCourante, progression, etape);
         end
-        barre_Progression(stcStatistiques, ligneCourante, progression, etape);
+    else
+        tailleIndex = dimensions(index,"ligne");
+        ligneCourante = tailleIndex;
+        index = zeros(tailleIndex,1);
     end
 
-    for ligneCourante = ligneCourante : size(index,1)
-        // Si Not A Number alors valeur précédente
-        if isnan(index(ligneCourante)) then
-            index(ligneCourante) = index(ligneCourante-1);
-        else
-            // Normalisation sur la journée
-            index(ligneCourante) = index(ligneCourante) - index0;
-            if index(ligneCourante) < 0 then
-                index(ligneCourante) = index(ligneCourante-1);
-                // Comptabiliser le nombre d'erreur consécutives
-                cptLigneErreur = cptLigneErreur +1;
-            elseif cptLigneErreur < MAXERREURLIGNE then
-                cptLigneErreur = 0;
-            end
-        end
-    end
     barre_Progression(stcStatistiques, ligneCourante, progression, ["2","2"]);
 
     [index] = resume(index);
