@@ -1,7 +1,7 @@
 *** Run ************
 Run Configuration.dxgn with doxywizard.exe
 Don't care about .dot conversion error then run make_dot2PNG.bat
-Open AFPLC Documentation (shortcut of .\html\index.html)
+Open .\Doxygen\html\index.html
 
 
 *** Installation ****************
