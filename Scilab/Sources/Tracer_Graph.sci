@@ -124,6 +124,8 @@ function tracer_Graph(data2plot, stcReleve)
     
         // Ajouter les heures sur les abscisses
         heures_Abscisses(graphique, stcReleve.heure);
+        seteventhandler('evnt_Hndlr_Souris');   //Affichage position souris
+
 
         printf("Puissance active moyenne = %s\n", puissMoyStr);
         printf("Puissance apparente tracée\n");
@@ -172,6 +174,7 @@ function tracer_2_Graph(stcReleve, optTracerPmoy)
         mise_en_forme(graphique, fenetre);
         // Ajouter les heures sur les abscisses
         heures_Abscisses(graphique, stcReleve.heure);
+        seteventhandler('evnt_Hndlr_Souris');   //Affichage position souris
         
         //*** Index *********************
         subplot(212);
@@ -300,4 +303,38 @@ function couleur = couleur_plot()
     couleur(6) = 'k';
     couleur(7) = 'y';
     couleur(8) = 'w';
+endfunction
+
+
+//****************************************************************************
+/// \fn evnt_Hndlr_Souris(win, x, y, ibut)
+/// \brief Display mouse position at graphic bottom
+//****************************************************************************
+function evnt_Hndlr_Souris(win, x, y, ibut)
+    if ibut==-1000 then return,end
+    [x,y]=xchange(x,y,'i2f')
+    //xinfo(msprintf('Event code %d at mouse position is (%f,%f)',ibut,x,y))
+    //Si l'abscisse est dans la fenêtre
+    if (x > 1 & x < stcReleve.nbrLignes) then
+        //Ajustement de l'unité
+        if stcReleve.papp(x) < 1000 then
+            texte = msprintf('%.0fW',stcReleve.papp(x));
+        else
+            texte = msprintf('%.2fkW',stcReleve.papp(x)/1000);
+        end
+
+        //Nombre de graphiques tracés
+        fenetre = gcf();
+        nbGraph = size(fenetre.children,1);
+        
+        //Ajout de l'énergie
+        if nbGraph == 2 then
+            texte = msprintf('%s et l''énergie de %ikWh', ...
+                               texte, stcReleve.index(x));
+        end
+        
+        xinfo(msprintf('A %s, la puissance est de %s', ...
+                        stcReleve.heure(x), texte));
+
+    end
 endfunction
