@@ -9,7 +9,7 @@ ConsoCompteurElectrique_avec_RPi
 Initié en septembre 2013
 
 Auteur:
-	Sébastien Lemoine	seb.lemoine@sfr.fr
+	Sébastien Lemoine
 
 Co-auteurs:
 	Manu
