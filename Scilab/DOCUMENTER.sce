@@ -20,15 +20,18 @@ srcPath = strcat([parentPath,"\Documentation"]);
 
 //*** CONFIGURATION MANUELLE *******************************************
 // Chemin du répertoire à documenter
-targetPath = strcat([parentPath,"\Sources"]);
-//targetPath = strcat([parentPath,"\Documentation"]); // Documenter la documentation
-nomFichier = "Documentation_Projet.txt";    // Nom du fichier de sortie
+targetRepository = "Sources";
+targetPath = strcat([parentPath,"\",targetRepository]);
+nomFichier = strcat(["Documentation_", targetRepository,".txt"]);    // Nom du fichier de sortie
 titreProjet = "R-Pi. Suivit Temps-Réel des consommations électriques";
-debugActif = %f;    // Activer ou non le debug
+
+//targetRepository = "Documentation";
+//targetPath = strcat([parentPath,"\",targetRepository]);
+// Autres info créer plus bas
+
+debugActif = %f;    // Activer ou non le debug => Génère le .sod du fichier .txt généré
 //*** Fin configuration manuelle *******************************************
 
-
-documentationRecursive = targetPath == srcPath;
 
 // Charger les fonctions pour documenter
 exec(srcPath+"\Documenter_Indexer.sci");
@@ -39,6 +42,9 @@ exec(srcPath+"\Outils.sci");
 printf("*************************************************************\n");
 printf("Générer la documentation du projet courant\nChemin: ''%s''\n", targetPath);
 printf("*************************************************************\n\n");
+
+// Documentation de la documentation
+documentationRecursive = targetPath == srcPath;
 
 if documentationRecursive then
     nomFichierPrincipal = "DOCUMENTER.sce";
@@ -73,6 +79,7 @@ stcDoc.fichiers = struct("nbr", dimensions(listeNomFichiers, "ligne"));
 stcDoc.todo.nbr = 0;
 stcDoc.bug.nbr = 0;
 stcDoc.stc.nbr = 0;
+stcDoc.warn.nbr = 0;
 
 //******* Indexer les fichiers ************
 printf("Info \t %i fichiers à indexer\n", stcDoc.fichiers.nbr);

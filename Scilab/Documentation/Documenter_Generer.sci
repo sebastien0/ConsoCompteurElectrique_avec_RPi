@@ -32,6 +32,13 @@ function creer_Documentation(stcDoc, nomProjet, nomFichier, debugActif)
         else
             ecrireTab(fd, stcDoc.bug);
         end
+        
+        mfprintf(fd,"\n********* WARNING ********************\n");
+        if stcDoc.warn.nbr == 0 then
+            mfprintf(fd,"Aucun WARNING remonté\n");
+        else
+            ecrireTab(fd, stcDoc.warn);
+        end
 
         mfprintf(fd,"\n********* TODO ********************\n");
         if stcDoc.todo.nbr == 0 then

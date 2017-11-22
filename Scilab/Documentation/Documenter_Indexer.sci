@@ -93,6 +93,18 @@ function indexer_Ligne(contenu, stcDoc, debugActif)
                     end
                     stcDoc.bug.tab(stcDoc.bug.nbr).descr = stcContenu.descr;
 
+                // *************** Warning ***************
+                elseif convstr(stcContenu.nom,'u') == convstr(tabBalises(11),'u') then
+                    if ~stcContenu.contientBalise then
+                        indexLigne = description_sur_lignes(contenu, ...
+                                    indexLigne, stcContenu_1.descr);
+                    else
+                        stcDoc.warn.nbr = stcDoc.warn.nbr + 1;
+                        stcDoc.warn.tab(stcDoc.warn.nbr).fichier = nomFichier;
+                        stcDoc.warn.tab(stcDoc.warn.nbr).ligne = indexLigne;
+                    end
+                    stcDoc.warn.tab(stcDoc.warn.nbr).descr = stcContenu.descr;
+
                 // *************** Version ***************
                 elseif stcContenu.nom == tabBalises(3) then
                     stcDoc.fichiers.tab(indexFichier).version = stcContenu.descr;
@@ -328,6 +340,18 @@ endfunction
 //****************************************************************************
 /// \fn tabBalises = liste_Nom_Balises()
 /// \brief Tableau contenant la liste des balises
+/// Liste des balises traitées, au format '/// \balise ' avec un espace obligatoire après le mot clef:
+/// - todo
+/// - bug
+/// - version
+/// - author
+/// - date
+/// - brief
+/// - fn
+/// - param
+/// - return
+/// - stc
+/// - warning
 /// \return tabBalises    \c tabString    Liste des noms de balise
 //*****************************************************************************
 function tabBalises = liste_Nom_Balises()
@@ -341,6 +365,7 @@ function tabBalises = liste_Nom_Balises()
     tabBalises(8) = "param";
     tabBalises(9) = "return";
     tabBalises(10) = "stc";
+    tabBalises(11) = "warning";
 endfunction
 
 //****************************************************************************
