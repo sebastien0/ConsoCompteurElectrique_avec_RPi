@@ -34,6 +34,8 @@ static char *_charSearch(int intToSearch, char *begin, int size){
 *   compris entre \p STX et \p ETX dans \p frame
 * \param [in] *tabRecu    Pointeur du tableau source
 * \param [in] *frame    Pointeur de la trame générée
+* \par Historique
+*	Circonscription de l'erreur causant le segfault
 ******************************/
 void extract(char *tabRecu, char *frame){
     static char *endFrame = NULL;
@@ -43,7 +45,23 @@ void extract(char *tabRecu, char *frame){
 	int size = endFrame - tabRecu;	// Taille d'une seule trame
 
 	// Copie de la trame sans ses balises
-    memcpy(frame, &tabRecu[2], endFrame - &tabRecu[2]);
-	frame[size] = '\0';
-//	printf("frame [extract] = %s\n",frame);
+	// 152  est la taille du malloc de 'frame' + 3 caracteres
+	if (endFrame - &tabRecu[2] <= 0)
+    {
+        printf("Error \t ETX before STX (segfault error avoid)\n");
+        frame[size] = '\0';
+    }
+    else if((size <= (152+3)) && (endFrame != NULL))
+	{
+	    //printf("\nDebug \t tabRecu in extract() :|%s| \n",frame);
+        //printf("Debug \t longeur endFrame - &tabRecu[2]: %i\n", endFrame - &tabRecu[2]);
+        memcpy(frame, &tabRecu[2], endFrame - &tabRecu[2]); /// \BUG améliorer la gestion de endFrame - &tabRecu[2] <= 0; i.e. lorsque ETX est avant STX
+	    frame[size] = '\0';
+	    //printf("Debug \t frame in extract() :|%s| \n",frame);
+	}
+	else
+	{
+		tabRecu[181]='\0';	// Au cas où, pour eviter BUG
+		printf("Error \t trame recue incorrecte : %s\n",tabRecu);
+	}
 }
