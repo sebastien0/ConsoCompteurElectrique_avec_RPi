@@ -18,10 +18,11 @@ Co-auteurs:
 
 Remerciements:
 	Coco
-	Julie
-	Nico
+	Julie L.
+	Nico D.
 	Marc Brunello
-	Sam
+	Samuel P.
+	Pierre V.
 ********************************************
 
 
