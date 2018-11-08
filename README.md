@@ -4,7 +4,11 @@
 		!!! Free for non commercial use !!!!!!
 ******************************************************************************************************
 
+<<<<<<< HEAD
 <img src="https://github.com/sebastien0/ConsoCompteurElectrique_avec_RPi/blob/master/Code/Compteur_Linky/Doxygen/Images/Illustration.jpg" height="500px">
+=======
+<img src="https://github.com/sebastien0/ConsoCompteurElectrique_avec_RPi/blob/master/Code/Compteur_Linky/Doxygen/Images/Illustration.jpg" height="230px">
+>>>>>>> 1e8c339c092339f7ec09b38550980a3edabc4971
 
 ********************************************
 ConsoCompteurElectrique_avec_RPi
